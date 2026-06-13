@@ -12,7 +12,7 @@ export default function Footer() {
             TechTonic
           </h3>
           <p className="text-sm text-gray-400 mb-4">
-            Nền tảng thương mại điện tử hiện đại, tập trung vào trải nghiệm mua sắm tối giản và dữ liệu chính xác.
+            Sàn thương mại điện tử hiện đại, tập trung vào trải nghiệm mua sắm tối giản và dữ liệu chính xác.
           </p>
           {/* Thay đổi hoàn toàn các nút mạng xã hội bằng text thường để chặn đứng mọi lỗi icon */}
           <div className="flex space-x-3 text-xs">
