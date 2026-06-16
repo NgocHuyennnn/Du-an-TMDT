@@ -1,22 +1,33 @@
-// src/App.jsx
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { publicRoutes } from './routes';
+import ManagerLayout from "./components/manager/ManagerLayout";
+import { publicRoutes } from "./routes/storeRoutes";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Tự động duyệt qua danh sách cấu hình để tạo tuyến đường */}
-        {publicRoutes.map((route, index) => {
-          const Page = route.component;
-          return (
-            <Route 
-              key={index} 
-              path={route.path} 
-              element={<Page />} 
-            />
-          );
-        })}
+        <Route element={<ManagerLayout />}>
+          {/* Route mặc định */}
+          <Route path="/" element={<Navigate to="/stores" replace />} />
+
+          {/* Các route */}
+          {publicRoutes.map((route, index) => {
+            const Page = route.component;
+
+            return (
+              <Route
+                key={index}
+                path={route.path}
+                element={<Page />}
+              />
+            );
+          })}
+        </Route>
       </Routes>
     </Router>
   );

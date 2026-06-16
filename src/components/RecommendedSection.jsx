@@ -211,10 +211,12 @@ export default function RecommendedSection() {
                 </div>
               </div>
 
-              <div className="absolute bottom-0 left-0 right-0 p-2 translate-y-full group-hover:translate-y-0 transition-transform duration-200 bg-white">
-                <button className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors">
-                  <ShoppingCart size={11} />
-                  Thêm vào giỏ
+              <div className="p-3 pt-0">
+                <button 
+                  onClick={(e) => { e.preventDefault(); console.log("Giỏ hàng:", product.id); }}
+                  className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
+                >
+                  <ShoppingCart size={12} /> Thêm giỏ hàng 
                 </button>
               </div>
             </div>
