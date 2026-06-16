@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import loginBanner from '../assets/nen.png'; 
@@ -23,7 +23,7 @@ export default function QuenMK() {
         <img src={loginBanner} alt="Background" className="w-full h-full object-cover opacity-40 filter contrast-[1.05]" />
       </div>
 
-      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-[520px] flex flex-col justify-between transition-all duration-300">
+      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-130 flex flex-col justify-between transition-all duration-300">
         <div className="w-full">
           <div className="flex justify-center mb-8">
             <Link to="/" className="flex items-center gap-1.5">
