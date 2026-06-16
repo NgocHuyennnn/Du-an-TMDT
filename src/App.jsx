@@ -1,28 +1,35 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-
 import ManagerLayout from "./components/manager/ManagerLayout";
 import { publicRoutes } from "./routes/storeRoutes";
-
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 function App() {
   return (
-    <Routes>
-      <Route element={<ManagerLayout />}>
-        <Route path="/" element={<Navigate to="/stores" />} />
+    <Router>
+      <Routes>
+        <Route element={<ManagerLayout />}>
+          {/* Route mặc định */}
+          <Route path="/" element={<Navigate to="/stores" replace />} />
 
-        {publicRoutes.map((route, storeRoutes) => {
-          const Page = route.component;
+          {/* Các route */}
+          {publicRoutes.map((route, index) => {
+            const Page = route.component;
 
-          return (
-            <Route
-              key={storeRoutes}
-              path={route.path}
-              element={<Page />}
-            />
-          );
-        })}
-      </Route>
-    </Routes>
+            return (
+              <Route
+                key={index}
+                path={route.path}
+                element={<Page />}
+              />
+            );
+          })}
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
