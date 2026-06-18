@@ -54,7 +54,7 @@ export default function FeaturedProducts() {
           {visible.map((product) => (
             <Link
               key={product.id}
-              to={`/product/${product.id}`}
+              to={`/chitietsanpham/${product.id}`}
               className="group relative flex flex-col bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-blue-200 hover:shadow-xl transition-all duration-300"
             >
               {/* Ảnh sản phẩm */}

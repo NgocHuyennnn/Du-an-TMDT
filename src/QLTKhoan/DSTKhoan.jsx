@@ -157,7 +157,7 @@ export default function QuanLyTaiKhoan() {
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-500">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
-            <Link to="/vaitro" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+            <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Home size={16} /> <span>Quản lý vai trò</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">

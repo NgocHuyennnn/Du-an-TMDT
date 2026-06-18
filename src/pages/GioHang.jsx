@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Trash2, Plus, Minus, ArrowLeft, ShieldCheck, ShoppingBag, Check, 
@@ -39,7 +39,7 @@ export default function GioHang() {
   ];
 
   const [couponCode, setCouponCode] = useState('');
-  const [appliedDiscount, setAppliedDiscount] = useState(30000); // Mặc định giả lập có sẵn FREESHIP30 như ảnh mẫu
+  const [appliedDiscount] = useState(30000); // Mặc định giả lập có sẵn FREESHIP30 như ảnh mẫu
   const shippingFee = 30000;
 
   const handleCheckChange = (id) => {
@@ -193,7 +193,7 @@ export default function GioHang() {
                       </div>
 
                       {/* Đơn giá hiển thị trên PC */}
-                      <div className="text-right min-w-[90px] hidden sm:block">
+                      <div className="text-right min-w-22.5 hidden sm:block">
                         <span className="font-extrabold text-sm text-gray-900 tracking-tight">
                           {formatCurrency(item.price * item.quantity)}
                         </span>
@@ -265,7 +265,7 @@ export default function GioHang() {
             
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden space-y-4 pb-4">
               {/* Tiêu đề Box Đơn hàng màu Gradient Tím Xanh cá tính như ảnh mẫu */}
-              <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-4 text-white flex items-center gap-2">
+              <div className="bg-linear-to-r from-violet-600 to-indigo-600 p-4 text-white flex items-center gap-2">
                 <Ticket size={18} />
                 <h2 className="text-sm font-bold tracking-wide">Chi tiết đơn hàng</h2>
               </div>
@@ -297,7 +297,7 @@ export default function GioHang() {
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                       placeholder="Nhập mã giảm giá..."
-                      className="flex-grow bg-transparent px-2 outline-none text-[11px] text-gray-900 placeholder-gray-400"
+                      className="grow bg-transparent px-2 outline-none text-[11px] text-gray-900 placeholder-gray-400"
                     />
                     <button className="bg-indigo-600 text-white text-[10px] uppercase px-3 py-1.5 rounded-md font-bold hover:bg-indigo-700 transition-all cursor-pointer">
                       Áp dụng

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { 
   User, Phone, MapPin, FileText, ShoppingBag, CreditCard, 
@@ -90,7 +90,7 @@ export default function ThanhToan() {
           
           {/* CỘT TRÁI */}
           <div className="lg:col-span-7 space-y-4">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white flex items-center justify-between relative overflow-hidden shadow-sm">
+            <div className="bg-linear-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white flex items-center justify-between relative overflow-hidden shadow-sm">
               <div className="flex items-center gap-3 z-10">
                 <div className="text-2xl">🎁</div>
                 <div>
@@ -174,7 +174,7 @@ export default function ThanhToan() {
                 </div>
 
                 <div className="hidden md:flex md:col-span-4 flex-col items-center justify-center p-4">
-                  <div className="relative w-full max-w-[140px] aspect-square bg-blue-50/40 rounded-full flex items-center justify-center border border-blue-100/40">
+                  <div className="relative w-full max-w-35 aspect-square bg-blue-50/40 rounded-full flex items-center justify-center border border-blue-100/40">
                     <div className="absolute text-blue-600"><MapPin size={32} className="fill-blue-500/20" /></div>
                     <div className="text-4xl mt-12">🛵</div>
                   </div>
