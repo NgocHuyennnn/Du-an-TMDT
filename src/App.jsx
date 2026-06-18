@@ -1,23 +1,43 @@
-import { Route, Router, Routes } from "react-router";
-import { publicRoutes } from "./routes";
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import ManagerLayout from './components/manager/ManagerLayout.jsx';
 
-function App() {
+// Import các nguồn route của bạn
+import { publicRoutes as indexRoutes } from './routes/index.js'; 
+import { privateRoutes, publicRoutes as storeRoutes } from './routes/storeRoutes.js';
+
+export default function App() {
   return (
-    <Router>
+    <BrowserRouter>
       <Routes>
-        {/* Tự động duyệt qua danh sách cấu hình để tạo tuyến đường */}
-        {publicRoutes.map((route, index) => {
-          const Page = route.component;
-          return (
+        {/* 1. Nhóm Route KHÔNG Layout */}
+        {indexRoutes.map((route, index) => (
+          <Route 
+            key={`idx-${index}`} 
+            path={route.path} 
+            element={<route.component />} 
+          />
+        ))}
+
+        {/* 2. Nhóm Route CÓ Layout */}
+        <Route element={<ManagerLayout/>}>
+          {storeRoutes.map((route, index) => (
             <Route 
-              key={index} 
+              key={`store-${index}`} 
               path={route.path} 
-              element={<Page />} 
+              element={<route.component />} 
             />
-          );
-        })}
+          ))}
+          {privateRoutes.map((route, index) => (
+            <Route 
+              key={`priv-${index}`} 
+              path={route.path} 
+              element={<route.component />} 
+            />
+          ))}
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-    </Router>
+    </BrowserRouter>
   );
 }
-export default App;

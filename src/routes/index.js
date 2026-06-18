@@ -15,6 +15,16 @@ import PQuyen from '../QLTKhoan/PQuyen';
 import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
 import DSDHang from '../DonHang/DSDHang';
+import RoleList from '@/pages/RoleList';
+import RoleAdd from '@/pages/RoleAdd';
+import RoleDetail from '@/pages/RoleDetail';
+import RoleEdit from '@/pages/RoleEdit';
+
+
+import ProductDetailPage from '@/pages/ProductDetailPage';
+import Baocao from '@/pages/BaoCao';
+import DoanhThu from '@/pages/DoanhThu';
+
 
 export const publicRoutes = [
   { path: '/', component: HomePage },
@@ -33,6 +43,25 @@ export const publicRoutes = [
     { path: '/dktkhoan', component: DKTKhoan },
     { path: '/tkcnhan', component: TKCNhan },
     { path: '/dsdhang', component: DSDHang },
+    { path: '/baocao', component: Baocao },
+    { path: '/doanhthu', component: DoanhThu },
+    { path: '/chitietsanpham/:id', component: ProductDetailPage },
+    {
+    path: "/roles",
+    component: RoleList,
+  },
+  {
+    path: "/roles/add",
+    component: RoleAdd,
+  },
+   {
+    path: "/roles/detail/:id",
+    component: RoleDetail,
+  },
+   {
+    path: "/roles/edit/:id",
+    component: RoleEdit,
+  },
 ];
 
 // Danh sách các trang bảo mật, bắt đăng nhập mới xem được (Ví dụ: Admin, Profile)

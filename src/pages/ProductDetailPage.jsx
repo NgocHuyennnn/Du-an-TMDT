@@ -12,8 +12,8 @@ import ProductReviews from "../components/ProductReviews";
 import SimilarProducts from "../components/SimilarProducts";
 // MAI MỐT CÓ API THẬT THÌ ĐỔI 
 export default function ProductDetailPage() {
-  const { productId } = useParams();
-  const data = allProducts.find((item) => item.id === Number(productId));
+  const { id } = useParams();
+  const data = allProducts.find((item) => item.id === Number(id));
 
   if (!data) return <div className="p-10 text-center text-lg">Sản phẩm không tồn tại!</div>;
 

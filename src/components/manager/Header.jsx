@@ -37,7 +37,7 @@ export default function Header() {
       {/* Menu */}
       <nav className="flex items-center gap-1 mr-auto">
         <button
-          onClick={() => navigate("/stores")}
+          onClick={() => navigate("/tongquat")}
           className="px-3 py-1.5 text-sm font-medium rounded-lg"
         >
           Tổng quát
