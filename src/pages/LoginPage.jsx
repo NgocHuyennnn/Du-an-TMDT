@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
-
-// Import tấm ảnh nền từ thư mục assets
 import loginBanner from '../assets/nen.png'; 
 
 export default function LoginPage() {
@@ -11,18 +9,35 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
+  // ĐÃ THÊM: Danh sách tên khách hàng ngẫu nhiên để chọn sau khi đăng nhập thành công
+  const randomNames = [
+    "Nguyễn Văn An", "Trần Thị Bình", "Lê Hoàng Cường", 
+    "Phạm Minh Đức", "Vũ Hải Đăng", "Hoàng Gia Huy", 
+    "Phan Khánh Linh", "Đỗ Tiến Đạt", "Bùi Tuyết Nhung"
+  ];
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('Đang xử lý đăng nhập với:', { emailOrPhone, password });
     
-    // ĐÃ SỬA: Điều hướng chuẩn bằng hiệu lệnh JavaScript, không bị xung đột trang
+    // 1. Lấy ngẫu nhiên 1 tên trong mảng
+    const randomIndex = Math.floor(Math.random() * randomNames.length);
+    const randomUser = randomNames[randomIndex];
+
+    // 2. Lưu tên vừa chọn vào localStorage
+    localStorage.setItem("userName", randomUser);
+
+    // 3. Kích hoạt sự kiện để thông báo cho Header biết cần cập nhật UI ngay lập tức
+    window.dispatchEvent(new Event("auth-change"));
+    
+    // 4. Điều hướng trang đến /page1
     navigate('/page1'); 
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
       
-      {/* ================= BACKGROUND: ẢNH CHÌM LÀM NỀN MỜ TOÀN TRANG ================= */}
+      {/* BACKGROUND */}
       <div className="absolute inset-0 z-0 w-full h-full select-none pointer-events-none">
         <img 
           src={loginBanner} 
@@ -31,11 +46,11 @@ export default function LoginPage() {
         />
       </div>
 
-      {/* ================= FOREGROUND: KHỐI FORM ĐỔ BÓNG MỊN (ĐỒNG BỘ UI) ================= */}
+      {/* FORM CONTAINER */}
       <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-[550px] flex flex-col justify-between transition-all duration-300">
         
         <div>
-          {/* 1. Logo TECH TONIC */}
+          {/* Logo */}
           <div className="flex justify-center mb-6">
             <Link to="/" className="shrink-0 flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <span className="text-2xl font-black tracking-tight text-gray-900">TECH</span>
@@ -43,16 +58,16 @@ export default function LoginPage() {
             </Link>
           </div>
 
-          {/* 2. Tiêu đề Đăng nhập */}
+          {/* Title */}
           <div className="text-left mb-6">
             <h1 className="text-[26px] font-semibold text-gray-900 mb-2 tracking-tight font-sans">Đăng nhập</h1>
             <p className="text-gray-500 text-sm leading-relaxed">Chào mừng bạn quay lại với hệ thống!</p>
           </div>
 
-          {/* 3. Form nhập liệu */}
+          {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
             
-            {/* Ô nhập Email / SĐT */}
+            {/* Input Email/SĐT */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Email hoặc Số điện thoại
@@ -70,7 +85,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Ô nhập Mật khẩu */}
+            {/* Input Password */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -100,7 +115,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Nút Đăng nhập dạng Submit chuẩn */}
+            {/* Submit Button */}
             <button 
               type="submit" 
               className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold hover:bg-blue-700 active:scale-[0.98] transition-all text-sm mt-2 shadow-[0_4px_12px_rgba(37,99,235,0.2)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] cursor-pointer flex items-center justify-center tracking-wide"
@@ -109,14 +124,14 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {/* 4. Thành phần phân cách HOẶC */}
+          {/* Divider */}
           <div className="relative flex py-4 items-center w-full">
             <div className="flex-grow border-t border-gray-100"></div>
             <span className="flex-shrink mx-4 text-[10px] text-gray-400 font-bold tracking-widest">HOẶC</span>
             <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
-          {/* 5. Nút Đăng nhập với Google */}
+          {/* Google Button */}
           <button 
             type="button" 
             className="w-full bg-white border border-gray-200 text-gray-700 h-11 rounded-xl font-medium hover:bg-gray-50 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2.5 cursor-pointer shadow-sm"
@@ -128,7 +143,7 @@ export default function LoginPage() {
           </button>
         </div>
 
-        {/* 6. Liên kết chuyển đổi sang Đăng ký */}
+        {/* Register Link */}
         <div className="text-center text-xs text-gray-500 mt-6 border-t border-gray-100 pt-4">
           Chưa có tài khoản?{' '}
           <Link 

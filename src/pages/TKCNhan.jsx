@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Thêm useNavigate để điều hướng sau khi đăng xuất
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, Home, Users, ClipboardList, Settings, HelpCircle,
   User, Mail, Phone, MapPin, Store, FileText, 
   ShieldCheck, Camera, Save, Award, Calendar, LogOut, X
 } from 'lucide-react';
 
-// Sử dụng chung ảnh nền từ assets để tạo hiệu ứng xuyên thấu cho phần Content
 import hinhNenTechTonic from '../assets/nen.png'; 
 
 export default function TaiKhoanCaNhan() {
-  const navigate = useNavigate(); // Khởi tạo hook điều hướng
+  const navigate = useNavigate();
 
-  // Giả lập dữ liệu hiện tại của đối tác từ hệ thống
+  // 1. ĐÃ SỬA: Lấy tên từ localStorage để đồng bộ với Header, nếu không có mới dùng tên mặc định
   const [profileData, setProfileData] = useState({
-    fullName: 'Nguyễn Văn A',
+    fullName: localStorage.getItem("userName") || 'Nguyễn Văn A',
     email: 'doitac.a@techtonic.com',
     phone: '0905123456',
     storeName: 'Tech Tonic Da Nang',
@@ -25,8 +24,19 @@ export default function TaiKhoanCaNhan() {
   });
 
   const [isSaving, setIsSaving] = useState(false);
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); // 🌟 State kiểm soát Popup đăng xuất
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [msg, setMsg] = useState({ type: '', text: '' });
+
+  // 2. ĐÃ THÊM: Lắng nghe thay đổi từ hệ thống (Nếu bấm thoát từ Header, trang này tự cập nhật ngay)
+  useEffect(() => {
+    const handleAuthChange = () => {
+      const currentUserName = localStorage.getItem("userName") || "Khách";
+      setProfileData(prev => ({ ...prev, fullName: currentUserName }));
+    };
+
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => window.removeEventListener("auth-change", handleAuthChange);
+  }, []);
 
   // Xử lý thay đổi thông tin hồ sơ
   const handleProfileChange = (e) => {
@@ -35,23 +45,31 @@ export default function TaiKhoanCaNhan() {
     if (msg.text) setMsg({ type: '', text: '' });
   };
 
-  // Lưu thông tin cập nhật
+  // 3. ĐÃ SỬA: Khi lưu thông tin hồ sơ thành công, lưu trực tiếp tên mới vào localStorage và bắn tín hiệu cho Header đổi theo
   const handleSaveProfile = (e) => {
     e.preventDefault();
     setIsSaving(true);
     
-    // Giả lập gọi API cập nhật dữ liệu
     setTimeout(() => {
       setIsSaving(false);
+      
+      // Cập nhật tên mới vào localStorage và kích hoạt đồng bộ
+      localStorage.setItem("userName", profileData.fullName);
+      window.dispatchEvent(new Event("auth-change"));
+
       setMsg({ type: 'success', text: 'Cập nhật hồ sơ tài khoản thành công!' });
     }, 1500);
   };
 
-  // Xử lý logic khi bấm xác nhận Đăng xuất
+  // 4. ĐÃ SỬA: Khi bấm xác nhận Đăng xuất, xóa dữ liệu khỏi localStorage và cập nhật trạng thái toàn trang về "Khách"
   const handleConfirmLogout = () => {
     setIsLogoutModalOpen(false);
-    // Xóa token / session của bạn tại đây nếu có (ví dụ: localStorage.removeItem('token'))
-    navigate('/'); // Chuyển hướng người dùng về trang chủ hoặc trang đăng nhập
+    
+    // Đưa trạng thái về "Khách" (hoặc xóa hẳn tùy nhu cầu ứng dụng của bạn)
+    localStorage.setItem("userName", "Khách"); 
+    window.dispatchEvent(new Event("auth-change")); // Phát thông báo cập nhật tới Header
+    
+    navigate('/'); // Chuyển hướng về trang chủ
   };
 
   return (
@@ -81,7 +99,6 @@ export default function TaiKhoanCaNhan() {
           </nav>
         </div>
 
-        {/* Nhóm chức năng phía dưới cùng của Sidebar */}
         <div className="p-3 border-t border-gray-100 space-y-1">
           <Link to="/cai-dat" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
             <Settings size={14} /> <span>Cài đặt</span>
@@ -90,7 +107,6 @@ export default function TaiKhoanCaNhan() {
             <HelpCircle size={14} /> <span>Hỗ trợ</span>
           </Link>
           
-          {/* 🌟 THÊM MỚI: Nút kích hoạt popup đăng xuất */}
           <button 
             type="button"
             onClick={() => setIsLogoutModalOpen(true)}
@@ -104,7 +120,6 @@ export default function TaiKhoanCaNhan() {
       {/* ==================== 2. MAIN WORKSPACE CONTENT ==================== */}
       <div className="flex-1 flex items-center justify-center p-4 lg:p-8 relative overflow-y-auto">
         
-        {/* ẢNH NỀN PHÍA DƯỚI KHU VỰC NỘI DUNG */}
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20 filter pointer-events-none"
           style={{ backgroundImage: `url(${hinhNenTechTonic})` }}
@@ -112,13 +127,12 @@ export default function TaiKhoanCaNhan() {
 
         <div className="absolute inset-0 bg-gradient-to-tr from-slate-100/40 via-transparent to-blue-50/20 z-0 pointer-events-none"></div>
 
-        {/* MAIN CONTAINER (BOX CHI TIẾT TÀI KHOẢN KÍNH MỜ) */}
+        {/* MAIN CONTAINER */}
         <div className="max-w-[900px] w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xl overflow-hidden z-10 grid grid-cols-1 md:grid-cols-3 animate-in fade-in zoom-in-95 duration-200">
           
-          {/* CỘT TRÁI: TÓM TẮT THÔNG TIN VÀ AVATAR */}
+          {/* CỘT TRÁI */}
           <div className="bg-slate-50/70 p-6 md:p-8 border-b md:border-b-0 md:border-r border-slate-200/60 flex flex-col items-center text-center justify-between">
             <div className="w-full space-y-6">
-              {/* Khung Avatar */}
               <div className="relative w-24 h-24 mx-auto group">
                 <div className="w-full h-full rounded-full bg-blue-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
                   <User size={44} className="text-blue-500" />
@@ -128,7 +142,6 @@ export default function TaiKhoanCaNhan() {
                 </button>
               </div>
 
-              {/* Tên và Cấp độ */}
               <div className="space-y-1.5">
                 <h3 className="text-sm font-black text-slate-900">{profileData.fullName}</h3>
                 <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-0.5 rounded-full text-[10px] font-bold">
@@ -137,7 +150,6 @@ export default function TaiKhoanCaNhan() {
                 </div>
               </div>
 
-              {/* Thông tin tham gia hệ thống */}
               <div className="bg-white/80 border border-slate-100 rounded-xl p-3 text-left space-y-2 text-[11px]">
                 <div className="flex items-center gap-2 text-slate-500">
                   <Calendar size={13} className="text-slate-400" />
@@ -150,14 +162,13 @@ export default function TaiKhoanCaNhan() {
               </div>
             </div>
 
-            {/* Huy hiệu xác minh ở chân cột trái */}
             <div className="mt-8 pt-4 border-t border-slate-200/50 w-full flex items-center justify-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
               <ShieldCheck size={13} className="text-emerald-500" />
               <span>Tài khoản đã xác minh</span>
             </div>
           </div>
 
-          {/* CỘT PHẢI: FORM CẬP NHẬT CHI TIẾT */}
+          {/* CỘT PHẢI */}
           <div className="col-span-2 p-6 md:p-8 flex flex-col justify-between">
             <div className="space-y-5">
               <div className="space-y-1">
@@ -165,7 +176,6 @@ export default function TaiKhoanCaNhan() {
                 <p className="text-xs font-medium text-slate-400">Quản lý và cập nhật thông tin vận hành của bạn trên hệ thống.</p>
               </div>
 
-              {/* THÔNG BÁO KẾT QUẢ XỬ LÝ */}
               {msg.text && (
                 <div className={`border rounded-xl p-3 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200 ${
                   msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
@@ -175,12 +185,9 @@ export default function TaiKhoanCaNhan() {
                 </div>
               )}
 
-              {/* FORM THÔNG TIN */}
               <form onSubmit={handleSaveProfile} className="space-y-4">
-                
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">1. Thông tin liên hệ cơ bản</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Họ tên */}
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-700 block">Họ và tên chủ sở hữu</label>
                     <div className="relative">
@@ -189,7 +196,6 @@ export default function TaiKhoanCaNhan() {
                     </div>
                   </div>
 
-                  {/* Số điện thoại */}
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-700 block">Số điện thoại liên hệ</label>
                     <div className="relative">
@@ -198,7 +204,6 @@ export default function TaiKhoanCaNhan() {
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-black text-slate-400 block">Email đăng nhập hệ thống (Cố định)</label>
                     <div className="relative">
@@ -210,7 +215,6 @@ export default function TaiKhoanCaNhan() {
 
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 pt-1">2. Thông tin pháp lý & Địa chỉ</div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {/* Tên gian hàng */}
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-700 block">Tên hiển thị thương hiệu</label>
                     <div className="relative">
@@ -219,7 +223,6 @@ export default function TaiKhoanCaNhan() {
                     </div>
                   </div>
 
-                  {/* Mã số thuế */}
                   <div className="space-y-1">
                     <label className="text-xs font-black text-slate-700 block">Mã số thuế doanh nghiệp</label>
                     <div className="relative">
@@ -228,7 +231,6 @@ export default function TaiKhoanCaNhan() {
                     </div>
                   </div>
 
-                  {/* Địa chỉ */}
                   <div className="space-y-1 sm:col-span-2">
                     <label className="text-xs font-black text-slate-700 block">Địa chỉ đặt văn phòng / kho trung chuyển</label>
                     <div className="relative">
@@ -238,7 +240,6 @@ export default function TaiKhoanCaNhan() {
                   </div>
                 </div>
 
-                {/* Nút lưu thay đổi */}
                 <div className="flex justify-end pt-3">
                   <button
                     type="submit"
@@ -255,7 +256,6 @@ export default function TaiKhoanCaNhan() {
                     )}
                   </button>
                 </div>
-
               </form>
             </div>
           </div>
@@ -263,16 +263,14 @@ export default function TaiKhoanCaNhan() {
         </div>
       </div>
 
-      {/* ==================== 3. 🌟 POPUP XÁC NHẬN ĐĂNG XUẤT (MODAL) ==================== */}
+      {/* ==================== 3. POPUP XÁC NHẬN ĐĂNG XUẤT ==================== */}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          {/* Lớp nền mờ */}
           <div 
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
             onClick={() => setIsLogoutModalOpen(false)}
           ></div>
           
-          {/* Hộp thoại nội dung chính */}
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-150">
             <button 
               onClick={() => setIsLogoutModalOpen(false)}

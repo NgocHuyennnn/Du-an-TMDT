@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 // Khôi phục điều hướng chuẩn của react-router-dom
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -12,6 +12,29 @@ export default function QuanLyDonHang() {
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+
+  // 1. ĐÃ THÊM: State quản lý tên người dùng để hiển thị Avatar đồng bộ
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem("userName") || "Khách";
+  });
+
+  // 2. ĐÃ THÊM: Lắng nghe sự thay đổi tên từ localStorage (giống các trang khác)
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setUserName(localStorage.getItem("userName") || "Khách");
+    };
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => window.removeEventListener("auth-change", handleAuthChange);
+  }, []);
+
+  // 3. ĐÃ THÊM: Hàm tạo chữ viết tắt từ tên người dùng (Nguyễn Văn A -> NA)
+  const getInitials = (name) => {
+    if (!name || name === "Khách") return "K";
+    const words = name.trim().split(" ");
+    if (words.length === 1) return words[0].charAt(0).toUpperCase();
+    // Lấy chữ cái đầu của từ đầu tiên và từ cuối cùng
+    return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+  };
 
   const tabs = [
     'Tất cả', 'Chờ thanh toán', 'Chờ vận chuyển', 
@@ -116,7 +139,7 @@ export default function QuanLyDonHang() {
         <div>
           <div className="p-5 border-b border-gray-50 flex items-center gap-1.5 text-blue-600 font-black text-xl tracking-tight">
             <ShoppingBag size={22} className="fill-blue-600/10" />
-             <span className="text-base sm:text-xl font-black tracking-tight text-gray-900">
+            <span className="text-base sm:text-xl font-black tracking-tight text-gray-900">
               TECH
             </span>
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-600">
@@ -124,7 +147,6 @@ export default function QuanLyDonHang() {
             </span>
           </div>
           <nav className="p-3 space-y-1">
-            {/* Thay thế href bằng cấu trúc định tuyến Link của react-router-dom */}
             <Link to="/page1" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Home size={16} /> <span>Trang chủ</span>
             </Link>
@@ -173,8 +195,9 @@ export default function QuanLyDonHang() {
               <HelpCircle size={16} />
             </button>
             <div className="flex items-center gap-2 border-l border-gray-200 pl-4">
-              <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-black text-xs text-white shadow-sm select-none">
-                NA
+              {/* ĐÃ SỬA: Thay đổi chữ fix cứng 'NA' thành chữ viết tắt linh động dựa vào userName */}
+              <div title={userName} className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-black text-xs text-white shadow-sm select-none">
+                {getInitials(userName)}
               </div>
             </div>
           </div>
@@ -184,7 +207,6 @@ export default function QuanLyDonHang() {
         <main className="flex-1 p-6 overflow-y-auto space-y-4">
           
           <div className="flex items-center gap-2">
-            {/* Sử dụng nút bấm kết hợp useNavigate để quay lại trang trước đó lịch sử duyệt */}
             <button 
               onClick={() => navigate('/page1')} 
               className="text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer p-0"
@@ -310,7 +332,6 @@ export default function QuanLyDonHang() {
                           <button className="flex items-center gap-1 bg-blue-600 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm cursor-pointer">
                             <RefreshCw size={12} /> Mua lại
                           </button>
-                          {/* Khôi phục Link của react-router-dom chuẩn SEO */}
                           <Link to='/danhgia' className="flex items-center justify-center border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer">
                             Đánh giá
                           </Link>
@@ -321,7 +342,7 @@ export default function QuanLyDonHang() {
                         <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
                       )}
                       
-                      {order.status === 'CHỜ VẬN CHUYỂN' && (
+                      {order.status === 'CHỜ VẬN CHUYỂY' && (
                         <button 
                           onClick={() => handleOpenCancelModal(order.id)}
                           className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-black transition-all shadow-sm cursor-pointer"
@@ -359,7 +380,7 @@ export default function QuanLyDonHang() {
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-gray-100">
             <button 
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-50 transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-slate-50 transition-colors"
             >
               <X size={16} />
             </button>
