@@ -1,0 +1,275 @@
+import  { useState } from 'react';
+import {  useNavigate } from 'react-router-dom'; // Thêm useNavigate để điều hướng sau khi đăng xuất
+import { 
+
+  User, Mail, Phone, MapPin, Store, FileText, 
+  ShieldCheck, Camera, Save, Award, Calendar,  X
+} from 'lucide-react';
+
+// Sử dụng chung ảnh nền từ assets để tạo hiệu ứng xuyên thấu cho phần Content
+import hinhNenTechTonic from '../assets/nen.png'; 
+
+export default function TaiKhoanCaNhan() {
+  const navigate = useNavigate(); // Khởi tạo hook điều hướng
+
+  // Giả lập dữ liệu hiện tại của đối tác từ hệ thống
+  const [profileData, setProfileData] = useState({
+    fullName: 'Nguyễn Văn A',
+    email: 'doitac.a@techtonic.com',
+    phone: '0905123456',
+    storeName: 'Tech Tonic Da Nang',
+    taxCode: '0401234567',
+    address: '123 Phan Châu Trinh, Hải Châu, Đà Nẵng',
+    joinDate: '15/04/2026',
+    partnerLevel: 'Đối tác Kim Cương'
+  });
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false); // 🌟 State kiểm soát Popup đăng xuất
+  const [msg, setMsg] = useState({ type: '', text: '' });
+
+  // Xử lý thay đổi thông tin hồ sơ
+  const handleProfileChange = (e) => {
+    const { name, value } = e.target;
+    setProfileData(prev => ({ ...prev, [name]: value }));
+    if (msg.text) setMsg({ type: '', text: '' });
+  };
+
+  // Lưu thông tin cập nhật
+  const handleSaveProfile = (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    
+    // Giả lập gọi API cập nhật dữ liệu
+    setTimeout(() => {
+      setIsSaving(false);
+      setMsg({ type: 'success', text: 'Cập nhật hồ sơ tài khoản thành công!' });
+    }, 1500);
+  };
+
+  // Xử lý logic khi bấm xác nhận Đăng xuất
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
+    // Xóa token / session của bạn tại đây nếu có (ví dụ: localStorage.removeItem('token'))
+    navigate('/'); // Chuyển hướng người dùng về trang chủ hoặc trang đăng nhập
+  };
+
+  return (
+    <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full overflow-hidden">
+      
+      {/* ==================== 1. SIDEBAR ==================== */}
+      
+
+      {/* ==================== 2. MAIN WORKSPACE CONTENT ==================== */}
+      <div className="flex-1 flex items-center justify-center p-4 lg:p-8 relative overflow-y-auto">
+        
+        {/* ẢNH NỀN PHÍA DƯỚI KHU VỰC NỘI DUNG */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-20 filter pointer-events-none"
+          style={{ backgroundImage: `url(${hinhNenTechTonic})` }}
+        ></div>
+
+        <div className="absolute inset-0 bg-linear-to-tr from-slate-100/40 via-transparent to-blue-50/20 z-0 pointer-events-none"></div>
+
+        {/* MAIN CONTAINER (BOX CHI TIẾT TÀI KHOẢN KÍNH MỜ) */}
+        <div className="max-w-900px w-full bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xl overflow-hidden z-10 grid grid-cols-1 md:grid-cols-3 animate-in fade-in zoom-in-95 duration-200">
+          
+          {/* CỘT TRÁI: TÓM TẮT THÔNG TIN VÀ AVATAR */}
+          <div className="bg-slate-50/70 p-6 md:p-8 border-b md:border-b-0 md:border-r border-slate-200/60 flex flex-col items-center text-center justify-between">
+            <div className="w-full space-y-6">
+              {/* Khung Avatar */}
+              <div className="relative w-24 h-24 mx-auto group">
+                <div className="w-full h-full rounded-full bg-blue-100 border-4 border-white shadow-md flex items-center justify-center overflow-hidden">
+                  <User size={44} className="text-blue-500" />
+                </div>
+                <button type="button" className="absolute bottom-0 right-0 bg-blue-600 p-2 rounded-full text-white hover:bg-blue-700 shadow-xs cursor-pointer transition-all">
+                  <Camera size={12} />
+                </button>
+              </div>
+
+              {/* Tên và Cấp độ */}
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-black text-slate-900">{profileData.fullName}</h3>
+                <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-0.5 rounded-full text-[10px] font-bold">
+                  <Award size={12} className="fill-amber-500/10" />
+                  <span>{profileData.partnerLevel}</span>
+                </div>
+              </div>
+
+              {/* Thông tin tham gia hệ thống */}
+              <div className="bg-white/80 border border-slate-100 rounded-xl p-3 text-left space-y-2 text-[11px]">
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Calendar size={13} className="text-slate-400" />
+                  <span>Ngày gia nhập: <strong className="text-slate-700">{profileData.joinDate}</strong></span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-500">
+                  <Store size={13} className="text-slate-400" />
+                  <span>Gian hàng: <strong className="text-blue-600">{profileData.storeName}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            {/* Huy hiệu xác minh ở chân cột trái */}
+            <div className="mt-8 pt-4 border-t border-slate-200/50 w-full flex items-center justify-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+              <ShieldCheck size={13} className="text-emerald-500" />
+              <span>Tài khoản đã xác minh</span>
+            </div>
+          </div>
+
+          {/* CỘT PHẢI: FORM CẬP NHẬT CHI TIẾT */}
+          <div className="col-span-2 p-6 md:p-8 flex flex-col justify-between">
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <h2 className="text-base font-black text-slate-900 tracking-tight">Chi tiết tài khoản cá nhân</h2>
+                <p className="text-xs font-medium text-slate-400">Quản lý và cập nhật thông tin vận hành của bạn trên hệ thống.</p>
+              </div>
+
+              {/* THÔNG BÁO KẾT QUẢ XỬ LÝ */}
+              {msg.text && (
+                <div className={`border rounded-xl p-3 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200 ${
+                  msg.type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-red-50 border-red-200 text-red-700'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${msg.type === 'success' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                  <span>{msg.text}</span>
+                </div>
+              )}
+
+              {/* FORM THÔNG TIN */}
+              <form onSubmit={handleSaveProfile} className="space-y-4">
+                
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1">1. Thông tin liên hệ cơ bản</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Họ tên */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-slate-700 block">Họ và tên chủ sở hữu</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><User size={14} /></span>
+                      <input type="text" name="fullName" value={profileData.fullName} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
+                    </div>
+                  </div>
+
+                  {/* Số điện thoại */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-slate-700 block">Số điện thoại liên hệ</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Phone size={14} /></span>
+                      <input type="text" name="phone" value={profileData.phone} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
+                    </div>
+                  </div>
+
+                  {/* Email */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-black text-slate-400 block">Email đăng nhập hệ thống (Cố định)</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Mail size={14} /></span>
+                      <input type="email" value={profileData.email} disabled className="w-full bg-slate-100 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-400 cursor-not-allowed select-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 pt-1">2. Thông tin pháp lý & Địa chỉ</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Tên gian hàng */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-slate-700 block">Tên hiển thị thương hiệu</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Store size={14} /></span>
+                      <input type="text" name="storeName" value={profileData.storeName} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
+                    </div>
+                  </div>
+
+                  {/* Mã số thuế */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-black text-slate-700 block">Mã số thuế doanh nghiệp</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><FileText size={14} /></span>
+                      <input type="text" name="taxCode" value={profileData.taxCode} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
+                    </div>
+                  </div>
+
+                  {/* Địa chỉ */}
+                  <div className="space-y-1 sm:col-span-2">
+                    <label className="text-xs font-black text-slate-700 block">Địa chỉ đặt văn phòng / kho trung chuyển</label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><MapPin size={14} /></span>
+                      <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Nút lưu thay đổi */}
+                <div className="flex justify-end pt-3">
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold h-10 px-5 rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer select-none"
+                  >
+                    {isSaving ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    ) : (
+                      <>
+                        <Save size={14} />
+                        <span>Lưu thay đổi hồ sơ</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </form>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ==================== 3. 🌟 POPUP XÁC NHẬN ĐĂNG XUẤT (MODAL) ==================== */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          {/* Lớp nền mờ */}
+          <div 
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
+            onClick={() => setIsLogoutModalOpen(false)}
+          ></div>
+          
+          {/* Hộp thoại nội dung chính */}
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-150">
+            <button 
+              onClick={() => setIsLogoutModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="text-center space-y-3 mt-2">
+              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto font-bold text-xl">
+                ⚠️
+              </div>
+              <h3 className="text-sm font-black text-slate-900 tracking-tight">Xác nhận đăng xuất</h3>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                Bạn có chắc chắn muốn đăng xuất khỏi tài khoản quản trị hệ thống hiện tại không?
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 mt-6">
+              <button 
+                type="button"
+                onClick={() => setIsLogoutModalOpen(false)}
+                className="flex-1 h-9 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                type="button"
+                onClick={handleConfirmLogout}
+                className="flex-1 h-9 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}

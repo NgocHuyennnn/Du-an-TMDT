@@ -12,6 +12,7 @@ import {
   Settings,
   HelpCircle,
   Bell,
+  Store,
 } from 'lucide-react';
 
 import PermissionPanel from '@/components/admin/PermissionPanel';
@@ -42,15 +43,16 @@ export default function RoleAdd() {
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-600 text-white rounded-xl shadow-sm transition-all">
               <Home size={16} /> <span>Quản lý vai trò</span>
             </Link>
+            <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
             </Link>
             <Link to="/dstkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Users size={16} /> <span>Tài khoản</span>
             </Link>
-            <Link to="/dsdhang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
-              <ClipboardList size={16} /> <span>Đơn hàng</span>
-            </Link>
+            
             <Link to="/phanquyen" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ClipboardList size={16} /> <span>Phân quyền</span>
             </Link>

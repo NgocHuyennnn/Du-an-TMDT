@@ -1,8 +1,56 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductInfo({ product }) {
   const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
   const [quantity, setQuantity] = useState(1);
+  const navigate = useNavigate();
+  const [showPopup, setShowPopup] = useState(false);
+  const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const handleAddToCart = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+  setShowLoginPopup(true);
+  return;
+}
+
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  cart.push({
+    ...product,
+    variant: selectedVariant,
+    quantity,
+  });
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  setShowPopup(true);
+
+  setTimeout(() => {
+    setShowPopup(false);
+  }, 2000);
+};
+  const handleBuyNow = () => {
+  const user = JSON.parse(localStorage.getItem("user"));
+
+   if (!user) {
+  setShowLoginPopup(true);
+  return;
+}
+
+  const cart = [
+    {
+      ...product,
+      variant: selectedVariant,
+      quantity,
+    },
+  ];
+
+  localStorage.setItem("checkout", JSON.stringify(cart));
+
+  navigate("/giohang");
+};
 // Định dạng giá tiền: 100000 -> 100.000 đ
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', {
@@ -71,13 +119,63 @@ const formatPrice = (price) => {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <button className="flex-1 border-2 border-blue-600 text-blue-600 px-4 py-2.5 rounded text-sm font-semibold hover:bg-blue-50 transition-colors">
-          THÊM VÀO GIỎ HÀNG
+  <button
+    onClick={handleAddToCart}
+    className="flex-1 border-2 border-blue-600 text-blue-600 px-4 py-2.5 rounded text-sm font-semibold hover:bg-blue-50 transition-colors"
+  >
+    THÊM VÀO GIỎ HÀNG
+  </button>
+
+  <button
+    onClick={handleBuyNow}
+    className="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded text-sm font-semibold hover:bg-blue-700 transition-colors"
+  >
+    MUA NGAY
+  </button>
+</div>
+{showPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="bg-black/70 text-white px-8 py-6 rounded-lg flex flex-col items-center gap-3">
+      <div className="w-14 h-14 rounded-full border-2 border-white flex items-center justify-center text-3xl">
+        ✓
+      </div>
+
+      <p className="text-sm font-medium">
+        Đã thêm vào giỏ hàng
+      </p>
+    </div>
+  </div>
+  
+)}
+{showLoginPopup && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
+      <h3 className="text-lg font-semibold mb-2">
+        Yêu cầu đăng nhập
+      </h3>
+
+      <p className="text-gray-600 mb-4">
+        Vui lòng đăng nhập để tiếp tục mua sắm.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowLoginPopup(false)}
+          className="px-4 py-2 border rounded"
+        >
+          Hủy
         </button>
-        <button className="flex-1 bg-blue-600 text-white px-4 py-2.5 rounded text-sm font-semibold hover:bg-blue-700 transition-colors">
-          MUA NGAY
+
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Đăng nhập
         </button>
       </div>
+    </div>
+  </div>
+)}
     </div>
   );
 }

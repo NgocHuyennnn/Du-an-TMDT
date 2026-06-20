@@ -4,7 +4,8 @@ import {
   ShoppingBag, Home, Users, ClipboardList, Settings, HelpCircle,
   Search, Download, Filter, RefreshCw, ChevronLeft, ChevronRight, 
   Eye, Trash2, Calendar, CreditCard, Phone, Bell, ChevronDown,
-  X, Truck, FileText, Package
+  X, Truck, FileText, Package,
+  Store
 } from 'lucide-react';
 
 import hinhNenTechTonic from '../assets/nen.png'; 
@@ -303,6 +304,9 @@ export default function DanhSachDonHang() {
             <Link to="/vaitro" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Home size={16} /> <span>Quản lý vai trò</span>
             </Link>
+            <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
             </Link>
@@ -370,7 +374,7 @@ export default function DanhSachDonHang() {
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-15 filter pointer-events-none"
             style={{ backgroundImage: `url(${hinhNenTechTonic})` }}
           ></div>
-          <div className="absolute inset-0 bg-gradient-to-tr from-slate-100/30 via-transparent to-blue-50/10 z-0 pointer-events-none"></div>
+          <div className="absolute inset-0 bg--to-tr from-slate-100/30 via-transparent to-blue-50/10 z-0 pointer-events-none"></div>
 
           {/* TIÊU ĐỀ VÀ THANH TÌM KIẾM */}
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">

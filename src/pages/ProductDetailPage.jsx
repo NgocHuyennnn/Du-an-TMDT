@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { allProducts } from "../data/productData";
-import Header from "../components/Header";
+import Header from "../components/Header1";
 import Footer from "../components/Footer";
 import Breadcrumb from "../components/Breadcrumb";
 import ProductGallery from "../components/ProductGallery";
