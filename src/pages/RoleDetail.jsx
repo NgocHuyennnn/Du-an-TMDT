@@ -84,9 +84,6 @@ export default function RoleDetail() {
             <Link to="/dstkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Users size={16} /> <span>Tài khoản</span>
             </Link>
-            <Link to="/dsdhang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
-              <ClipboardList size={16} /> <span>Đơn hàng</span>
-            </Link>
             <Link to="/phanquyen" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ClipboardList size={16} /> <span>Phân quyền</span>
             </Link>

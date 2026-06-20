@@ -7,9 +7,10 @@ export default function LoginPage() {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(''); // Quản lý thông báo lỗi bảo mật
   const navigate = useNavigate();
 
-  // ĐÃ THÊM: Danh sách tên khách hàng ngẫu nhiên để chọn sau khi đăng nhập thành công
+  // Danh sách tên khách hàng ngẫu nhiên dành riêng cho luồng Khách hàng
   const randomNames = [
     "Nguyễn Văn An", "Trần Thị Bình", "Lê Hoàng Cường", 
     "Phạm Minh Đức", "Vũ Hải Đăng", "Hoàng Gia Huy", 
@@ -18,20 +19,60 @@ export default function LoginPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log('Đang xử lý đăng nhập với:', { emailOrPhone, password });
+    setErrorMessage(''); // Reset lỗi mỗi lần bấm đăng nhập
     
-    // 1. Lấy ngẫu nhiên 1 tên trong mảng
-    const randomIndex = Math.floor(Math.random() * randomNames.length);
-    const randomUser = randomNames[randomIndex];
+    // 1. Chuẩn hóa chuỗi nhập vào (Xóa khoảng trắng thừa và đưa về chữ thường)
+    const accountLower = emailOrPhone.trim().toLowerCase();
 
-    // 2. Lưu tên vừa chọn vào localStorage
-    localStorage.setItem("userName", randomUser);
+    // 2. Định nghĩa các đuôi bảo mật (Secret Suffix) và mật khẩu tương ứng để test
+    const ADMIN_SUFFIX = '_adm@2026';
+    const MANAGER_SUFFIX = '_mgr@2026';
 
-    // 3. Kích hoạt sự kiện để thông báo cho Header biết cần cập nhật UI ngay lập tức
+    let detectedRole = "Customer"; 
+    let finalUserName = "";
+
+    // 3. Logic xử lý kiểm tra bảo mật cả Tài khoản và Mật khẩu
+    if (accountLower.endsWith(ADMIN_SUFFIX)) {
+      // Bảo mật hơn bằng cách check thêm mật khẩu riêng cho Admin
+      if (password !== 'admin123@') {
+        setErrorMessage('Mật khẩu không chính xác!');
+        return;
+      }
+      detectedRole = "Admin";
+      finalUserName = "Quản trị viên Hệ thống";
+    } 
+    else if (accountLower.endsWith(MANAGER_SUFFIX)) {
+      // Bảo mật hơn bằng cách check thêm mật khẩu riêng cho Manager
+      if (password !== 'manager123@') {
+        setErrorMessage('Mật khẩu  không chính xác!');
+        return;
+      }
+      detectedRole = "Manager";
+      finalUserName = "Quản lý Vận hành";
+    } 
+    else {
+      // Nhóm Khách hàng thông thường: Chấp nhận mọi mật khẩu (Luồng test tự do)
+      detectedRole = "Customer";
+      const randomIndex = Math.floor(Math.random() * randomNames.length);
+      finalUserName = randomNames[randomIndex];
+    }
+
+    // 4. Lưu thông tin an toàn vào localStorage
+    localStorage.setItem("userName", finalUserName);
+    localStorage.setItem("userRole", detectedRole);
+    localStorage.setItem("isAuthenticated", "true"); // Đánh dấu đã đăng nhập thành công
+
+    // 5. Kích hoạt sự kiện để thông báo cho Header/Sidebar biết để cập nhật UI ngay lập tức
     window.dispatchEvent(new Event("auth-change"));
     
-    // 4. Điều hướng trang đến /page1
-    navigate('/page1'); 
+    // 6. Điều hướng trang (Navigate) chính xác dựa trên Role đã phân tách
+    if (detectedRole === "Admin") {
+      navigate('/roles'); 
+    } else if (detectedRole === "Manager") {
+      navigate('/stores'); 
+    } else {
+      navigate('/page1'); 
+    }
   };
 
   return (
@@ -59,10 +100,17 @@ export default function LoginPage() {
           </div>
 
           {/* Title */}
-          <div className="text-left mb-6">
+          <div className="text-left mb-4">
             <h1 className="text-[26px] font-semibold text-gray-900 mb-2 tracking-tight font-sans">Đăng nhập</h1>
             <p className="text-gray-500 text-sm leading-relaxed">Chào mừng bạn quay lại với hệ thống!</p>
           </div>
+
+          {/* Hiển thị thông báo lỗi bảo mật nếu có */}
+          {errorMessage && (
+            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold rounded-xl animate-shake">
+              {errorMessage}
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
