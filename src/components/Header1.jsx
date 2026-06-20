@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, ShoppingCart, Bell } from "lucide-react";
 import { Link } from 'react-router-dom';
 
@@ -6,15 +6,39 @@ export default function Header() {
   const [cartCount] = useState(3);
   const [searchValue, setSearchValue] = useState(""); 
 
-  // 1. Tên người dùng đăng nhập
-  const [userName] = useState("Nguyễn Văn A");
+  // ĐÃ SỬA: Lấy tên từ localStorage, mặc định là "Khách" nếu chưa đăng nhập
+  const [userName, setUserName] = useState(() => {
+    return localStorage.getItem("userName") || "Khách";
+  });
 
-  // 2. Hàm xử lý tách 2 chữ cái đầu tiên của tên và viết hoa
+  // ĐÃ SỬA: Lắng nghe sự kiện thay đổi dữ liệu từ trang đăng nhập để cập nhật realtime
+  useEffect(() => {
+    const handleAuthChange = () => {
+      setUserName(localStorage.getItem("userName") || "Khách");
+    };
+
+    // Lắng nghe sự kiện custom nội bộ và sự kiện storage tiêu chuẩn
+    window.addEventListener("auth-change", handleAuthChange);
+    window.addEventListener("storage", handleAuthChange);
+
+    return () => {
+      window.removeEventListener("auth-change", handleAuthChange);
+      window.removeEventListener("storage", handleAuthChange);
+    };
+  }, []);
+
+  // Hàm xử lý tách chữ cái hiển thị Avatar
   const getAvatarLetters = (name) => {
-    if (!name) return "US";
+    if (!name || name === "Khách") return "K";
     const words = name.trim().split(/\s+/);
     if (words.length === 1) return words[0].slice(0, 2).toUpperCase();
     return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  };
+
+  // Hàm Đăng xuất (Trở về trạng thái khách)
+  const handleLogout = () => {
+    localStorage.removeItem("userName");
+    window.dispatchEvent(new Event("auth-change")); // Phát tín hiệu cập nhật UI
   };
 
   return (
@@ -47,7 +71,6 @@ export default function Header() {
           {/* Right Actions */}
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             
-            {/* ĐÃ SỬA: Biến toàn bộ khu vực Giỏ hàng thành một thẻ Link duy nhất hướng về /giohang */}
             {/* Cart */}
             <Link 
               to="/giohang" 
@@ -72,19 +95,27 @@ export default function Header() {
 
             <div className="w-px h-5 bg-gray-200 mx-1 hidden sm:block" />
             
-            {/* Avatar Tên Viết Hoa */}
-            <Link 
-              to="/page1" 
-              className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50 rounded-xl transition-all duration-200"
-            >
-              <div className="w-8 h-8 bg-blue-600 text-white flex items-center justify-center rounded-full text-xs font-bold shadow-sm select-none shrink-0">
-                {getAvatarLetters(userName)}
+            {/* ĐÃ SỬA: Hiển thị Đăng nhập hoặc Avatar tùy thuộc trạng thái */}
+            {userName === "Khách" ? (
+              <Link to="/login" className="text-xs font-bold text-blue-600 hover:text-blue-700 px-2 py-1.5">
+                Đăng nhập
+              </Link>
+            ) : (
+              <div className="flex items-center gap-1">
+                <Link 
+                  to="/tkcnhan" 
+                  className="flex items-center gap-2 px-2 py-1 hover:bg-gray-50 rounded-xl transition-all duration-200"
+                >
+                  <div className="w-8 h-8 bg-blue-600 text-white flex items-center justify-center rounded-full text-xs font-bold shadow-sm select-none shrink-0">
+                    {getAvatarLetters(userName)}
+                  </div>
+                  
+                  <span className="text-xs font-semibold text-gray-700 hidden md:block">
+                    {userName}
+                  </span>
+                </Link>
               </div>
-              
-              <span className="text-xs font-semibold text-gray-700 hidden md:block">
-                {userName}
-              </span>
-            </Link>
+            )}
             
           </div>
         </div>
