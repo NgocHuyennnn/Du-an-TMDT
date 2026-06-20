@@ -114,12 +114,6 @@ export default function Header() {
                     {userName}
                   </span>
                 </Link>
-                <button 
-                  onClick={handleLogout}
-                  className="text-[10px] font-medium text-red-500 hover:underline px-2 py-1"
-                >
-                  Thoát
-                </button>
               </div>
             )}
             
