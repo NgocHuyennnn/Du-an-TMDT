@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Store, TrendingUp, Star, Clock, Eye, Pencil, Ban, CheckCircle2,
   SlidersHorizontal, ChevronLeft, ChevronRight, MapPin, Mail, Phone,
 } from 'lucide-react';
-import { Allstores, statusConfig } from '@/data/mockDataCH';
+import {  statusConfig } from '@/data/mockDataCH';
 import { useNavigate } from 'react-router-dom';
 import SuspendModal from './SuspendModal';
 
@@ -60,7 +60,8 @@ function PageBtn({ children, onClick, active, disabled }) {
 // --- COMPONENT CHÍNH ---
 export default function StoreManagement() {
   const navigate = useNavigate();
-  const [stores, setStores] = useState(Allstores);
+  const [stores, setStores] = useState([]);
+const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [filterStatus, setFilterStatus] = useState('all');
 
@@ -76,6 +77,42 @@ export default function StoreManagement() {
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
   const [suspendTarget, setSuspendTarget] = useState(null);
+ 
+useEffect(() => {
+  const loadStores = async () => {
+    try {
+      const response = await fetch(
+        "https://tmdt-backend-ego0.onrender.com/api/shops"
+      );
+
+      const result = await response.json();
+
+      console.log(result);
+
+      if (result.status === "success") {
+  const mappedStores = result.data.map((shop) => ({
+    id: shop.ShopID,
+    name: shop.ShopName,
+    code: `SHOP-${shop.ShopID}`,
+    city: shop.Address || "Chưa cập nhật",
+    phone: shop.Hotline || "-",
+    email: shop.Email || "-",
+    rating: shop.Rating || 0,
+    status: shop.IsActive ? "active" : "closed",
+  }));
+
+  setStores(mappedStores);
+}
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadStores();
+}, []);
+
   function handleSuspend(store, reason, note) {
   // Sau này thay bằng API
   setStores((prev) =>
@@ -95,9 +132,18 @@ export default function StoreManagement() {
 }
   
   function handleFilter(s) {
-    setFilterStatus(s);
-    setPage(1);
-  }
+  setFilterStatus(s);
+  setPage(1);
+}
+
+if (loading) {
+  return (
+    <div className="p-6">
+      Đang tải danh sách cửa hàng...
+    </div>
+  );
+}
+
 
   return (
     <div className="p-6 space-y-6">
@@ -128,7 +174,9 @@ export default function StoreManagement() {
       </div>
 
       {/* Table card */}
+      
       <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        
         {/* Filter pills */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center gap-2 flex-wrap">
           {['all', 'active', 'pending', 'closed'].map((s) => (

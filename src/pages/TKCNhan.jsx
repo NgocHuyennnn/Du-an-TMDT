@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ShoppingBag, Home, Users, ClipboardList, Settings, HelpCircle,
-  User, Mail, Phone, MapPin, Store, FileText, 
-  ShieldCheck, Camera, Save, Award, Calendar, LogOut, X
+  User, Mail, Phone, 
+  ShieldCheck, Camera, Save, Award, LogOut, X
 } from 'lucide-react';
 
 import hinhNenTechTonic from '../assets/nen.png'; 
@@ -12,16 +12,15 @@ export default function TaiKhoanCaNhan() {
   const navigate = useNavigate();
 
   // 1. ĐÃ SỬA: Lấy tên từ localStorage để đồng bộ với Header, nếu không có mới dùng tên mặc định
-  const [profileData, setProfileData] = useState({
-    fullName: localStorage.getItem("userName") || 'Nguyễn Văn A',
-    email: 'doitac.a@techtonic.com',
-    phone: '0905123456',
-    storeName: 'Tech Tonic Da Nang',
-    taxCode: '0401234567',
-    address: '123 Phan Châu Trinh, Hải Châu, Đà Nẵng',
-    joinDate: '15/04/2026',
-    partnerLevel: 'Đối tác Kim Cương'
-  });
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
+const [profileData, setProfileData] = useState({
+  fullName: currentUser?.fullname || "",
+  email: currentUser?.email || "",
+  phone: currentUser?.phone || "",
+  gender: currentUser?.gender || "",
+  birthday: currentUser?.birthday || "",
+});
 
   const [isSaving, setIsSaving] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
@@ -30,47 +29,79 @@ export default function TaiKhoanCaNhan() {
   // 2. ĐÃ THÊM: Lắng nghe thay đổi từ hệ thống (Nếu bấm thoát từ Header, trang này tự cập nhật ngay)
   useEffect(() => {
     const handleAuthChange = () => {
-      const currentUserName = localStorage.getItem("userName") || "Khách";
-      setProfileData(prev => ({ ...prev, fullName: currentUserName }));
-    };
+      const user = JSON.parse(localStorage.getItem("user"));
 
+setProfileData(prev => ({
+  ...prev,
+  fullName: user?.fullname || "",
+  email: user?.email || "",
+  phone: user?.phone || "",
+  gender: user?.gender || "",
+  birthday: user?.birthday || "",
+  
+}));
+    };
     window.addEventListener("auth-change", handleAuthChange);
     return () => window.removeEventListener("auth-change", handleAuthChange);
   }, []);
+// Xử lý khi nhập thông tin
+const handleProfileChange = (e) => {
+  const { name, value } = e.target;
 
+  setProfileData(prev => ({
+    ...prev,
+    [name]: value
+  }));
+
+  if (msg.text) {
+    setMsg({
+      type: '',
+      text: ''
+    });
+  }
+};
   // Xử lý thay đổi thông tin hồ sơ
-  const handleProfileChange = (e) => {
-    const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
-    if (msg.text) setMsg({ type: '', text: '' });
-  };
-
-  // 3. ĐÃ SỬA: Khi lưu thông tin hồ sơ thành công, lưu trực tiếp tên mới vào localStorage và bắn tín hiệu cho Header đổi theo
   const handleSaveProfile = (e) => {
-    e.preventDefault();
-    setIsSaving(true);
+  e.preventDefault();
+  setIsSaving(true);
     
-    setTimeout(() => {
-      setIsSaving(false);
-      
-      // Cập nhật tên mới vào localStorage và kích hoạt đồng bộ
-      localStorage.setItem("userName", profileData.fullName);
-      window.dispatchEvent(new Event("auth-change"));
+  setTimeout(() => {
+    setIsSaving(false);
 
-      setMsg({ type: 'success', text: 'Cập nhật hồ sơ tài khoản thành công!' });
-    }, 1500);
-  };
+    const user = JSON.parse(localStorage.getItem("user"));
 
-  // 4. ĐÃ SỬA: Khi bấm xác nhận Đăng xuất, xóa dữ liệu khỏi localStorage và cập nhật trạng thái toàn trang về "Khách"
-  const handleConfirmLogout = () => {
-    setIsLogoutModalOpen(false);
-    
-    // Đưa trạng thái về "Khách" (hoặc xóa hẳn tùy nhu cầu ứng dụng của bạn)
-    localStorage.setItem("userName", "Khách"); 
-    window.dispatchEvent(new Event("auth-change")); // Phát thông báo cập nhật tới Header
-    
-    navigate('/'); // Chuyển hướng về trang chủ
-  };
+    const newUser = {
+      ...user,
+      fullname: profileData.fullName,
+      phone: profileData.phone,
+      gender: profileData.gender,
+      birthday: profileData.birthday
+    };
+
+    localStorage.setItem("user", JSON.stringify(newUser));
+
+    window.dispatchEvent(new Event("auth-change"));
+
+    setMsg({
+      type: "success",
+      text: "Cập nhật thông tin thành công!"
+    });
+
+  }, 1500); // 👈 đóng setTimeout
+}; // 👈 đóng handleSaveProfile
+
+
+// Đặt ra ngoài đây
+const handleConfirmLogout = () => {
+  setIsLogoutModalOpen(false);
+
+  localStorage.removeItem("user");
+  localStorage.removeItem("access_token");
+
+  window.dispatchEvent(new Event("auth-change"));
+
+  navigate('/');
+};
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full overflow-hidden">
@@ -84,7 +115,7 @@ export default function TaiKhoanCaNhan() {
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-600">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
-            <Link to="/page1" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Home size={16} /> <span>Trang chủ</span>
             </Link>
             <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
@@ -146,26 +177,29 @@ export default function TaiKhoanCaNhan() {
                 <h3 className="text-sm font-black text-slate-900">{profileData.fullName}</h3>
                 <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-0.5 rounded-full text-[10px] font-bold">
                   <Award size={12} className="fill-amber-500/10" />
-                  <span>{profileData.partnerLevel}</span>
+                  <span>Khách hàng</span>
                 </div>
               </div>
 
               <div className="bg-white/80 border border-slate-100 rounded-xl p-3 text-left space-y-2 text-[11px]">
-                <div className="flex items-center gap-2 text-slate-500">
-                  <Calendar size={13} className="text-slate-400" />
-                  <span>Ngày gia nhập: <strong className="text-slate-700">{profileData.joinDate}</strong></span>
-                </div>
-                <div className="flex items-center gap-2 text-slate-500">
-                  <Store size={13} className="text-slate-400" />
-                  <span>Gian hàng: <strong className="text-blue-600">{profileData.storeName}</strong></span>
-                </div>
-              </div>
+
+            <div className="flex items-center gap-2 text-slate-500">
+            <User size={13}/>
+                <span>Vai trò:<strong className="text-blue-600">Khách hàng</strong>
+                </span>
             </div>
 
+            <div className="flex items-center gap-2 text-slate-500">
+                <Mail size={13}/><span>Email:<strong className="text-slate-700">{profileData.email}</strong>
+                </span>
+            </div>
+
+            </div>
             <div className="mt-8 pt-4 border-t border-slate-200/50 w-full flex items-center justify-center gap-1.5 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
               <ShieldCheck size={13} className="text-emerald-500" />
               <span>Tài khoản đã xác minh</span>
             </div>
+          </div>
           </div>
 
           {/* CỘT PHẢI */}
@@ -173,7 +207,7 @@ export default function TaiKhoanCaNhan() {
             <div className="space-y-5">
               <div className="space-y-1">
                 <h2 className="text-base font-black text-slate-900 tracking-tight">Chi tiết tài khoản cá nhân</h2>
-                <p className="text-xs font-medium text-slate-400">Quản lý và cập nhật thông tin vận hành của bạn trên hệ thống.</p>
+                <p className="text-xs font-medium text-slate-400">Quản lý thông tin hồ sơ để bảo mật tài khoản.</p>
               </div>
 
               {msg.text && (
@@ -213,33 +247,50 @@ export default function TaiKhoanCaNhan() {
                   </div>
                 </div>
 
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 pt-1">2. Thông tin pháp lý & Địa chỉ</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-xs font-black text-slate-700 block">Tên hiển thị thương hiệu</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Store size={14} /></span>
-                      <input type="text" name="storeName" value={profileData.storeName} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
-                    </div>
-                  </div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 pt-1">
+  2. Thông tin cá nhân
+</div>
 
-                  <div className="space-y-1">
-                    <label className="text-xs font-black text-slate-700 block">Mã số thuế doanh nghiệp</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><FileText size={14} /></span>
-                      <input type="text" name="taxCode" value={profileData.taxCode} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
-                    </div>
-                  </div>
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                  <div className="space-y-1 sm:col-span-2">
-                    <label className="text-xs font-black text-slate-700 block">Địa chỉ đặt văn phòng / kho trung chuyển</label>
-                    <div className="relative">
-                      <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><MapPin size={14} /></span>
-                      <input type="text" name="address" value={profileData.address} onChange={handleProfileChange} className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
-                    </div>
-                  </div>
-                </div>
+{/* Giới tính */}
+<div className="space-y-1">
+<label className="text-xs font-black text-slate-700 block">
+  Giới tính
+</label>
 
+<select
+ name="gender"
+ value={profileData.gender}
+ onChange={handleProfileChange}
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl h-10 px-3 text-xs"
+>
+<option value="">Chọn giới tính</option>
+<option value="Nam">Nam</option>
+<option value="Nữ">Nữ</option>
+<option value="Khác">Khác</option>
+</select>
+
+</div>
+
+
+{/* Ngày sinh */}
+<div className="space-y-1">
+<label className="text-xs font-black text-slate-700 block">
+ Ngày sinh
+</label>
+
+<input
+ type="date"
+ name="birthday"
+ value={profileData.birthday}
+ onChange={handleProfileChange}
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl h-10 px-3 text-xs"
+/>
+
+</div>
+
+</div>
                 <div className="flex justify-end pt-3">
                   <button
                     type="submit"
@@ -310,5 +361,6 @@ export default function TaiKhoanCaNhan() {
       )}
 
     </div>
+    
   );
 }

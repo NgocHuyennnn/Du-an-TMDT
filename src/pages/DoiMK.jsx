@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
-
+import {  ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
+import axios from "axios";
 // Import tấm ảnh nền mờ của bạn
 import loginBanner from '../assets/nen.png'; 
 
 export default function DoiMK() {
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
@@ -14,27 +15,86 @@ export default function DoiMK() {
   
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setError('');
+  //Mk hiện tại
+  <div className="space-y-2">
+<label className="block text-xs font-bold text-gray-700 uppercase">
+  Mật khẩu hiện tại
+</label>
 
-    // Kiểm tra tính hợp lệ của mật khẩu
-    if (newPassword.length < 6) {
-      setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+<div className="relative flex items-center">
+<Lock size={16} className="absolute left-4 text-gray-400"/>
+
+<input
+type="password"
+required
+value={oldPassword}
+onChange={(e)=>setOldPassword(e.target.value)}
+placeholder="Nhập mật khẩu hiện tại"
+className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
+/>
+
+</div>
+</div>
+//MK mới 
+  if (newPassword.length < 6) {
+    setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
+    return;
+  }
+
+
+  if (newPassword !== confirmPassword) {
+    setError("Xác nhận mật khẩu không khớp.");
+    return;
+  }
+
+
+  try {
+
+    const token = localStorage.getItem("token");
+
+
+    if(!token){
+      setError("Bạn chưa đăng nhập.");
       return;
     }
 
-    if (newPassword !== confirmPassword) {
-      setError('Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.');
-      return;
+
+    const res = await axios.post(
+  "https://tmdt-backend-ego0.onrender.com/api/auth/reset-password",
+  {
+    email: localStorage.getItem("user_reset_email"),
+    otp: location.state?.otp,
+    new_password: newPassword
+  }
+);
+
+
+    if(res.data.success){
+
+      alert("Đổi mật khẩu thành công");
+
+      localStorage.removeItem("token");
+
+      navigate("/login");
+
     }
 
-    console.log('Đang xử lý cập nhật mật khẩu mới...');
-    
-    // Giả lập cập nhật thành công -> Chuyển về trang Đăng nhập kèm thông báo
-    alert('Đổi mật khẩu thành công! Hãy đăng nhập lại bằng mật khẩu mới.');
-    navigate('/login'); 
-  };
+
+  } catch(err){
+
+    console.log(err);
+
+    setError(
+      err.response?.data?.message ||
+      "Đổi mật khẩu thất bại"
+    );
+
+  }
+
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
@@ -49,7 +109,7 @@ export default function DoiMK() {
       </div>
 
       {/* FOREGROUND: KHỐI FORM ĐỒ BÓNG MỊN CHUẨN UI HIỆN ĐẠI */}
-      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-[580px] flex flex-col justify-between transition-all duration-300">
+      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-580px flex flex-col justify-between transition-all duration-300">
         
         <div className="w-full flex flex-col">
           {/* LOGO TECH TONIC */}

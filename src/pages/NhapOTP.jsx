@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck, Mail } from 'lucide-react';
 import loginBanner from '../assets/nen.png'; 
-
+import axios from "axios";
 export default function NhapOTP() {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const [timeLeft, setTimeLeft] = useState(89); 
@@ -75,17 +75,62 @@ export default function NhapOTP() {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const finalOtp = otp.join("");
-    if (finalOtp.length < 6) {
-      alert("Vui lòng nhập đầy đủ 6 chữ số mã xác thực!");
-      return;
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const finalOtp = otp.join("");
+
+  if (finalOtp.length < 6) {
+    alert("Vui lòng nhập đủ 6 số OTP!");
+    return;
+  }
+
+
+  try {
+
+    const res = await axios.post(
+      "https://tmdt-backend-ego0.onrender.com/api/auth/verify-otp",
+      {
+        email: emailReceived,
+        otp: finalOtp
+      }
+    );
+
+
+    if(res.data.success){
+
+      // lưu email để trang đổi mật khẩu lấy
+      localStorage.setItem(
+        "user_reset_email",
+        emailReceived
+      );
+
+
+      alert("Xác nhận OTP thành công");
+
+
+      navigate("/doi-mat-khau",{
+        state:{
+          email: emailReceived,
+          otp: finalOtp
+        }
+      });
+
     }
-    console.log(`Xác nhận OTP thành công: ${finalOtp}`);
-    // Chuyển hướng sang trang đổi mật khẩu mới của bạn
-    navigate('/doi-mat-khau'); 
-  };
+
+
+  } catch(err){
+
+    console.log(err);
+
+    alert(
+      err.response?.data?.message ||
+      "OTP không hợp lệ"
+    );
+
+  }
+
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
@@ -145,7 +190,33 @@ export default function NhapOTP() {
           <div className="text-center mt-5">
             <button 
               type="button"
-              onClick={() => setTimeLeft(89)} 
+              onClick={async()=>{
+
+ try{
+
+    await axios.post(
+   "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
+   {
+    email: emailReceived
+   }
+  );
+
+  alert("Đã gửi lại OTP");
+
+  setTimeLeft(89);
+
+ }catch(err){
+
+  console.log(err);
+
+  alert(
+    err.response?.data?.message ||
+    "OTP không hợp lệ"
+  );
+
+}
+
+}} 
               disabled={timeLeft > 0}
               className={`text-xs font-bold underline transition-colors ${timeLeft > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700 cursor-pointer'}`}
             >
