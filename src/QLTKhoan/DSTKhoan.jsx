@@ -4,7 +4,8 @@ import {
   Users, UserCheck, Clock, Search, Filter, Plus, 
   Edit2, Trash2, MoreVertical, ChevronLeft, ChevronRight,
   Settings, Bell, HelpCircle, ShoppingBag, Home, ClipboardList,
-  AlertTriangle, X, User, Mail, Phone
+  AlertTriangle, X, User, Mail, Phone,
+  Store
 } from 'lucide-react';
 
 export default function QuanLyTaiKhoan() {
@@ -159,6 +160,9 @@ export default function QuanLyTaiKhoan() {
           <nav className="p-3 space-y-1">
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Home size={16} /> <span>Quản lý vai trò</span>
+            </Link>
+            <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Store size={16} /> <span>Quản lý cửa hàng</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>

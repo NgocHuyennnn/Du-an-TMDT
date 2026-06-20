@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 import loginBanner from '../assets/nen.png'; 
@@ -75,6 +75,49 @@ export default function LoginPage() {
     }
   };
 
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: emailOrPhone,
+        password: password,
+      }),
+    });
+
+    const data = await res.json();
+
+console.log("LOGIN RESPONSE:", data);
+console.log("DATA KEYS:", Object.keys(data));
+
+if (!res.ok) {
+  throw new Error(data.message || "Đăng nhập thất bại");
+}
+
+const token = data.access_token || data.data?.access_token;
+
+console.log("TOKEN LẤY ĐƯỢC:", token);
+
+if (!token) {
+  throw new Error("BE không trả token");
+}
+
+localStorage.setItem("access_token", token);
+
+console.log(
+  "TOKEN TRONG LOCAL:",
+  localStorage.getItem("access_token")
+);
+
+navigate("/page1");
+
+  } catch (err) {
+    console.log("LOGIN ERROR:", err);
+    alert(err.message);
+  }
+};
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
       

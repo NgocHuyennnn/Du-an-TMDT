@@ -12,7 +12,8 @@ import CustomersPage from "@/pages/CustomersPage";
 import DashboardPage from "@/pages/DashboargPage";
 import OrdersPage from "@/pages/OrdersPage";
 import ReportsPage from "@/pages/ReportsPage";
-
+import TKManager from "@/pages/TKManager";
+import CategoriesManagement from "@/pages/CategoriesMangement";
 
 
 export const publicRoutes = [
@@ -79,7 +80,14 @@ export const publicRoutes = [
     path: "/reports",
     component: ReportsPage,
   },
-
+  {
+    path: "/accounts",
+    component: TKManager,
+  },
+  {
+    path: "/categories",
+    component: CategoriesManagement,
+  },
 ];
 
 

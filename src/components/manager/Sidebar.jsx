@@ -10,14 +10,17 @@ import {
   Plus,
   Zap,
   LogOut,
+  User,
 } from "lucide-react";
 
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
 const navItems = [
   { icon: LayoutDashboard, label: "Trang chủ", path: "/page1" },
+  { icon: User, label: "Tài khoản", path: "/accounts" },
   { icon: Store, label: "Cửa hàng", path: "/stores" },
   { icon: Package, label: "Sản phẩm", path: "/products" },
+  { icon: BarChart3, label: "Danh mục", path: "/categories" },
   { icon: ShoppingCart, label: "Đơn hàng", path: "/orders" },
   { icon: Users, label: "Khách hàng", path: "/customers" },
   

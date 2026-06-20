@@ -6,7 +6,7 @@ import {
   Eye, Trash2, Calendar, CreditCard, Phone,
   X, Truck, FileText, Package
 } from 'lucide-react';
-
+import { createPortal } from 'react-dom';
 import hinhNenTechTonic from '../assets/nen.png'; 
 
 export default function DanhSachDonHang() {
@@ -297,10 +297,17 @@ export default function DanhSachDonHang() {
       </div>
 
       {/* ==================== 🌟 MODAL CHI TIẾT ĐƠN HÀNG DỰA THEO WIREFRAME 🌟 ==================== */}
-      {selectedOrder && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-[#f8fafc] w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto ">
-            
+      {selectedOrder &&
+  createPortal(
+    <div
+      className="fixed inset-0 z-99999 bg-black/50 backdrop-blur-sm"
+      onClick={() => setSelectedOrder(null)}
+    >
+      <div
+        className="absolute left-1/2 top-1/2 w-[95vw] max-w-7xl -translate-x-1/2 -translate-y-1/2 bg-[#f8fafc] rounded-2xl shadow-2xl overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+    
             {/* Header của Modal */}
             <div className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
@@ -312,7 +319,7 @@ export default function DanhSachDonHang() {
             </div>
 
             {/* Sub-Header hành động */}
-            <div className="bg-white border-b border-slate-200/60 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="bg-white border-b border-slate-200/60 px-6 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0 font-sans">
               <h2 className="text-lg font-black text-slate-900">Chi tiết đơn hàng: {selectedOrder.id}</h2>
               <div className="flex items-center gap-2">
                 <button className="bg-blue-50 border border-blue-200 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-md hover:bg-blue-100 transition-colors cursor-pointer">In hóa đơn</button>
@@ -320,7 +327,7 @@ export default function DanhSachDonHang() {
             </div>
 
             {/* Layout nội dung chi tiết dạng 2 Cột chuẩn Wireframe */}
-            <div className="flex-1 p-6  grid grid-cols-1 lg:grid-cols-3 gap-6 text-slate-700 text-xs">
+            <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 text-slate-700 text-xs font-sans">
               
               {/* CỘT TRÁI (Chiếm 2/3): Danh sách sản phẩm & Lịch sử xử lý */}
               <div className="lg:col-span-2 space-y-6">
@@ -469,9 +476,12 @@ export default function DanhSachDonHang() {
             </div>
 
           </div>
-        </div>
+        </div>,
+          document.body
+        
       )}
 
     </div>
+    
   );
 }
