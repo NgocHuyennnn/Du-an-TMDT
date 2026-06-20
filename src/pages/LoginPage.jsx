@@ -1,82 +1,21 @@
 import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
+
+// Import tấm ảnh nền từ thư mục assets
 import loginBanner from '../assets/nen.png'; 
 
 export default function LoginPage() {
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(''); // Quản lý thông báo lỗi bảo mật
   const navigate = useNavigate();
 
-  // Danh sách tên khách hàng ngẫu nhiên dành riêng cho luồng Khách hàng
-  const randomNames = [
-    "Nguyễn Văn An", "Trần Thị Bình", "Lê Hoàng Cường", 
-    "Phạm Minh Đức", "Vũ Hải Đăng", "Hoàng Gia Huy", 
-    "Phan Khánh Linh", "Đỗ Tiến Đạt", "Bùi Tuyết Nhung"
-  ];
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage(''); // Reset lỗi mỗi lần bấm đăng nhập
-    
-    // 1. Chuẩn hóa chuỗi nhập vào (Xóa khoảng trắng thừa và đưa về chữ thường)
-    const accountLower = emailOrPhone.trim().toLowerCase();
-
-    // 2. Định nghĩa các đuôi bảo mật (Secret Suffix) và mật khẩu tương ứng để test
-    const ADMIN_SUFFIX = '_adm@2026';
-    const MANAGER_SUFFIX = '_mgr@2026';
-
-    let detectedRole = "Customer"; 
-    let finalUserName = "";
-
-    // 3. Logic xử lý kiểm tra bảo mật cả Tài khoản và Mật khẩu
-    if (accountLower.endsWith(ADMIN_SUFFIX)) {
-      // Bảo mật hơn bằng cách check thêm mật khẩu riêng cho Admin
-      if (password !== 'admin123@') {
-        setErrorMessage('Mật khẩu không chính xác!');
-        return;
-      }
-      detectedRole = "Admin";
-      finalUserName = "Quản trị viên Hệ thống";
-    } 
-    else if (accountLower.endsWith(MANAGER_SUFFIX)) {
-      // Bảo mật hơn bằng cách check thêm mật khẩu riêng cho Manager
-      if (password !== 'manager123@') {
-        setErrorMessage('Mật khẩu  không chính xác!');
-        return;
-      }
-      detectedRole = "Manager";
-      finalUserName = "Quản lý Vận hành";
-    } 
-    else {
-      // Nhóm Khách hàng thông thường: Chấp nhận mọi mật khẩu (Luồng test tự do)
-      detectedRole = "Customer";
-      const randomIndex = Math.floor(Math.random() * randomNames.length);
-      finalUserName = randomNames[randomIndex];
-    }
-
-    // 4. Lưu thông tin an toàn vào localStorage
-    localStorage.setItem("userName", finalUserName);
-    localStorage.setItem("userRole", detectedRole);
-    localStorage.setItem("isAuthenticated", "true"); // Đánh dấu đã đăng nhập thành công
-
-    // 5. Kích hoạt sự kiện để thông báo cho Header/Sidebar biết để cập nhật UI ngay lập tức
-    window.dispatchEvent(new Event("auth-change"));
-    
-    // 6. Điều hướng trang (Navigate) chính xác dựa trên Role đã phân tách
-    if (detectedRole === "Admin") {
-      navigate('/roles'); 
-    } else if (detectedRole === "Manager") {
-      navigate('/stores'); 
-    } else {
-      navigate('/page1'); 
-    }
-  };
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
   try {
-    const res = await fetch("http://localhost:5000/api/auth/login", {
+    const res = await fetch("https://tmdt-backend-ego0.onrender.com/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,22 +35,33 @@ if (!res.ok) {
   throw new Error(data.message || "Đăng nhập thất bại");
 }
 
-const token = data.access_token || data.data?.access_token;
-
-console.log("TOKEN LẤY ĐƯỢC:", token);
+const token = data.data?.access_token;
+const user = data.data?.user;
 
 if (!token) {
   throw new Error("BE không trả token");
 }
 
 localStorage.setItem("access_token", token);
+localStorage.setItem("user", JSON.stringify(user));
+
+
+const role = user.roleid;
+
+if (role === 1) {
+  navigate("/admin");
+} else if (role === 2) {
+  navigate("/manager");
+} else {
+  navigate("/");
+}
 
 console.log(
   "TOKEN TRONG LOCAL:",
   localStorage.getItem("access_token")
 );
 
-navigate("/page1");
+
 
   } catch (err) {
     console.log("LOGIN ERROR:", err);
@@ -121,7 +71,7 @@ navigate("/page1");
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
       
-      {/* BACKGROUND */}
+      {/* ================= BACKGROUND: ẢNH CHÌM LÀM NỀN MỜ TOÀN TRANG ================= */}
       <div className="absolute inset-0 z-0 w-full h-full select-none pointer-events-none">
         <img 
           src={loginBanner} 
@@ -130,11 +80,11 @@ navigate("/page1");
         />
       </div>
 
-      {/* FORM CONTAINER */}
+      {/* ================= FOREGROUND: KHỐI FORM ĐỔ BÓNG MỊN (ĐỒNG BỘ UI) ================= */}
       <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-[550px] flex flex-col justify-between transition-all duration-300">
         
         <div>
-          {/* Logo */}
+          {/* 1. Logo TECH TONIC */}
           <div className="flex justify-center mb-6">
             <Link to="/" className="shrink-0 flex items-center gap-1.5 hover:opacity-80 transition-opacity">
               <span className="text-2xl font-black tracking-tight text-gray-900">TECH</span>
@@ -142,23 +92,16 @@ navigate("/page1");
             </Link>
           </div>
 
-          {/* Title */}
-          <div className="text-left mb-4">
+          {/* 2. Tiêu đề Đăng nhập */}
+          <div className="text-left mb-6">
             <h1 className="text-[26px] font-semibold text-gray-900 mb-2 tracking-tight font-sans">Đăng nhập</h1>
             <p className="text-gray-500 text-sm leading-relaxed">Chào mừng bạn quay lại với hệ thống!</p>
           </div>
 
-          {/* Hiển thị thông báo lỗi bảo mật nếu có */}
-          {errorMessage && (
-            <div className="mb-4 p-3 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold rounded-xl animate-shake">
-              {errorMessage}
-            </div>
-          )}
-
-          {/* Form */}
+          {/* 3. Form nhập liệu */}
           <form onSubmit={handleSubmit} className="space-y-5">
             
-            {/* Input Email/SĐT */}
+            {/* Ô nhập Email / SĐT */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
                 Email hoặc Số điện thoại
@@ -176,7 +119,7 @@ navigate("/page1");
               </div>
             </div>
 
-            {/* Input Password */}
+            {/* Ô nhập Mật khẩu */}
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
@@ -206,7 +149,7 @@ navigate("/page1");
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Nút Đăng nhập dạng Submit chuẩn */}
             <button 
               type="submit" 
               className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold hover:bg-blue-700 active:scale-[0.98] transition-all text-sm mt-2 shadow-[0_4px_12px_rgba(37,99,235,0.2)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.3)] cursor-pointer flex items-center justify-center tracking-wide"
@@ -215,14 +158,14 @@ navigate("/page1");
             </button>
           </form>
 
-          {/* Divider */}
+          {/* 4. Thành phần phân cách HOẶC */}
           <div className="relative flex py-4 items-center w-full">
             <div className="flex-grow border-t border-gray-100"></div>
             <span className="flex-shrink mx-4 text-[10px] text-gray-400 font-bold tracking-widest">HOẶC</span>
             <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
-          {/* Google Button */}
+          {/* 5. Nút Đăng nhập với Google */}
           <button 
             type="button" 
             className="w-full bg-white border border-gray-200 text-gray-700 h-11 rounded-xl font-medium hover:bg-gray-50 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2.5 cursor-pointer shadow-sm"
@@ -234,7 +177,7 @@ navigate("/page1");
           </button>
         </div>
 
-        {/* Register Link */}
+        {/* 6. Liên kết chuyển đổi sang Đăng ký */}
         <div className="text-center text-xs text-gray-500 mt-6 border-t border-gray-100 pt-4">
           Chưa có tài khoản?{' '}
           <Link 

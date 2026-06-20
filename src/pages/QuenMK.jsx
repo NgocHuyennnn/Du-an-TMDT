@@ -2,20 +2,65 @@ import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import loginBanner from '../assets/nen.png'; 
-
+import axios from "axios";
 export default function QuenMK() {
   const [accountInfo, setAccountInfo] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Lưu vào localStorage để chắc chắn trang sau lấy được, không lo bị rỗng
-    localStorage.setItem('user_reset_email', accountInfo);
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // Điều hướng sang trang nhập OTP và đính kèm state
-    navigate('/nhapOTP', { state: { email: accountInfo } }); 
-  };
+  console.log("Bấm gửi OTP");
+
+  if(!accountInfo){
+    alert("Vui lòng nhập email");
+    return;
+  }
+
+
+  try {
+
+    const res = await axios.post(
+      "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
+      {
+        email: accountInfo
+      }
+    );
+
+
+    console.log("BE trả:", res.data);
+
+
+    // không cần check success nữa
+    localStorage.setItem(
+      "user_reset_email",
+      accountInfo
+    );
+
+
+    alert("OTP đã được gửi về email");
+
+
+    navigate('/nhapOTP', { 
+      state:{
+        email: accountInfo
+      }
+    });
+
+
+  } catch(err){
+
+    console.log("LỖI:", err.response?.data || err);
+
+
+    alert(
+      err.response?.data?.message ||
+      "Không gửi được OTP"
+    );
+
+  }
+
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">

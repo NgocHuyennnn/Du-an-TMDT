@@ -65,15 +65,15 @@ const inputClass =
 export default function CreateStore() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    name: '',
-    description: '',
-    category: '',
-    email: '',
-    phone: '',
-    publicSearch: true,
-    passwordProtect: false,
-    legalAgreed: false,
-  });
+  name: '',
+  description: '',
+  address: '',
+  email: '',
+  phone: '',
+  publicSearch: true,
+  passwordProtect: false,
+  legalAgreed: false,
+});
   const [logoPreview, setLogoPreview] = useState(null);
   // Khởi tạo một lần và giữ nguyên giá trị
 const [refCode] = useState(() => 'STR-GEN-' + Math.random().toString(36).slice(2, 8).toUpperCase());
@@ -87,14 +87,60 @@ const [refCode] = useState(() => 'STR-GEN-' + Math.random().toString(36).slice(2
     if (file) setLogoPreview(URL.createObjectURL(file));
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
   e.preventDefault();
 
-  if (!form.legalAgreed) return;
+  if (!form.legalAgreed) {
+    alert("Vui lòng xác nhận điều khoản");
+    return;
+  }
 
-  alert('Cửa hàng đã được tạo thành công! 🎉🎉🎉');
+  try {
+    const token = localStorage.getItem("token");
 
-  navigate('/stores');
+console.log("TOKEN:", token);
+
+console.log({
+  shopname: form.name,
+  address: form.address,
+  hotline: form.phone,
+  description: form.description,
+});
+
+    const response = await fetch(
+  "https://tmdt-backend-ego0.onrender.com/api/shops",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      shopname: form.name,
+      address: form.address,
+      hotline: form.phone,
+      description: form.description,
+    }),
+  }
+);
+
+    const result = await response.json();
+
+console.log("STATUS:", response.status);
+console.log("RESULT:", result);
+
+    console.log(result);
+
+    if (response.ok) {
+      alert("Tạo cửa hàng thành công 🎉");
+      navigate("/stores");
+    } else {
+      alert(result.message || "Tạo cửa hàng thất bại");
+    }
+  } catch (error) {
+    console.error(error);
+    alert("Lỗi kết nối server");
+  }
 }
   return (
     <div className="p-6 max-w-5xl mx-auto">
@@ -149,6 +195,16 @@ const [refCode] = useState(() => 'STR-GEN-' + Math.random().toString(36).slice(2
                   className={inputClass}
                 />
               </div>
+              <div>
+  <Label required>Địa chỉ</Label>
+  <input
+    type="text"
+    placeholder="Nhập địa chỉ cửa hàng"
+    value={form.address}
+    onChange={(e) => set('address', e.target.value)}
+    className={inputClass}
+  />
+</div>
               <div>
                 <Label>Mô tả</Label>
                 <textarea

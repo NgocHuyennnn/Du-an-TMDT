@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, User, Mail, ShieldCheck } from 'lucide-react';
 
@@ -13,6 +13,8 @@ export default function RegisterPage() {
   // Các state lưu giá trị đầu vào
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -22,29 +24,62 @@ export default function RegisterPage() {
   const navigate = useNavigate();
 
   // Hàm xử lý kiểm tra bảo mật và trùng khớp khi bấm nút Đăng ký
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setErrorMessage('');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+   console.log("ĐÃ BẤM ĐĂNG KÝ");
+  setErrorMessage('');
 
-    // 1. KIỂM TRA ĐỘ MẠNH MẬT KHẨU (Tối thiểu 8 ký tự, 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-    
-    if (!passwordRegex.test(password)) {
-      setErrorMessage('Mật khẩu phải từ 8 ký tự trở lên, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt (VD: @, $, !, %, *, ?, &).');
-      return;
-    }
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
-    // 2. KIỂM TRA TRÙNG KHỚP: Nếu 2 mật khẩu không khớp nhau
-    if (password !== confirmPassword) {
-      setErrorMessage('Mật khẩu nhập lại không trùng khớp. Vui lòng kiểm tra lại!');
-      return;
-    }
+  if (!passwordRegex.test(password)) {
+    setErrorMessage(
+      'Mật khẩu phải từ 8 ký tự trở lên, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.'
+    );
+    return;
+  }
 
-    // Nếu thỏa mãn tất cả các điều kiện trên
-    console.log('Thông tin hợp lệ! Đang tiến hành tạo tài khoản...');
-    alert('Đăng ký tài khoản thành công!');
-    navigate('/login'); 
-  };
+  if (password !== confirmPassword) {
+    setErrorMessage(
+      'Mật khẩu nhập lại không trùng khớp. Vui lòng kiểm tra lại!'
+    );
+    return;
+  }
+
+  try {
+    const response = await fetch('https://tmdt-backend-ego0.onrender.com/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+  fullname: fullName,
+  email: email,
+  password: password,
+  phonenumber: phone,
+  address: address,
+}),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+  console.log(data);
+  setErrorMessage(
+    data.message ||
+    data.error ||
+    JSON.stringify(data)
+  );
+  return;
+}
+
+    alert('Đăng ký thành công!');
+    navigate('/login');
+  } catch (error) {
+    console.error(error);
+    setErrorMessage('Không thể kết nối tới server');
+  }
+};
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
@@ -117,6 +152,34 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
+            <div className="space-y-2">
+  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+    Số điện thoại
+  </label>
+
+  <input
+    type="text"
+    required
+    value={phone}
+    onChange={(e) => setPhone(e.target.value)}
+    placeholder="0912345678"
+    className="w-full h-12 px-4 border border-gray-200 rounded-xl"
+  />
+</div>
+          <div className="space-y-2">
+  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+    Địa chỉ
+  </label>
+
+  <input
+    type="text"
+    required
+    value={address}
+    onChange={(e) => setAddress(e.target.value)}
+    placeholder="Huế"
+    className="w-full h-12 px-4 border border-gray-200 rounded-xl"
+  />
+</div>
 
             {/* Hàng chứa Mật khẩu & Xác nhận mật khẩu */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
