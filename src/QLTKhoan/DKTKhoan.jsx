@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ShoppingBag, User, Mail, Lock, Phone, Store, MapPin, 
-  FileText, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck 
+  FileText, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck,
+  Home, Users, ClipboardList, UserPlus, Settings, HelpCircle, LogOut
 } from 'lucide-react';
 
 // 🌟 Đã import đúng file từ thư mục assets
@@ -129,6 +130,50 @@ export default function DangKyBanHang() {
   }
 
   return (
+    <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full overflow-hidden">
+      
+      {/* ==================== 1. SIDEBAR ==================== */}
+      <div className="w-60 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0 z-20">
+        <div>
+          <div className="p-5 border-b border-gray-50 flex items-center gap-1.5 text-blue-600 font-black text-xl tracking-tight">
+            <ShoppingBag size={22} className="fill-blue-600/10" />
+            <span className="text-base sm:text-xl font-black tracking-tight text-gray-900">TECH</span>
+            <span className="text-base sm:text-xl font-black tracking-tight text-blue-600">TONIC</span>
+          </div>
+          <nav className="p-3 space-y-1">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <Home size={16} /> <span>Trang chủ</span>
+            </Link>
+            <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <Users size={16} /> <span>Tài khoản</span>
+            </Link>
+            
+            <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <ClipboardList size={16} /> <span>Đơn hàng</span>
+            </Link>
+            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
+              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
+            </Link>
+          </nav>
+        </div>
+
+        <div className="p-3 border-t border-gray-100 space-y-1">
+          <Link to="/cai-dat" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
+            <Settings size={14} /> <span>Cài đặt</span>
+          </Link>
+          <Link to="/ho-tro" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
+            <HelpCircle size={14} /> <span>Hỗ trợ</span>
+          </Link>
+          
+          <Link 
+ to="/"
+ className="w-full flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-red-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg transition-all"
+>
+ <LogOut size={14} />
+ <span>Đăng xuất</span>
+</Link>
+        </div>
+      </div>
     <div className="min-h-screen bg-[#f8fafc] flex flex-col justify-center items-center p-4 lg:p-8 antialiased font-sans relative w-full overflow-hidden">
       
       {/* 🌟 ĐÃ SỬA: Thay thế url('/nen.png') bằng biến hinhNenTechTonic */}
@@ -315,6 +360,7 @@ export default function DangKyBanHang() {
         </div>
 
       </div>
+    </div>
     </div>
   );
 }

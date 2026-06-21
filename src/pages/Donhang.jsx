@@ -4,7 +4,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   Search, Bell, HelpCircle, Home, Store, ShoppingBag, 
   ClipboardList, Users, BarChart3, Settings, MessageSquare, ArrowLeft, X,
-  Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket
+  Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
+  UserPlus
 } from 'lucide-react';
 
 export default function QuanLyDonHang() {
@@ -153,11 +154,12 @@ export default function QuanLyDonHang() {
             <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Users size={16} /> <span>Tài khoản</span>
             </Link>
-            <Link to="/san-pham" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
-              <ShoppingBag size={16} /> <span>Sản phẩm</span>
-            </Link>
+            
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
+            </Link>
+            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
             </Link>
           </nav>
         </div>
