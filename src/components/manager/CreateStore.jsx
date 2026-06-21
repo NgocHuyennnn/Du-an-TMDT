@@ -7,19 +7,10 @@ import {
   Eye,
   Lock,
   CheckSquare,
-  ChevronDown,
+  
 } from 'lucide-react';
 import { useNavigate } from "react-router-dom";
-const categories = [
-  'Thời trang & May mặc',
-  'Điện tử & Công nghệ',
-  'Thực phẩm & Đồ uống',
-  'Gia dụng & Nội thất',
-  'Mỹ phẩm & Sức khỏe',
-  'Thể thao & Ngoài trời',
-  'Sách & Văn phòng phẩm',
-  'Đồ chơi & Trẻ em',
-];
+
 
 function Toggle({ checked, onChange }) {
   return (
@@ -96,47 +87,47 @@ const [refCode] = useState(() => 'STR-GEN-' + Math.random().toString(36).slice(2
   }
 
   try {
-    const token = localStorage.getItem("token");
 
-console.log("TOKEN:", token);
+    const token = localStorage.getItem("access_token");
 
-console.log({
-  shopname: form.name,
-  address: form.address,
-  hotline: form.phone,
-  description: form.description,
-});
+if (!token) {
+  alert("Bạn chưa đăng nhập");
+  return;
+}
 
     const response = await fetch(
-  "https://tmdt-backend-ego0.onrender.com/api/shops",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      shopname: form.name,
-      address: form.address,
-      hotline: form.phone,
-      description: form.description,
-    }),
-  }
-);
+      "https://tmdt-backend-ego0.onrender.com/api/shops",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+  ShopName: form.name,
+  Address: form.address,
+  Hotline: form.phone,
+  Description: form.description,
+  Email: form.email,
+})
+      }
+    );
+
 
     const result = await response.json();
 
-console.log("STATUS:", response.status);
-console.log("RESULT:", result);
+    console.log("STATUS:", response.status);
+    console.log("RESULT:", result);
 
-    console.log(result);
 
     if (response.ok) {
       alert("Tạo cửa hàng thành công 🎉");
       navigate("/stores");
     } else {
-      alert(result.message || "Tạo cửa hàng thất bại");
+      alert(result.message || result.msg || "Tạo cửa hàng thất bại");
     }
+
+
   } catch (error) {
     console.error(error);
     alert("Lỗi kết nối server");
@@ -216,22 +207,7 @@ console.log("RESULT:", result);
                 />
               </div>
               <div className="pt-1 border-t border-slate-50" />
-              <div>
-                <Label>Danh mục</Label>
-                <div className="relative">
-                  <select
-                    value={form.category}
-                    onChange={(e) => set('category', e.target.value)}
-                    className={`${inputClass} appearance-none pr-10 cursor-pointer`}
-                  >
-                    <option value="">Chọn danh mục</option>
-                    {categories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
+              
             </div>
           </div>
 

@@ -1,35 +1,94 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { Star, ShoppingCart, Heart } from "lucide-react";
-import { Products } from "@/data/productData";
+//import { Products } from "@/data/productData";
 
 
 const PAGE_SIZE = 12;
 
 function formatPrice(price) {
-  return price.toLocaleString("vi-VN") + "đ";
+  return Number(price).toLocaleString("vi-VN") + "đ";
 }
 
-function discountPercent(original, current) {
-  if (!original) return 0;
-  return Math.round(((original - current) / original) * 100);
-}
 
 export default function RecommendedSection() {
-  const [page, setPage] = useState(1);
-  const [liked, setLiked] = useState(new Set());
 
-  const displayed = Products.slice(0, PAGE_SIZE * page);
-  const hasMore = displayed.length < Products.length;
+const [page,setPage] = useState(1);
+const navigate = useNavigate();
+const [total,setTotal] = useState(0);
+const [products,setProducts] = useState([]);
+const [liked,setLiked] = useState(new Set());
 
-  const toggleLike = (id, e) => {
-    e.preventDefault();
-    setLiked((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
 
+useEffect(()=>{
+
+ async function fetchProducts(){
+
+  try{
+
+   const res = await axios.get(
+    `https://tmdt-backend-ego0.onrender.com/api/products?page=${page}&limit=12`
+
+   );
+
+
+   setProducts(prev =>
+     page === 1 
+     ? res.data.data 
+     : [...prev, ...res.data.data]
+   );
+
+   setTotal(res.data.pagination.total_items);
+
+
+  }catch(err){
+
+   console.log("Lỗi lấy sản phẩm",err);
+
+  }
+
+ }
+
+
+ fetchProducts();
+
+},[page]);
+const displayed = products.slice(
+ 0,
+ PAGE_SIZE * page
+);
+
+
+//const hasMore = products.length < total;
+const hasMore = products.length < total;
+if(!products.length){
+ return (
+  <section className="max-w-7xl mx-auto px-4 py-4">
+    <div className="bg-white p-5 rounded-xl">
+      Đang tải sản phẩm...
+    </div>
+  </section>
+ )
+}
+
+const toggleLike=(id,e)=>{
+
+ e.preventDefault();
+
+ setLiked(prev=>{
+
+  const next = new Set(prev);
+
+  next.has(id)
+  ? next.delete(id)
+  : next.add(id);
+
+  return next;
+
+ });
+
+};
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-10">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -41,28 +100,32 @@ export default function RecommendedSection() {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {displayed.map((product) => (
-            <div
-              key={product.id}
-              className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-200 cursor-pointer"
-            >
-              <span className="absolute top-2 left-2 z-10 text-[10px] font-bold text-red-500 bg-red-50 px-1.5 py-0.5 rounded-full">
-                -{discountPercent(product.originalPrice, product.price)}%
-              </span>
+           <div
+ key={product.ProductID}
+ onClick={() =>
+   navigate(`/chitietsanpham/${product.ProductID}`)
+ }
+ className="group relative bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-blue-200 hover:shadow-lg transition-all duration-200 cursor-pointer"
+>
+              
 
               <button
-                onClick={(e) => toggleLike(product.id, e)}
+                onClick={(e) => toggleLike(product.ProductID, e)}
                 className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white transition-all duration-150"
               >
                 <Heart
                   size={13}
-                  className={liked.has(product.id) ? "fill-red-500 text-red-500" : "text-gray-400"}
+                  className={liked.has(product.ProductID) ? "fill-red-500 text-red-500" : "text-gray-400"}
                 />
               </button>
 
               <div className="aspect-square bg-gray-50 overflow-hidden">
                 <img
-                  src={product.image}
-                  alt={product.name}
+                  src={
+ product.PrimaryImage ||
+ "https://via.placeholder.com/300"
+}
+                  alt={product.ProductName}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
@@ -70,7 +133,7 @@ export default function RecommendedSection() {
               {/* Thêm padding-bottom pb-12 để chừa sẵn chỗ trống cố định cho nút Mua trượt lên, không lo bị đè chữ */}
               <div className="p-3 pb-12">
                 <p className="text-xs text-gray-700 font-medium line-clamp-2 leading-snug mb-1.5 h-8">
-                  {product.name}
+                  {product.ProductName}
                 </p>
 
                 <div className="flex items-center gap-1 mb-2">
@@ -80,7 +143,7 @@ export default function RecommendedSection() {
                         key={i}
                         size={9}
                         className={
-                          i < Math.floor(product.rating)
+                          i < 5
                             ? "fill-yellow-400 text-yellow-400"
                             : "text-gray-200 fill-gray-200"
                         }
@@ -88,23 +151,24 @@ export default function RecommendedSection() {
                     ))}
                   </div>
                   <span className="text-[10px] text-gray-400">
-                    ({product.reviews})
+
+                  Đã bán {product.SoldQuantity}
+
                   </span>
+                  
                 </div>
 
                 <div>
                   <p className="text-sm font-black text-blue-700">
-                    {formatPrice(product.price)}
+                    {formatPrice(product.Price)}
                   </p>
-                  <p className="text-[10px] text-gray-400 line-through">
-                    {formatPrice(product.originalPrice)}
-                  </p>
+                  
                 </div>
               </div>
 
               <div className="p-3 pt-0">
                 <button 
-                  onClick={(e) => { e.preventDefault(); console.log("Giỏ hàng:", product.id); }}
+                  onClick={(e) => { e.preventDefault(); console.log("Giỏ hàng:", product.ProductID); }}
                   className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                 >
                   <ShoppingCart size={12} /> Thêm giỏ hàng 
@@ -117,7 +181,7 @@ export default function RecommendedSection() {
         {hasMore && (
           <div className="flex justify-center mt-8">
             <button
-              onClick={() => setPage((p) => p + 1)}
+              onClick={() => setPage(prev=>prev+1)}
               className="px-10 py-2.5 border-2 border-blue-600 text-blue-600 text-sm font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all duration-200 active:scale-95"
             >
               Tải thêm

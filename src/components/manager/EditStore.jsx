@@ -7,21 +7,12 @@ import {
   Eye,
   Lock,
   CheckSquare,
-  ChevronDown,
+  
   RefreshCw,
 } from 'lucide-react';
 import { useNavigate, useParams } from "react-router-dom";
 import { Allstores } from "@/data/mockDataCH";
-const categories = [
-  'Thời trang & May mặc',
-  'Điện tử & Công nghệ',
-  'Thực phẩm & Đồ uống',
-  'Gia dụng & Nội thất',
-  'Mỹ phẩm & Sức khỏe',
-  'Thể thao & Ngoài trời',
-  'Sách & Văn phòng phẩm',
-  'Đồ chơi & Trẻ em',
-];
+
 
 function Toggle({ checked, onChange }) {
   return (
@@ -74,7 +65,7 @@ export default function EditStore() {
   const [form, setForm] = useState({
     name: store?.name ?? '',
     description: '',
-    category: '',
+    
     email: store?.email ?? '',
     phone: store?.phone ?? '',
     publicSearch: true,
@@ -93,15 +84,41 @@ export default function EditStore() {
     if (file) setLogoPreview(URL.createObjectURL(file));
   }
 
-  function handleUpdate() {
-  setSaved(true);
+  async function handleUpdate(){
 
-  setTimeout(() => {
-    setSaved(false);
-    navigate("/stores");
-  }, 800);
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(
+    `https://tmdt-backend-ego0.onrender.com/api/shops/${id}`,
+    {
+      method:"PUT",
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${token}`
+      },
+      body:JSON.stringify({
+        shopname:form.name,
+        address:form.address,
+        hotline:form.phone,
+        description:form.description
+      })
+    }
+  );
+
+  const data = await res.json();
+
+  if(res.ok){
+    setSaved(true);
+
+    setTimeout(()=>{
+      setSaved(false);
+      navigate("/stores");
+    },800);
+
+  }else{
+    alert(data.message || "Cập nhật thất bại");
+  }
 }
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       {/* Back link */}
@@ -197,22 +214,7 @@ export default function EditStore() {
                 />
               </div>
               <div className="pt-1 border-t border-slate-50" />
-              <div>
-                <Label>Danh mục</Label>
-                <div className="relative">
-                  <select
-                    value={form.category}
-                    onChange={(e) => set('category', e.target.value)}
-                    className={`${inputClass} appearance-none pr-10 cursor-pointer`}
-                  >
-                    <option value="">Chọn danh mục</option>
-                    {categories.map((c) => (
-                      <option key={c} value={c}>{c}</option>
-                    ))}
-                  </select>
-                  <ChevronDown size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                </div>
-              </div>
+              
             </div>
           </div>
 
