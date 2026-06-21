@@ -45,9 +45,11 @@ export default function Header() {
           {/* Right Actions */}
           <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
             {/* Cart */}
-            <button className="relative flex items-center gap-1 px-2 py-1.5 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200">
+            <Link 
+              to="/giohang" 
+              className="relative flex items-center gap-1 px-2 py-1.5 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 cursor-pointer"
+            >
               <div className="relative">
-                {/* Sửa lỗi truyền sai prop kích thước (chỉ dùng thuộc tính size) */}
                 <ShoppingCart size={20} />
                 {cartCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
@@ -56,7 +58,7 @@ export default function Header() {
                 )}
               </div>
               <span className="text-xs font-medium hidden md:block">Giỏ hàng</span>
-            </button>
+            </Link>
 
             {/* Notifications */}
             <button className="relative p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 hidden sm:block">
@@ -70,16 +72,21 @@ export default function Header() {
           <div className="flex items-center gap-1">
             {user ? (
   <div className="relative">
+
+  
+
     <button
-  onClick={() => setShowMenu(!showMenu)}
-  className="flex items-center gap-1 hover:text-blue-600"
->
-  <User size={18} />
-  <span className="text-sm font-semibold">
-    {user.fullname}
-  </span>
-  <ChevronDown size={14} />
-</button>
+      onClick={() => setShowMenu(!showMenu)}
+      className="flex items-center gap-1 hover:text-blue-600"
+    >
+      <User size={18} />
+      <span className="text-sm font-semibold">
+        {user.fullname}
+      </span>
+      <ChevronDown size={14}/>
+    </button>
+
+
 
     {showMenu && (
       <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
@@ -91,7 +98,7 @@ export default function Header() {
             if (user.roleid === 1) {
               navigate("/dstkhoan");
             } else if (user.roleid === 2) {
-              navigate("/account");
+              navigate("/accounts");
             } else {
               navigate("/tkcnhan");
             }
