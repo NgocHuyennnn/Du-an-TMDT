@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 // Khôi phục điều hướng chuẩn của react-router-dom
 import { useNavigate, Link } from 'react-router-dom';
 import { 
-  Search, Bell, HelpCircle, Home, Store, ShoppingBag, 
-  ClipboardList, Users, BarChart3, Settings, MessageSquare, ArrowLeft, X,
+  Search, Bell, HelpCircle, Home, ShoppingBag, 
+  ClipboardList, Users,  Settings, MessageSquare, ArrowLeft, X,
   Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
   UserPlus
 } from 'lucide-react';
@@ -148,7 +148,7 @@ export default function QuanLyDonHang() {
             </span>
           </div>
           <nav className="p-3 space-y-1">
-            <Link to="/page1" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Home size={16} /> <span>Trang chủ</span>
             </Link>
             <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">

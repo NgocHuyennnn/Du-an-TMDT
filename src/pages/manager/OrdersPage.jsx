@@ -1,5 +1,5 @@
 import  { useState, useMemo } from 'react';
-import { orders as mockOrders } from '../data/mockDataCH';
+import { orders as mockOrders } from '@/data/mockDataCH';
 import { 
   
   Search, Download, RefreshCw, ChevronLeft, ChevronRight, 
@@ -7,7 +7,7 @@ import {
   X, Truck, FileText, Package
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
-import hinhNenTechTonic from '../assets/nen.png'; 
+import hinhNenTechTonic from '@/assets/nen.png'; 
 
 export default function DanhSachDonHang() {
   // 1. DỮ LIỆU ĐƠN HÀNG (ĐÃ ĐƯỢC MỞ RỘNG CHI TIẾT SẢN PHẨM PHỤC VỤ HIỂN THỊ MODAL)
