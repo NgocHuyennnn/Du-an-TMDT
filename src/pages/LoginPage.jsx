@@ -42,16 +42,24 @@ if (!token) {
   throw new Error("BE không trả token");
 }
 
+// Lưu token
 localStorage.setItem("access_token", token);
+
+// Lưu user
 localStorage.setItem("user", JSON.stringify(user));
 
+// Nếu BE trả shopid thì lưu luôn
+if (user.shopid) {
+  localStorage.setItem("shop_id", user.shopid);
+}
 
-const role = user.roleid;
+console.log("SHOP ID:", localStorage.getItem("shop_id"));
 
-if (role === 1) {
-  navigate("/admin");
-} else if (role === 2) {
-  navigate("/manager");
+// Điều hướng theo RoleName
+if (user.rolename === "Admin") {
+  navigate("/dstkhoan");
+} else if (user.rolename === "Manager") {
+  navigate("/accounts");
 } else {
   navigate("/");
 }
@@ -81,7 +89,7 @@ console.log(
       </div>
 
       {/* ================= FOREGROUND: KHỐI FORM ĐỔ BÓNG MỊN (ĐỒNG BỘ UI) ================= */}
-      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-[550px] flex flex-col justify-between transition-all duration-300">
+      <div className="relative z-10 bg-white/90 backdrop-blur-lg w-full max-w-md rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white p-8 sm:p-10 min-h-550px flex flex-col justify-between transition-all duration-300">
         
         <div>
           {/* 1. Logo TECH TONIC */}
@@ -160,9 +168,9 @@ console.log(
 
           {/* 4. Thành phần phân cách HOẶC */}
           <div className="relative flex py-4 items-center w-full">
-            <div className="flex-grow border-t border-gray-100"></div>
-            <span className="flex-shrink mx-4 text-[10px] text-gray-400 font-bold tracking-widest">HOẶC</span>
-            <div className="flex-grow border-t border-gray-100"></div>
+            <div className="grow border-t border-gray-100"></div>
+            <span className="shrink mx-4 text-[10px] text-gray-400 font-bold tracking-widest">HOẶC</span>
+            <div className="grow border-t border-gray-100"></div>
           </div>
 
           {/* 5. Nút Đăng nhập với Google */}
