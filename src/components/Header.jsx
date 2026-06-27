@@ -95,13 +95,22 @@ export default function Header() {
           onClick={() => {
             setShowMenu(false);
 
-            if (user.roleid === 1) {
-              navigate("/dstkhoan");
-            } else if (user.roleid === 2) {
-              navigate("/accounts");
-            } else {
-              navigate("/tkcnhan");
-            }
+            switch (user.rolename) {
+  case "Admin":
+    navigate("/dstkhoan");
+    break;
+
+  case "Manager":
+    navigate("/accounts");
+    break;
+
+  case "Customer":
+    navigate("/tkcnhan");
+    break;
+
+  default:
+    navigate("/");
+}
           }}
           className="w-full text-left px-4 py-3 hover:bg-gray-100"
         >

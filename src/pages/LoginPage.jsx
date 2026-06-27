@@ -31,9 +31,6 @@ export default function LoginPage() {
 console.log("LOGIN RESPONSE:", data);
 console.log("DATA KEYS:", Object.keys(data));
 
-if (!res.ok) {
-  throw new Error(data.message || "Đăng nhập thất bại");
-}
 
 const token = data.data?.access_token;
 const user = data.data?.user;
@@ -48,18 +45,20 @@ localStorage.setItem("access_token", token);
 // Lưu user
 localStorage.setItem("user", JSON.stringify(user));
 
-// Nếu BE trả shopid thì lưu luôn
-if (user.shopid) {
-  localStorage.setItem("shop_id", user.shopid);
+// Lưu thông tin shop nếu có
+if (user.shop?.shopid) {
+  localStorage.setItem("shop_id", user.shop.shopid);
+  localStorage.setItem("shop", JSON.stringify(user.shop));
 }
 
+console.log("USER:", user);
+console.log("SHOP:", user.shop);
 console.log("SHOP ID:", localStorage.getItem("shop_id"));
-
 // Điều hướng theo RoleName
 if (user.rolename === "Admin") {
-  navigate("/dstkhoan");
+  navigate("/");
 } else if (user.rolename === "Manager") {
-  navigate("/accounts");
+  navigate("/");
 } else {
   navigate("/");
 }

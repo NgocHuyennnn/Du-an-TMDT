@@ -7,13 +7,12 @@ import EditStore from "@/components/manager/EditStore";
 
 import StoreDetail from "@/components/manager/StoreDetail";
 import StoreManagement from "@/components/manager/StoreManagement";
-
-import CustomersPage from "@/pages/CustomersPage";
-import DashboardPage from "@/pages/DashboargPage";
-import OrdersPage from "@/pages/OrdersPage";
-import ReportsPage from "@/pages/ReportsPage";
+import DashboardPage from "@/pages/manager/DashboargPage";
+import CustomersPage from "@/pages/manager/CustomersPage";
+import ReportsPage from "@/pages/manager/ReportsPage";
+import CategoriesManagement from "@/pages/manager/CategoriesMangement";
+import OrdersPage from "@/pages/manager/OrdersPage";
 import TKManager from "@/pages/TKManager";
-import CategoriesManagement from "@/pages/CategoriesMangement";
 
 
 export const publicRoutes = [
