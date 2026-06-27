@@ -15,20 +15,21 @@ import PQuyen from '../QLTKhoan/PQuyen';
 import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
 import DSDHang from '../DonHang/DSDHang';
-import RoleList from '@/pages/RoleList';
-import RoleAdd from '@/pages/RoleAdd';
-import RoleDetail from '@/pages/RoleDetail';
-import RoleEdit from '@/pages/RoleEdit';
 
 
 import ProductDetailPage from '@/pages/ProductDetailPage';
-import Baocao from '@/pages/BaoCao';
-import DoanhThu from '@/pages/DoanhThu';
-import CuaHang from '@/pages/CuaHang';
 
-import CreateStore from '@/pages/CreateStore';
+
 import EditStore from '@/pages/EditStore';
 import StoreDetail from '@/pages/StoreDetail';
+import RoleList from '@/pages/admin/RoleList';
+import RoleAdd from '@/pages/admin/RoleAdd';
+import RoleDetail from '@/pages/admin/RoleDetail';
+import RoleEdit from '@/pages/admin/RoleEdit';
+import Baocao from '@/pages/admin/BaoCao';
+import DoanhThu from '@/pages/admin/DoanhThu';
+import CuaHang from '@/pages/admin/CuaHang';
+import CreateStore from '@/pages/admin/CreateStore';
 export const publicRoutes = [
   { path: '/', component: HomePage },
   { path: '/login', component: LoginPage },
