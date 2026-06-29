@@ -1,25 +1,71 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import {  useNavigate, useParams } from "react-router-dom";
 import { productStatusConfig } from '@/data/mockDataCH';
 import { ArrowLeft, ChevronRight, Pencil, Copy, Heart, Eye, Package } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+
 
 export default function ProductDetail() {
-  const location = useLocation();
   const navigate = useNavigate();
+const { id } = useParams();
 
-  const product = location.state?.product;
+const [product, setProduct] = useState(null);
+const [categories, setCategories] = useState([]);
+const [loading, setLoading] = useState(true);
+useEffect(() => {
+  const fetchProduct = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
 
-  if (!product) return null;
+      const res = await axios.get(
+        `https://tmdt-backend-ego0.onrender.com/api/products/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+       const categoryRes = await axios.get(
+  "https://tmdt-backend-ego0.onrender.com/api/categories",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+      
 
-  const cfg = productStatusConfig[product.status];
+      setProduct(res.data.data);
+      console.log(res.data.data);
+       setCategories(categoryRes.data.data);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  
+  fetchProduct();
+}, [id]);
+ if (loading) {
+  return <div className="p-6">Đang tải...</div>;
+}
+
+if (!product) {
+  return <div className="p-6">Không tìm thấy sản phẩm.</div>;
+}
+
+const status = product.IsActive ? "active" : "hidden";
+const cfg = productStatusConfig[status];
+const categoryName =
+  categories.find(c => c.CategoryID === product.CategoryID)?.CategoryName || "--";
   return (
     <div className="p-6 max-w-5xl mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-xs text-slate-400 font-semibold uppercase tracking-wider mb-4">
         <span className="hover:text-slate-600 cursor-pointer" onClick={() => navigate(-1)}>Sản phẩm</span>
         <ChevronRight size={12} />
-        <span className="text-slate-600">{product.name}</span>
+        <span className="text-slate-600">{product.ProductName}</span>
       </div>
 
       {/* Back + actions */}
@@ -33,7 +79,7 @@ export default function ProductDetail() {
             Sao chép
           </button>
           <button
-            onClick={() => navigate(`/products/edit/${product.id}`, {
+            onClick={() => navigate(`/products/edit/${product.ProductID}`, {
   state:{ product }
 })}
             className="flex items-center gap-2 px-4 py-2 border-2 border-slate-900 hover:bg-slate-900 hover:text-white text-slate-900 text-sm font-bold rounded-xl transition-all"
@@ -48,9 +94,19 @@ export default function ProductDetail() {
       <div className="grid grid-cols-5 gap-6 mb-6">
         {/* Image */}
         <div className="col-span-2">
-          <div className="bg-slate-100 border border-slate-200 rounded-2xl aspect-square flex items-center justify-center">
-            <Package size={48} className="text-slate-400" />
-          </div>
+          <div className="bg-slate-100 border border-slate-200 rounded-2xl aspect-square overflow-hidden">
+  {product.Images?.length > 0 ? (
+    <img
+      src={product.Images[0].ImageURL}
+      alt={product.ProductName}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center">
+      <Package size={48} className="text-slate-400" />
+    </div>
+  )}
+</div>
         </div>
 
         {/* Info */}
@@ -71,17 +127,17 @@ export default function ProductDetail() {
 
           {/* Name + price */}
           <div>
-            <h1 className="text-2xl font-black text-slate-900 leading-tight">{product.name}</h1>
+            <h1 className="text-2xl font-black font-sans text-slate-900 leading-tight">{product.ProductName}</h1>
             <p className="text-3xl font-black text-slate-800 mt-2">
-              {(product.price ?? 0).toLocaleString('vi-VN')}đ
+              {Number(product.Price || 0).toLocaleString("vi-VN")}
             </p>
           </div>
 
           {/* Stock */}
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tồn kho hiện tại:</span>
-            <span className={`text-lg font-black ${product.stock === 0 ? 'text-rose-500' : product.stock <= 10 ? 'text-amber-600' : 'text-slate-800'}`}>
-              {product.stock}
+            <span className={`text-lg font-black ${product.StockQuantity === 0 ? 'text-rose-500' : product.StockQuantity <= 10 ? 'text-amber-600' : 'text-slate-800'}`}>
+              {product.StockQuantity}
             </span>
           </div>
 
@@ -123,7 +179,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2">
               <Heart size={15} className="text-rose-400" />
               <div>
-                <p className="text-sm font-black text-slate-800">{product.wishlist}</p>
+                <p className="text-sm font-black text-slate-800">{product.wishlist ?? 0}</p>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Lượt yêu thích</p>
               </div>
             </div>
@@ -131,7 +187,7 @@ export default function ProductDetail() {
             <div className="flex items-center gap-2">
               <Eye size={15} className="text-blue-400" />
               <div>
-                <p className="text-sm font-black text-slate-800">{product.views >= 1000 ? `${(product.views / 1000).toFixed(1)}k` : product.views}</p>
+                <p className="text-sm font-black text-slate-800">{product.views >= 1000 ? `${(product.views / 1000).toFixed(1)}k` : product.views ?? 0}</p>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Lượt xem</p>
               </div>
             </div>
@@ -151,11 +207,11 @@ export default function ProductDetail() {
               </div>
               <div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Danh mục</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.category}</p>
+                <p className="text-sm font-semibold text-slate-700 mt-0.5">{categoryName}</p>
               </div>
               <div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wider">Thương hiệu</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.brand}</p>
+                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.brand || "--"}</p>
               </div>
             </div>
           </div>
@@ -163,12 +219,12 @@ export default function ProductDetail() {
       </div>
 
       {/* Description */}
-      {product.description && (
+      {product.Description && (
         <div className="bg-white border border-slate-100 rounded-2xl p-6">
           <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest pb-3 mb-4 border-b border-slate-100">
             Mô tả sản phẩm
           </p>
-          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{product.description}</p>
+          <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">{product.Description}</p>
         </div>
       )}
     </div>

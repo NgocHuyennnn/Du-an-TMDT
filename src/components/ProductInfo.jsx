@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProductInfo({ product }) {
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const variants = product?.Variants || [];
+const [selectedVariant, setSelectedVariant] = useState(variants[0] || null);
   const [quantity, setQuantity] = useState(1);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
@@ -60,19 +61,19 @@ const formatPrice = (price) => {
 };
   return (
     <div className="flex-1">
-      <h1 className="text-xl font-bold text-gray-900 mb-1">{product.name}</h1>
+      <h1 className="text-xl font-bold text-gray-900 mb-1">{product.ProductName}</h1>
 
       <div className="flex items-center gap-2 mb-3">
         <div className="flex text-yellow-400 text-xs">{"★★★★★"}</div>
         <span className="text-xs text-gray-500">(Bình luận)</span>
         <span className="text-xs text-gray-400">|</span>
-        <span className="text-xs text-gray-500">Đã bán {product.sold}</span>
+        <span className="text-xs text-gray-500">Đã bán {product.SoldQuantity}</span>
       </div>
 
       {/* Thay đoạn này */}
 <div className="bg-gray-50 rounded-lg px-4 py-3 mb-4">
   <span className="text-2xl font-bold text-red-600">
-    {formatPrice(product.price)}
+    {formatPrice(product.Price)}
   </span>
 </div>
 
@@ -80,7 +81,7 @@ const formatPrice = (price) => {
       <div className="mb-3">
         <span className="text-xs text-gray-500 mr-3">PHÂN LOẠI</span>
         <div className="inline-flex gap-2 mt-1">
-          {product.variants.map((v) => (
+          {variants.map((v) => (
             <button
               key={v}
               onClick={() => setSelectedVariant(v)}
@@ -114,7 +115,7 @@ const formatPrice = (price) => {
             +
           </button>
         </div>
-        <span className="text-xs text-gray-400">{product.stock} sản phẩm có sẵn</span>
+        <span className="text-xs text-gray-400">{product.StockQuantity} sản phẩm có sẵn</span>
       </div>
 
       {/* Actions */}

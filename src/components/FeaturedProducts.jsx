@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Star, ShoppingCart } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 function formatPrice(price) { return price.toLocaleString("vi-VN") + "đ"; }
 function discount(original, current) { return Math.round(((original - current) / original) * 100); }
@@ -8,27 +8,88 @@ function discount(original, current) { return Math.round(((original - current) /
 export default function FeaturedProducts() {
   const [offset, setOffset] = useState(0);
   const [products, setProducts] = useState([]);
-  const VISIBLE = 6;
+  const navigate = useNavigate();
 
+const [showPopup, setShowPopup] = useState(false);
+const [showLoginPopup, setShowLoginPopup] = useState(false);
+  const VISIBLE = 6;
+const handleAddToCart = (e, product) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    setShowLoginPopup(true);
+    return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  const exist = cart.find(
+    (item) => item.ProductID === product.id
+  );
+
+  if (exist) {
+    exist.quantity += 1;
+  } else {
+    cart.push({
+      ProductID: product.id,
+      ProductName: product.name,
+      Price: product.price,
+      quantity: 1,
+      PrimaryImage: product.image,
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  window.dispatchEvent(new Event("cartUpdated"));
+
+  setShowPopup(true);
+
+  setTimeout(() => {
+    setShowPopup(false);
+  }, 2000);
+};
   // Cấu trúc để cắm API thật vào sau này
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("https://81ddadcb-aef7-4c78-a255-e50a3da2f3c9.mock.pstmn.io/api/products");
+        const response = await fetch("https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=100");
         const result = await response.json();
         
         // Map dữ liệu từ API về giao diện
-        const formattedData = result.data.map(item => ({
-          id: item.ProductID,
-          name: item.ProductName,
-          price: item.Price,
-          originalPrice: item.Price * 1.2, 
-          rating: 4.5,
-          reviews: 120,
-          image: item.Images ? item.Images[0] : "https://via.placeholder.com/300",
-          badge: null,
-          badgeColor: ""
-        }));
+        const formattedData = result.data
+  .sort((a, b) => {
+    // Ưu tiên lượt bán
+    if (b.SoldQuantity !== a.SoldQuantity) {
+      return b.SoldQuantity - a.SoldQuantity;
+    }
+
+    // Nếu bằng nhau thì ưu tiên đánh giá
+    if ((b.AverageRating || 0) !== (a.AverageRating || 0)) {
+      return (b.AverageRating || 0) - (a.AverageRating || 0);
+    }
+
+    // Nếu vẫn bằng thì ưu tiên nhiều review hơn
+    return (b.ReviewCount || 0) - (a.ReviewCount || 0);
+  })
+  .map(item => ({
+    id: item.ProductID,
+    name: item.ProductName,
+    price: Number(item.Price),
+    originalPrice: Number(item.Price) * 1.2,
+    rating: item.AverageRating || 5,
+    reviews: item.ReviewCount || item.SoldQuantity || 0,
+    sold: item.SoldQuantity || 0,
+    image:
+      item.Images?.[0]?.ImageURL ||
+      item.PrimaryImage ||
+      "https://via.placeholder.com/300",
+  }));
+
+setProducts(formattedData);
         setProducts(formattedData);
       } catch (error) { console.error("Lỗi API:", error); }
     };
@@ -70,7 +131,9 @@ export default function FeaturedProducts() {
                 <p className="text-xs text-gray-700 font-medium line-clamp-2 h-8 mb-2 leading-tight">{product.name}</p>
                 <div className="flex items-center gap-1 mb-2">
                   <div className="flex text-yellow-400">{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={10} className={i < Math.floor(product.rating) ? "fill-current" : "text-gray-200"} />)}</div>
-                  <span className="text-[10px] text-gray-400">({product.reviews})</span>
+                  <span className="text-[10px] text-gray-400">
+    ⭐ {product.rating} • Đã bán {product.sold}
+</span>
                 </div>
                 <div className="mt-auto">
                   <p className="text-sm font-black text-blue-700">{formatPrice(product.price)}</p>
@@ -81,7 +144,7 @@ export default function FeaturedProducts() {
               {/* Nút Thêm giỏ hàng (Chỉ hiện khi hover) */}
              <div className="p-3 pt-0">
                 <button 
-                  onClick={(e) => { e.preventDefault(); console.log("Giỏ hàng:", product.id); }}
+                  onClick={(e) => handleAddToCart(e, product)}
                   className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                 >
                   <ShoppingCart size={12} /> Thêm giỏ hàng 
@@ -91,6 +154,48 @@ export default function FeaturedProducts() {
           ))}
         </div>
       </div>
+      {showPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="bg-black/70 text-white px-8 py-6 rounded-lg flex flex-col items-center gap-3">
+      <div className="w-14 h-14 rounded-full border-2 border-white flex items-center justify-center text-3xl">
+        ✓
+      </div>
+
+      <p className="text-sm font-medium">
+        Đã thêm vào giỏ hàng
+      </p>
+    </div>
+  </div>
+)}
+{showLoginPopup && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
+      <h3 className="text-lg font-semibold mb-2">
+        Yêu cầu đăng nhập
+      </h3>
+
+      <p className="text-gray-600 mb-4">
+        Vui lòng đăng nhập để tiếp tục mua sắm.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowLoginPopup(false)}
+          className="px-4 py-2 border rounded"
+        >
+          Hủy
+        </button>
+
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </section>
   );
 }

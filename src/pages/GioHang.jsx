@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Trash2, Plus, Minus, ArrowLeft, ShieldCheck, ShoppingBag, Check, 
@@ -9,27 +9,41 @@ export default function GioHang() {
   const navigate = useNavigate();
 
   // Mock data sản phẩm trong giỏ hàng có thêm thuộc tính màu sắc, kích cỡ
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Áo khoác hoodie unisex nỉ bông dày cao cấp',
-      price: 450000,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600&auto=format&fit=crop&q=60', 
-      variant: 'Màu xám / Size L',
-      checked: true,
-    },
-    {
-      id: 2,
-      name: 'Túi xách nữ thời trang cao cấp vân nổi',
-      price: 390000,
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=500&auto=format&fit=crop&q=60',
-      variant: 'Màu đỏ',
-      checked: false,
-    },
-  ]);
+  const [cartItems, setCartItems] = useState([]);
 
+useEffect(() => {
+
+  const loadCart = () => {
+
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    const data = cart.map(item => ({
+      id: item.ProductID,
+      name: item.ProductName,
+      price: Number(item.Price),
+      quantity: item.quantity || 1,
+      image:
+        item.PrimaryImage ||
+        item.Images?.[0]?.ImageURL ||
+        "https://via.placeholder.com/150",
+      variant: item.variant || "",
+      checked: true,
+    }));
+
+    setCartItems(data);
+  };
+
+  loadCart();
+
+  window.addEventListener("storage", loadCart);
+  window.addEventListener("cartUpdated", loadCart);
+
+  return () => {
+    window.removeEventListener("storage", loadCart);
+    window.removeEventListener("cartUpdated", loadCart);
+  };
+
+}, []);
   // Danh sách sản phẩm gợi ý "Có thể bạn cũng thích" phía dưới
   const suggestedProducts = [
     { id: 101, name: 'Giày thể thao nam trẻ trung', price: 690000, image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&auto=format&fit=crop&q=60' },
@@ -47,18 +61,55 @@ export default function GioHang() {
   };
 
   const updateQuantity = (id, amount) => {
-    setCartItems(cartItems.map(item => {
-      if (item.id === id) {
-        const newQty = item.quantity + amount;
-        return { ...item, quantity: newQty > 0 ? newQty : 1 };
-      }
-      return item;
-    }));
-  };
+  const newCart = cartItems.map(item => {
+    if (item.id === id) {
+      const newQty = Math.max(1, item.quantity + amount);
+      return {
+        ...item,
+        quantity: newQty,
+      };
+    }
+    return item;
+  });
+
+  setCartItems(newCart);
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(
+      newCart.map(item => ({
+        ProductID: item.id,
+        ProductName: item.name,
+        Price: item.price,
+        quantity: item.quantity,
+        PrimaryImage: item.image,
+        variant: item.variant,
+      }))
+    )
+  );
+  window.dispatchEvent(new Event("cartUpdated"));
+};
 
   const deleteItem = (id) => {
-    setCartItems(cartItems.filter(item => item.id !== id));
-  };
+  const newCart = cartItems.filter(item => item.id !== id);
+
+  setCartItems(newCart);
+
+  localStorage.setItem(
+    "cart",
+    JSON.stringify(
+      newCart.map(item => ({
+        ProductID: item.id,
+        ProductName: item.name,
+        Price: item.price,
+        quantity: item.quantity,
+        PrimaryImage: item.image,
+        variant: item.variant,
+      }))
+    )
+  );
+  window.dispatchEvent(new Event("cartUpdated"));
+};
 
   const tempTotal = cartItems.filter(item => item.checked).reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discountAmount = tempTotal > 0 ? appliedDiscount : 0;
@@ -76,7 +127,7 @@ export default function GioHang() {
         {/* HEADER ĐIỀU HƯỚNG */}
         <div className="mb-4">
           <Link 
-            to="/page1" 
+            to="/" 
             className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 transition-colors group"
           >
             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
