@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Users, ShoppingBag, Home, ClipboardList, Settings, 
-  HelpCircle, Bell, ShieldCheck, Save, RefreshCw, CheckCircle2, AlertCircle,
+  HelpCircle, Bell, ShieldCheck, Save, RefreshCw, CheckCircle2, 
   Store
 } from 'lucide-react';
 

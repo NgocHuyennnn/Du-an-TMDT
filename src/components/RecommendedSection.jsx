@@ -19,8 +19,43 @@ const navigate = useNavigate();
 const [total,setTotal] = useState(0);
 const [products,setProducts] = useState([]);
 const [liked,setLiked] = useState(new Set());
+const [showPopup, setShowPopup] = useState(false);
+const [showLoginPopup, setShowLoginPopup] = useState(false);
 
+const handleAddToCart = (e, product) => {
+  e.stopPropagation();
 
+  const user = JSON.parse(localStorage.getItem("user"));
+
+  if (!user) {
+    setShowLoginPopup(true);
+    return;
+  }
+
+  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+  const exist = cart.find(
+    (item) => item.ProductID === product.ProductID
+  );
+
+  if (exist) {
+    exist.quantity += 1;
+  } else {
+    cart.push({
+      ...product,
+      quantity: 1,
+    });
+  }
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+window.dispatchEvent(new Event("cartUpdated"));
+
+setShowPopup(true);
+  setTimeout(() => {
+    setShowPopup(false);
+  }, 2000);
+};
 useEffect(()=>{
 
  async function fetchProducts(){
@@ -32,13 +67,13 @@ useEffect(()=>{
 
    );
 
-
+   
    setProducts(prev =>
      page === 1 
      ? res.data.data 
      : [...prev, ...res.data.data]
    );
-
+   
    setTotal(res.data.pagination.total_items);
 
 
@@ -122,8 +157,9 @@ const toggleLike=(id,e)=>{
               <div className="aspect-square bg-gray-50 overflow-hidden">
                 <img
                   src={
- product.PrimaryImage ||
- "https://via.placeholder.com/300"
+  product.Images?.[0]?.ImageURL ||
+  product.PrimaryImage ||
+  "https://via.placeholder.com/300"
 }
                   alt={product.ProductName}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -168,11 +204,12 @@ const toggleLike=(id,e)=>{
 
               <div className="p-3 pt-0">
                 <button 
-                  onClick={(e) => { e.preventDefault(); console.log("Giỏ hàng:", product.ProductID); }}
+                  onClick={(e) => handleAddToCart(e, product)}
                   className="w-full flex items-center justify-center gap-1.5 py-2 bg-blue-50 text-blue-600 text-xs font-bold rounded-lg hover:bg-blue-600 hover:text-white transition-colors"
                 >
                   <ShoppingCart size={12} /> Thêm giỏ hàng 
                 </button>
+                
               </div>
             </div>
           ))}
@@ -186,8 +223,52 @@ const toggleLike=(id,e)=>{
             >
               Tải thêm
             </button>
+          
           </div>
         )}
+        {showPopup && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="bg-black/70 text-white px-8 py-6 rounded-lg flex flex-col items-center gap-3">
+      <div className="w-14 h-14 rounded-full border-2 border-white flex items-center justify-center text-3xl">
+        ✓
+      </div>
+
+      <p className="text-sm font-medium">
+        Đã thêm vào giỏ hàng
+      </p>
+    </div>
+  </div>
+  
+)}
+{showLoginPopup && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
+      <h3 className="text-lg font-semibold mb-2">
+        Yêu cầu đăng nhập
+      </h3>
+
+      <p className="text-gray-600 mb-4">
+        Vui lòng đăng nhập để tiếp tục mua sắm.
+      </p>
+
+      <div className="flex justify-end gap-2">
+        <button
+          onClick={() => setShowLoginPopup(false)}
+          className="px-4 py-2 border rounded"
+        >
+          Hủy
+        </button>
+
+        <button
+          onClick={() => navigate("/login")}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Đăng nhập
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       </div>
     </section>
   );
