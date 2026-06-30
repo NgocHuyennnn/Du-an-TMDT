@@ -20,7 +20,7 @@ const navItems = [
   { icon: User, label: "Tài khoản", path: "/accounts" },
   { icon: Store, label: "Cửa hàng", path: "/stores" },
   { icon: Package, label: "Sản phẩm", path: "/products" },
-  { icon: BarChart3, label: "Danh mục", path: "/categories" },
+  //{ icon: BarChart3, label: "Danh mục", path: "/categories" },
   { icon: ShoppingCart, label: "Đơn hàng", path: "/orders" },
   { icon: Users, label: "Khách hàng", path: "/customers" },
   
@@ -191,11 +191,20 @@ const [openReport, setOpenReport] = useState(false);
 
 
         <button
-          onClick={() => navigate("/")}
-          className="px-4 py-2 rounded-lg bg-red-500 text-white"
-        >
-          Đăng xuất
-        </button>
+  onClick={() => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    sessionStorage.clear();
+
+    setShowLogout(false);
+
+    navigate("/", { replace: true });
+    window.location.reload();
+  }}
+  className="px-4 py-2 rounded-lg bg-red-500 text-white"
+>
+  Đăng xuất
+</button>
 
       </div>
 

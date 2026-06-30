@@ -6,6 +6,7 @@ import HomePage1 from '../pages/HomePage1';
 import QuenMK from '../pages/QuenMK';
 import NhapOTP from '../pages/NhapOTP';
 import DoiMK from '../pages/DoiMK';
+import ResetPassword from '../pages/ResetPassword';
 import GioHang from '../pages/GioHang';
 import ThanhToan from '../pages/ThanhToan';
 import Donhang from '../pages/Donhang';
@@ -30,6 +31,7 @@ import Baocao from '@/pages/admin/BaoCao';
 import DoanhThu from '@/pages/admin/DoanhThu';
 import CuaHang from '@/pages/admin/CuaHang';
 import CreateStore from '@/pages/admin/CreateStore';
+import CategoriesAdmin from '@/pages/admin/CategoriesAdmin';
 export const publicRoutes = [
   { path: '/', component: HomePage },
   { path: '/login', component: LoginPage },
@@ -38,6 +40,7 @@ export const publicRoutes = [
     { path: '/quen-mat-khau', component: QuenMK },
     { path: '/nhapOTP', component: NhapOTP },
     { path: '/doi-mat-khau', component: DoiMK },
+    { path: '/reset-password', component: ResetPassword },
     { path: '/giohang', component: GioHang },
     { path: '/thanhtoan', component: ThanhToan },
     { path: '/donhang', component: Donhang },
@@ -51,6 +54,7 @@ export const publicRoutes = [
     { path: '/doanhthu', component: DoanhThu },
     { path: '/chitietsanpham/:id', component: ProductDetailPage },
     { path: '/cuahang', component: CuaHang },
+    { path: '/danhmuc', component: CategoriesAdmin },
     {
     path: "/roles",
     component: RoleList,
@@ -80,6 +84,7 @@ export const publicRoutes = [
       path: "/cuahang/:id",
       component: StoreDetail,
     },
+    
 ];
 
 // Danh sách các trang bảo mật, bắt đăng nhập mới xem được (Ví dụ: Admin, Profile)
