@@ -68,11 +68,11 @@ export default function TaiKhoanCaNhan() {
         : "",
 
     partnerLevel:
-      user.roleid === 1
-        ? "Admin"
-        : user.roleid === 2
-        ? "Quản lý"
-        : "Khách hàng",
+  user.rolename === "Admin"
+    ? "Admin"
+    : user.rolename === "Manager"
+    ? "Quản lý"
+    : "Khách hàng",
   }));
 }, []);
   const [isSaving, setIsSaving] = useState(false);

@@ -5,7 +5,7 @@ import {
   FileText, Eye, EyeOff, CheckCircle2, ArrowRight, ShieldCheck,
   Home, Users, ClipboardList, UserPlus, Settings, HelpCircle, LogOut
 } from 'lucide-react';
-
+import axios from "axios";
 // 🌟 Đã import đúng file từ thư mục assets
 import hinhNenTechTonic from '../assets/nen.png'; 
 
@@ -43,47 +43,64 @@ export default function DangKyBanHang() {
   };
 
   // Xử lý sự kiện Submit đăng ký gian hàng
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Kiểm tra dữ liệu đầu vào bắt buộc
-    if (
-      !formData.merchantName || !formData.email || !formData.phone || 
-      !formData.storeName || !formData.storeAddress || 
-      !formData.password || !formData.confirmPassword
-    ) {
-      setError('Vui lòng điền đầy đủ tất cả các trường thông tin bắt buộc (*).');
-      return;
-    }
-    
-    const phoneRegex = /^[0-9]{10}$/;
-    if (!phoneRegex.test(formData.phone)) {
-      setError('Số điện thoại không hợp lệ. Vui lòng nhập chính xác 10 chữ số.');
-      return;
-    }
+  const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    if (formData.password.length < 6) {
-      setError('Mật khẩu bảo mật phải chứa ít nhất từ 6 ký tự trở lên.');
-      return;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      setError('Xác nhận mật khẩu không trùng khớp. Vui lòng kiểm tra lại.');
-      return;
-    }
-
-    if (!formData.agreeMerchantTerms) {
-      setError('Bạn cần đồng ý với Điều khoản hợp tác dành cho Đối tác bán hàng.');
-      return;
-    }
-
-    // Giả lập gửi dữ liệu đăng ký kinh doanh lên hệ thống duyệt
+  try {
+    const oldToken = localStorage.getItem("access_token");
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-    }, 2000);
-  };
+    const res = await axios.post(
+      "https://tmdt-backend-ego0.onrender.com/api/shops",
+      {
+        shopname: formData.storeName,
+        address: formData.storeAddress,
+        hotline: formData.phone
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${oldToken}`
+        }
+      }
+    );
+    setIsLoading(false);
+    setIsSuccess(true);
+    console.log(res.data);
+    
+
+    // ===== THAY MÁU TOKEN =====
+   // Lấy user hiện tại
+const user = JSON.parse(localStorage.getItem("user")) || {};
+
+// Shop vừa tạo
+const shop = res.data.data.shop;
+
+// Cập nhật localStorage
+const newUser = {
+  ...user,
+  rolename: "Manager",
+  roleid: res.data.data.final_role_uuid,
+
+  shop: {
+    shopid: shop.ShopID,
+    shopname: shop.ShopName
+  }
+};
+
+localStorage.setItem("user", JSON.stringify(newUser));
+localStorage.setItem("shop_id", shop.ShopID);
+     console.log("SHOP RESPONSE:", res.data);
+    alert("🎉 Tạo cửa hàng thành công!");
+
+    // ===== NHẢY SANG TRANG MANAGER =====
+    window.location.href = "/manager-dashboard";
+
+  } catch (err) {
+    console.log(err.response?.data);
+    setError(
+      err.response?.data?.message || "Đăng ký cửa hàng thất bại"
+    );
+  }
+};
 
   // Giao diện khi gửi yêu cầu đăng ký gian hàng thành công
   if (isSuccess) {

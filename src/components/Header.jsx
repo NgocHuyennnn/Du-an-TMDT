@@ -1,14 +1,37 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, Bell, User, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 
 export default function Header() {
-  const [cartCount] = useState(3);
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   // 1. Cho phép thay đổi giá trị của ô tìm kiếm bằng setSearchValue
   const [searchValue, setSearchValue] = useState(""); 
   const user = JSON.parse(localStorage.getItem("user"));
+  useEffect(() => {
+  const loadCartCount = () => {
+    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+    // Tổng số lượng sản phẩm
+    const total = cart.reduce(
+      (sum, item) => sum + (item.quantity || 1),
+      0
+    );
+
+    setCartCount(total);
+  };
+
+  loadCartCount();
+
+  window.addEventListener("cartUpdated", loadCartCount);
+  window.addEventListener("storage", loadCartCount);
+
+  return () => {
+    window.removeEventListener("cartUpdated", loadCartCount);
+    window.removeEventListener("storage", loadCartCount);
+  };
+}, []);
   return (
     <header className="bg-white border-b border-gray-100 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

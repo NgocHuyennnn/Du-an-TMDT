@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
-
+import axios from "axios";
 const reasons = [
   'Vì đã bán hết hoặc thiếu hàng tồn kho.',
   'Vì sản phẩm cần được cập nhật thông tin.',
@@ -16,7 +16,33 @@ export default function ProductSuspendModal({ product, onClose, onConfirm }) {
   function toggle(r) {
     setSelected((prev) => prev.includes(r) ? prev.filter((x) => x !== r) : [...prev, r]);
   }
+const handleSuspend = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
 
+   const res = await axios.delete(
+  `https://tmdt-backend-ego0.onrender.com/api/products/${product.ProductID}`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+console.log(res.data);
+    alert("Đình chỉ sản phẩm thành công");
+
+    onConfirm({
+  ...product,
+  IsActive: false
+});
+    onClose();
+
+  } catch (err) {
+    console.log(err.response?.data);
+    alert(err.response?.data?.message || "Đình chỉ thất bại");
+  }
+};
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose} />
@@ -63,11 +89,11 @@ export default function ProductSuspendModal({ product, onClose, onConfirm }) {
         {/* Footer */}
         <div className="border-t border-slate-100 px-6 py-4 flex flex-col gap-2">
           <button
-            onClick={() => { onConfirm(product, selected); onClose(); }}
-            className="w-full py-2.5 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition-colors"
-          >
-            XÁC NHẬN ĐÌNH CHỈ
-          </button>
+  onClick={handleSuspend}
+  className="w-full py-2.5 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition-colors"
+>
+  XÁC NHẬN ĐÌNH CHỈ
+</button>
           <button
             onClick={onClose}
             className="w-full py-2.5 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-xl transition-colors"

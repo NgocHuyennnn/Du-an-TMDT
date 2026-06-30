@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from "react";
 import { ArrowLeft, ImagePlus, ChevronDown } from 'lucide-react';
-import { productCategories } from '@/data/mockDataCH';
+//import { productCategories } from '@/data/mockDataCH';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import axios from "axios";
 const inputClass = 'w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 transition-all';
 
 function SectionBlock({ title, children }) {
@@ -49,26 +50,136 @@ const { id } = useParams();
 const location = useLocation();
 
 const product = location.state?.product;
-
+const [categories, setCategories] = useState([]);
   const isEdit = !!id;
   
   const [form, setForm] = useState({
-    name: product?.name ?? '',
-    brand: product?.brand ?? '',
-    description: product?.description ?? '',
-    price: product?.price ?? '',
-    stock: product?.stock ?? '',
-    comparePrice: '',
-    weight: product?.weight ?? '',
-    origin: product?.origin ?? '',
-    category: product?.category ?? '',
-    statusActive: product?.status === 'active',
-    statusSoldout: product?.status === 'soldout',
-    statusHidden: product?.status === 'hidden',
-  });
+  name: product?.ProductName ?? "",
+  brand: "",
+  description: product?.Description ?? "",
+  price: product?.Price ?? "",
+  stock: product?.StockQuantity ?? "",
+  comparePrice: "",
+  weight: "",
+  origin: "",
+  category: product?.CategoryID ?? "",
+  statusActive: true,
+  statusSoldout: false,
+  statusHidden: false,
+});
+  useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const res = await axios.get(
+        "https://tmdt-backend-ego0.onrender.com/api/categories"
+      );
 
+      setCategories(res.data.data);
+    } catch (err) {
+      console.log("Lỗi lấy danh mục:", err);
+    }
+  };
+
+  fetchCategories();
+}, []);
+useEffect(() => {
+  if (!isEdit) return;
+
+  const fetchProduct = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const res = await axios.get(
+        `https://tmdt-backend-ego0.onrender.com/api/products/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const p = res.data.data;
+
+      setForm({
+        name: p.ProductName || "",
+        brand: "",
+        description: p.Description || "",
+        price: p.Price || "",
+        stock: p.StockQuantity || "",
+        comparePrice: "",
+        weight: "",
+        origin: "",
+        category: p.CategoryID || "",
+        statusActive: true,
+        statusSoldout: false,
+        statusHidden: false,
+      });
+
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  fetchProduct();
+
+}, [id]);
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
+  const handleSubmit = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+    const shopId = localStorage.getItem("shop_id");
+    if (!shopId) {
+    alert("Không tìm thấy ShopID");
+    return;
+}
+    const formData = new FormData();
 
+    formData.append("ProductName", form.name);
+    formData.append("Price", form.price);
+    formData.append("StockQuantity", form.stock);
+    formData.append("CategoryID", form.category);
+    formData.append("ShopID", shopId);
+    formData.append("Description", form.description);
+    console.log("ShopID:", localStorage.getItem("shop_id"));
+    if (isEdit) {
+
+  await axios.patch(
+    `https://tmdt-backend-ego0.onrender.com/api/products/${id}`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  alert("Cập nhật sản phẩm thành công");
+
+} else {
+
+  const res = await axios.post(
+    "https://tmdt-backend-ego0.onrender.com/api/products",
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  console.log(res.data);
+  alert("Tạo sản phẩm thành công");
+}
+
+navigate("/products");
+
+    
+
+  } catch (err) {
+    console.log(err.response?.data);
+    alert(err.response?.data?.message || "Có lỗi xảy ra");
+  }
+};
   return (
     <div className="p-6 max-w-5xl mx-auto">
       {/* Back */}
@@ -93,7 +204,7 @@ const product = location.state?.product;
             Huỷ bỏ
           </button>
           <button
-             onClick={() => navigate(-1)}
+             onClick={handleSubmit}
             className="px-5 py-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
           >
             {isEdit ? 'Cập nhật' : 'Lưu sản phẩm'}
@@ -109,10 +220,7 @@ const product = location.state?.product;
               <Label required>Tên sản phẩm</Label>
               <input type="text" placeholder="VD: Áo khoác Lumina Technical" value={form.name} onChange={(e) => set('name', e.target.value)} className={inputClass} />
             </div>
-            <div>
-              <Label>Thương hiệu sản phẩm</Label>
-              <input type="text" placeholder="VD: Nike, Apple, Lumina..." value={form.brand} onChange={(e) => set('brand', e.target.value)} className={inputClass} />
-            </div>
+            
             <div>
               <Label>Mô tả chi tiết</Label>
               <textarea
@@ -130,10 +238,6 @@ const product = location.state?.product;
               <div>
                 <Label required>Giá bán (VNĐ)</Label>
                 <input type="number" placeholder="0" value={form.price} onChange={(e) => set('price', e.target.value)} className={inputClass} />
-              </div>
-              <div>
-                <Label>Giá so sánh (VNĐ)</Label>
-                <input type="number" placeholder="0" value={form.comparePrice} onChange={(e) => set('comparePrice', e.target.value)} className={inputClass} />
               </div>
             </div>
             <div>
@@ -188,7 +292,7 @@ const product = location.state?.product;
                     className={`${inputClass} appearance-none pr-9 cursor-pointer`}
                   >
                     <option value="">Chọn danh mục</option>
-                    {productCategories.map((c) => <option key={c} value={c}>{c}</option>)}
+                    {categories.map((c) => <option key={c.CategoryID} value={c.CategoryID}>{c.CategoryName}</option>)}
                   </select>
                   <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                 </div>

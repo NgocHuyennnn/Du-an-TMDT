@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   Plus, Search, SlidersHorizontal, Eye, Pencil, Ban,
   ChevronLeft, ChevronRight, ArrowUpDown, Package,
 } from 'lucide-react';
 
 import ProductSuspendModal from './ProductSuspendModal.jsx';
-import { products, productStatusConfig } from '@/data/mockDataCH.js';
-
+//import { products, productStatusConfig } from '@/data/mockDataCH.js';
+import { productStatusConfig } from '@/data/mockDataCH.js';
 import { useNavigate } from 'react-router-dom';
 const ITEMS_PER_PAGE = 7;
+function formatPrice(price) {
+  return Number(price || 0).toLocaleString("vi-VN");
+}
 
 function StatusBadge({ status }) {
   const cfg = productStatusConfig[status] ?? productStatusConfig.active;
@@ -42,25 +46,70 @@ export default function ProductList() {
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [suspendTarget, setSuspendTarget] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
- const filtered = products.filter((p) => {
-  const matchSearch =
-    (p.name ?? '').toLowerCase().includes(search.toLowerCase()) ||
-    (p.sku ?? '').toLowerCase().includes(search.toLowerCase());
+  useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
 
-  const matchStatus =
-    filterStatus === 'all' || p.status === filterStatus;
+      const res = await axios.get(
+        "https://tmdt-backend-ego0.onrender.com/api/products",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  return matchSearch && matchStatus;
-});
+      setProducts(res.data.data);
+    } catch (error) {
+      console.error("Lỗi lấy sản phẩm:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  fetchProducts();
+}, []);
+ const filtered = products
+  .filter((p) => {
+    const matchSearch = (p.ProductName ?? "")
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    let status = "active";
+
+    if (!p.IsActive) {
+      status = "hidden";
+    } else if (p.StockQuantity === 0) {
+      status = "soldout";
+    }
+
+    const matchStatus =
+      filterStatus === "all" || status === filterStatus;
+
+    return matchSearch && matchStatus;
+  })
+  .sort((a, b) => {
+    // Đưa sản phẩm tạm ẩn xuống cuối
+    if (a.IsActive === b.IsActive) return 0;
+    return a.IsActive ? -1 : 1;
+  });
   const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
   const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
-  const lowStock = products.filter((p) => p.stock > 0 && p.stock <= 10).length;
+  const lowStock = products.filter((p) => p.StockQuantity > 0 && p.StockQuantity <= 10).length;
 
   function handleSearch(v) { setSearch(v); setPage(1); }
   function handleFilter(v) { setFilterStatus(v); setPage(1); }
-
+  if (loading) {
+  return (
+    <div className="p-6">
+      Đang tải sản phẩm...
+    </div>
+  );
+}
   return (
     <>
       <div className="p-6 space-y-5">
@@ -142,7 +191,7 @@ export default function ProductList() {
                     </td>
                   </tr>
                 ) : paginated.map((product) => (
-                  <tr key={product.id} className="group hover:bg-slate-50/70 transition-colors">
+                  <tr key={product.ProductID} className="group hover:bg-slate-50/70 transition-colors">
                     <td className="pl-5 pr-3 py-3.5">
                       <input type="checkbox" className="rounded border-slate-300" />
                     </td>
@@ -152,24 +201,34 @@ export default function ProductList() {
                       </div>
                     </td>
                     <td className="px-3 py-3.5">
-                      <p className="text-sm font-semibold text-slate-700">{product.name}</p>
+                      <p className="text-sm font-semibold text-slate-700">{product.ProductName}</p>
                       <p className="text-xs text-slate-400 font-mono mt-0.5">{product.sku}</p>
                     </td>
                     <td className="px-3 py-3.5">
-                      <p className="text-sm font-bold text-slate-700">{(product.price ?? 0).toLocaleString('vi-VN')}đ</p>
+  <p className="text-sm font-bold text-slate-700">
+    {formatPrice(product.Price)}
+  </p>
+</td>
+                    <td className="px-3 py-3.5">
+                      <StatusBadge
+  status={
+    !product.IsActive
+      ? "hidden"
+      : product.StockQuantity === 0
+      ? "soldout"
+      : "active"
+  }
+/>
                     </td>
                     <td className="px-3 py-3.5">
-                      <StatusBadge status={product.status} />
-                    </td>
-                    <td className="px-3 py-3.5">
-                      <span className={`text-sm font-semibold ${product.stock === 0 ? 'text-rose-500' : product.stock <= 10 ? 'text-amber-600' : 'text-slate-700'}`}>
-                        {product.stock}
+                      <span className={`text-sm font-semibold ${product.StockQuantity === 0 ? 'text-rose-500' : product.StockQuantity <= 10 ? 'text-amber-600' : 'text-slate-700'}`}>
+                        {product.StockQuantity}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
                       <div className="flex items-center justify-end gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          onClick={() => navigate(`/products/${product.id}`, {
+                          onClick={() => navigate(`/products/${product.ProductID}`, {
   state: { product }
 })}
                           className="w-8 h-8 flex items-center justify-center rounded-lg text-blue-500 hover:bg-blue-50 transition-colors"
@@ -178,7 +237,7 @@ export default function ProductList() {
                           <Eye size={14} />
                         </button>
                         <button
-                          onClick={() => navigate(`/products/edit/${product.id}`, {
+                          onClick={() => navigate(`/products/edit/${product.ProductID}`, {
   state: { product }
 
 })}
@@ -253,10 +312,20 @@ export default function ProductList() {
       </div>
 
       <ProductSuspendModal
-        product={suspendTarget}
-        onClose={() => setSuspendTarget(null)}
-        onConfirm={() => setSuspendTarget(null)}
-      />
+  product={suspendTarget}
+  onClose={() => setSuspendTarget(null)}
+  onConfirm={(updatedProduct) => {
+    setProducts(prev =>
+      prev.map(p =>
+        p.ProductID === updatedProduct.ProductID
+          ? { ...p, IsActive: false }
+          : p
+      )
+    );
+
+    setSuspendTarget(null);
+  }}
+/>
     </>
   );
 }

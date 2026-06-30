@@ -8,11 +8,11 @@ import Footer from "../components/Footer";
 import Breadcrumb from "../components/Breadcrumb";
 import ProductGallery from "../components/ProductGallery";
 import ProductInfo from "../components/ProductInfo";
-import ShopInfo from "../components/ShopInfo";
+//import ShopInfo from "../components/ShopInfo";
 import ProductSpecs from "../components/ProductSpecs";
 import ProductDescription from "../components/ProductDescription";
-import ProductReviews from "../components/ProductReviews";
-import SimilarProducts from "../components/SimilarProducts";
+//import ProductReviews from "../components/ProductReviews";
+//import SimilarProducts from "../components/SimilarProducts";
 
 
 export default function ProductDetailPage() {
@@ -102,52 +102,47 @@ export default function ProductDetailPage() {
 
 
           <ProductGallery
-            thumbnails={
-              data.images 
-              ? data.images 
-              : [data.product?.image]
-            }
-          />
-
+  thumbnails={data.Images || []}
+/>
 
           <ProductInfo
-            product={data.product}
-          />
+    product={data}
+/>
 
 
         </div>
 
 
 
-        <ShopInfo
+        {/* <ShopInfo
           shop={data.shop}
-        />
+        /> */}
 
 
 
         <ProductSpecs
-          specs={data.specs}
-        />
+  specs={data.Specifications || []}
+/>
 
 
 
         <ProductDescription
-          paragraphs={data.description}
-        />
+  paragraphs={data.Description}
+/>
 
 
 
-        <ProductReviews
+        {/* <ProductReviews
           rating={data.product?.rating}
           totalReviews={data.product?.reviewsCount}
           reviews={data.reviews}
-        />
+        /> */}
 
 
 
-        <SimilarProducts
+        {/* <SimilarProducts
           products={data.similarProducts}
-        />
+        /> */}  
 
 
       </div>
