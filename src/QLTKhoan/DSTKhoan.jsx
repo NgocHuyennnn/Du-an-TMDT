@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from 'react-router-dom';
 import { 
   Users, UserCheck, Clock, Search, Filter, Plus, 
@@ -10,18 +11,7 @@ import {
 
 export default function QuanLyTaiKhoan() {
   // 1. Danh sách dữ liệu gốc (Đã bổ sung trường phone, lastLogin, createdAt để đồng bộ giao diện)
-  const [users, setUsers] = useState([
-    { id: '#USR-8821', name: 'Nguyễn Văn Lâm', short: 'NL', email: 'lam.nv@company.vn', phone: '0987 111 222', role: 'ADMIN', status: 'Hoạt động', lastLogin: '15/06/2026', createdAt: '01/01/2025' },
-    { id: '#USR-7732', name: 'Trần Thị Hoa', short: 'TH', email: 'hoa.tt@company.vn', phone: '0912 333 444', role: 'MANAGER', status: 'Đang khóa', lastLogin: '12/05/2026', createdAt: '10/02/2025' },
-    { id: '#USR-6654', name: 'Lê Minh Đức', short: 'LD', email: 'duc.lm@company.vn', phone: '0965 555 666', role: 'CUSTOMER', status: 'Hoạt động', lastLogin: '14/06/2026', createdAt: '15/03/2025' },
-    { id: '#USR-5521', name: 'Phạm Thanh Vân', short: 'PV', email: 'van.pt@company.vn', phone: '0978 777 888', role: 'STAFF', status: 'Hoạt động', lastLogin: '16/06/2026', createdAt: '20/03/2025' },
-    { id: '#USR-4412', name: 'Hoàng Quốc Bảo', short: 'HB', email: 'bao.hq@company.vn', phone: '0934 999 000', role: 'STAFF', status: 'Hoạt động', lastLogin: '10/06/2026', createdAt: '01/04/2025' },
-    { id: '#USR-3398', name: 'Đặng Mai Phương', short: 'DP', email: 'phuong.dm@company.vn', phone: '0901 222 333', role: 'MANAGER', status: 'Hoạt động', lastLogin: '11/06/2026', createdAt: '12/04/2025' },
-    { id: '#USR-2275', name: 'Bùi Tiến Dũng', short: 'BD', email: 'dung.bt@company.vn', phone: '0945 444 555', role: 'CUSTOMER', status: 'Đang khóa', lastLogin: '30/04/2026', createdAt: '18/04/2025' },
-    { id: '#USR-1150', name: 'Vũ Thu Hà', short: 'VH', email: 'ha.vt@company.vn', phone: '0981 666 777', role: 'STAFF', status: 'Hoạt động', lastLogin: '16/06/2026', createdAt: '25/04/2025' },
-    { id: '#USR-0987', name: 'Đỗ Hùng Dũng', short: 'DD', email: 'dung.dh@company.vn', phone: '0923 888 999', role: 'CUSTOMER', status: 'Hoạt động', lastLogin: '05/06/2026', createdAt: '02/05/2025' },
-    { id: '#USR-0843', name: 'Trịnh Linh Chi', short: 'TC', email: 'chi.tl@company.vn', phone: '0956 000 111', role: 'CUSTOMER', status: 'Hoạt động', lastLogin: '13/06/2026', createdAt: '10/05/2025' },
-  ]);
+  const [users, setUsers] = useState([]);
 
   // Các state lưu giá trị bộ lọc
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,34 +19,78 @@ export default function QuanLyTaiKhoan() {
   const [selectedStatus, setSelectedStatus] = useState('Tất cả trạng thái');
 
   // STATE QUẢN LÝ POPUP XÁC NHẬN KHÓA
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [userToSuspend, setUserToSuspend] = useState(null);
-
-  // 🌟 STATE QUẢN LÝ POPUP THÊM MỚI TÀI KHOẢN (Đã thêm phone)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [newUserData, setNewUserData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    role: 'CUSTOMER'
-  });
+const [isModalOpen, setIsModalOpen] = useState(false);
 
   // 🌟 STATE QUẢN LÝ POPUP CHỈNH SỬA TÀI KHOẢN
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  useEffect(() => {
+  loadUsers();
+}, []);
 
+const loadUsers = () => {
+  const token = localStorage.getItem("access_token");
+
+  axios.get(
+    `https://tmdt-backend-ego0.onrender.com/api/users?page=1&limit=10`,{
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    .then((res) => {
+      console.log("DATA:", res.data);
+
+      const apiUsers = res.data.data;
+
+const normalizedData = apiUsers.map((u) => ({
+  id: u.UserID,
+  name: u.FullName,
+  email: u.Email,
+  phone: u.PhoneNumber,
+  avatar: u.AvatarURL,
+  role: u.RoleName,
+  roleId: u.RoleID,
+  status: u.IsActive
+    ? "Hoạt động"
+    : "Đang khóa",
+
+  short: u.FullName
+    ? u.FullName
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+    : "UN",
+}));
+
+setUsers(normalizedData);
+    })
+    .catch((err) => {
+      console.log("ERROR:", err);
+      setUsers([]);
+    });
+};
   // Logic bộ lọc tự động
   const filteredUsers = users.filter((user) => {
-    const matchesSearch = 
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.id.toLowerCase().includes(searchTerm.toLowerCase());
+  const name = user?.name || "";
+  const email = user?.email || "";
+  const id = user?.id || "";
 
-    const matchesRole = selectedRole === 'Tất cả vai trò' || user.role === selectedRole;
-    const matchesStatus = selectedStatus === 'Tất cả trạng thái' || user.status === selectedStatus;
+  const matchesSearch =
+    name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    id.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+  const matchesRole =
+
+    selectedRole === "Tất cả vai trò" || user?.role === selectedRole;
+
+  const matchesStatus =
+    selectedStatus === "Tất cả trạng thái" || user?.status === selectedStatus;
+
+  return matchesSearch && matchesRole && matchesStatus;
+});
 
   // HÀM KHI CLICK VÀO THÙNG RÁC
   const handleTrashClick = (user) => {
@@ -65,17 +99,28 @@ export default function QuanLyTaiKhoan() {
   };
 
   // HÀM XÁC NHẬN ĐÌNH CHỈ TÀI KHOẢN
-  const handleConfirmSuspend = () => {
-    if (userToSuspend) {
-      setUsers(prevUsers => 
-        prevUsers.map(user => 
-          user.id === userToSuspend.id ? { ...user, status: 'Đang khóa' } : user
-        )
-      );
-    }
-    setIsModalOpen(false); 
+  const handleConfirmSuspend = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
+
+    await axios.patch(
+  `https://tmdt-backend-ego0.onrender.com/api/users/${userToSuspend.id}/status`,
+  {},
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+    loadUsers();
+    setIsModalOpen(false);
     setUserToSuspend(null);
-  };
+
+  } catch (err) {
+    console.log(err.response?.data || err);
+  }
+};
 
   // 🌟 HÀM KHI CLICK VÀO ICON CÂY BÚT (MỞ POPUP CHỈNH SỬA)
   const handleEditClick = (user) => {
@@ -84,23 +129,30 @@ export default function QuanLyTaiKhoan() {
   };
 
   // 🌟 HÀM XỬ LÝ LƯU THÔNG TIN CHỈNH SỬA
-  const handleUpdateUserSubmit = (e) => {
-    e.preventDefault();
-    if (!editingUser.name || !editingUser.email) return;
+  const handleUpdateRole = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
 
-    setUsers(prevUsers => 
-      prevUsers.map(u => 
-        u.id === editingUser.id 
-          ? { 
-              ...editingUser, 
-              short: getShortName(editingUser.name) // Cập nhật lại ký tự Avatar nếu đổi họ tên
-            } 
-          : u
-      )
+    await axios.patch(
+      `https://tmdt-backend-ego0.onrender.com/api/users/${editingUser.id}/role`,
+      {
+        roleid: editingUser.role, // hoặc roleId tùy backend
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+
+    await loadUsers();
     setIsEditModalOpen(false);
     setEditingUser(null);
-  };
+
+  } catch (err) {
+    console.log(err.response?.data || err);
+  }
+};
 
   // HÀM TỰ ĐỘNG LẤY CHỮ CÁI VIẾT TẮT ĐỂ LÀM AVATAR
   const getShortName = (fullName) => {
@@ -113,30 +165,6 @@ export default function QuanLyTaiKhoan() {
     return (firstLetter + lastLetter).toUpperCase();
   };
 
-  // HÀM XỬ LÝ LƯU TÀI KHOẢN MỚI TRÊN FORM (Đã thêm phone)
-  const handleAddUserSubmit = (e) => {
-    e.preventDefault();
-    if (!newUserData.name || !newUserData.email) return;
-
-    const randomId = `#USR-${Math.floor(1000 + Math.random() * 9000)}`;
-    
-    const newUser = {
-      id: randomId,
-      name: newUserData.name,
-      short: getShortName(newUserData.name),
-      email: newUserData.email,
-      phone: newUserData.phone || 'Chưa cập nhật',
-      role: newUserData.role,
-      status: 'Hoạt động',
-      lastLogin: new Date().toLocaleDateString('vi-VN'),
-      createdAt: new Date().toLocaleDateString('vi-VN')
-    };
-
-    setUsers([newUser, ...users]);
-    setNewUserData({ name: '', email: '', phone: '', role: 'CUSTOMER' });
-    setIsAddModalOpen(false);
-  };
-
   const getRoleStyle = (role) => {
     switch (role) {
       case 'ADMIN': return 'bg-[#0f172a] text-white border-[#0f172a]'; 
@@ -145,7 +173,6 @@ export default function QuanLyTaiKhoan() {
       default: return 'bg-slate-50 text-slate-600 border-slate-200'; 
     }
   };
-
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full">
       
@@ -225,14 +252,6 @@ export default function QuanLyTaiKhoan() {
               <h1 className="text-xl font-black text-[#0f172a] tracking-tight">Danh sách tài khoản</h1>
               <p className="text-xs font-medium text-slate-400">Quản lý và phân quyền người dùng trong hệ thống.</p>
             </div>
-            
-            <button 
-              onClick={() => setIsAddModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 h-10 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2 cursor-pointer shrink-0 w-fit"
-            >
-              <Plus size={15} />
-              <span>Thêm tài khoản mới</span>
-            </button>
           </div>
 
           {/* BỘ LỌC */}
@@ -299,7 +318,7 @@ export default function QuanLyTaiKhoan() {
                 <tbody className="divide-y divide-slate-100 text-xs font-medium text-slate-600">
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-slate-50/50 transition-colors h-14">
+                      <tr key={user.id || user._id || user.email}>
                         <td className="pl-6 font-mono text-slate-400 font-semibold">{user.id}</td>
                         <td className="px-4">
                           <div className="flex items-center gap-3">
@@ -436,90 +455,6 @@ export default function QuanLyTaiKhoan() {
         </div>
       )}
 
-      {/* 🌟 5. GIAO DIỆN POPUP FORM THÊM TÀI KHOẢN MỚI (Đã bổ sung trường Số điện thoại) */}
-      {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onClick={() => setIsAddModalOpen(false)}></div>
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-md w-full relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center border border-blue-100/30">
-                  <Plus size={16} />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-[#0f172a] tracking-tight">Thêm tài khoản hệ thống</h3>
-                  <p className="text-[10px] font-medium text-slate-400">Khởi tạo và cấu hình tài khoản nhân sự mới.</p>
-                </div>
-              </div>
-              <button onClick={() => setIsAddModalOpen(false)} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"><X size={15} /></button>
-            </div>
-
-            <form onSubmit={handleAddUserSubmit}>
-              <div className="p-6 space-y-4">
-                
-                <div className="space-y-1.5 text-xs font-bold text-slate-500">
-                  <label htmlFor="modal-name">HỌ VÀ TÊN <span className="text-red-500">*</span></label>
-                  <input 
-                    id="modal-name" type="text" required
-                    value={newUserData.name}
-                    onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
-                    placeholder="Ví dụ: Nguyễn Văn A"
-                    className="w-full bg-slate-50/30 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-700 font-medium transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1.5 text-xs font-bold text-slate-500">
-                  <label htmlFor="modal-email">ĐỊA CHỈ EMAIL <span className="text-red-500">*</span></label>
-                  <input 
-                    id="modal-email" type="email" required
-                    value={newUserData.email}
-                    onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                    placeholder="username@company.vn"
-                    className="w-full bg-slate-50/30 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-700 font-medium transition-all"
-                  />
-                </div>
-
-                {/* 🌟 THÊM MỚI: TRƯỜNG NHẬP SỐ ĐIỆN THOẠI TRÊN POPUP TẠO MỚI */}
-                <div className="space-y-1.5 text-xs font-bold text-slate-500">
-                  <label htmlFor="modal-phone">SỐ ĐIỆN THOẠI</label>
-                  <input 
-                    id="modal-phone" type="text"
-                    value={newUserData.phone}
-                    onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                    placeholder="Ví dụ: 0987 123 456"
-                    className="w-full bg-slate-50/30 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-700 font-medium transition-all"
-                  />
-                </div>
-
-                <div className="space-y-1.5 text-xs font-bold text-slate-500">
-                  <label htmlFor="modal-role">VAI TRÒ / PHÂN CẤP</label>
-                  <select 
-                    id="modal-role"
-                    value={newUserData.role}
-                    onChange={(e) => setNewUserData({...newUserData, role: e.target.value})}
-                    className="w-full bg-slate-50/30 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-600 font-medium transition-all cursor-pointer"
-                  >
-                    <option value="CUSTOMER">CUSTOMER (Khách hàng)</option>
-                    <option value="STAFF">STAFF (Nhân viên)</option>
-                    <option value="MANAGER">MANAGER (Quản lý trưởng)</option>
-                    <option value="ADMIN">ADMIN (Quản trị viên cấp cao)</option>
-                  </select>
-                </div>
-
-                <p className="text-[10px] text-slate-400 font-medium italic pt-1">
-                  * Ghi chú: Tài khoản sau khi khởi tạo thành công sẽ tự động nhận trạng thái <span className="text-emerald-500 font-bold">Hoạt động</span>.
-                </p>
-              </div>
-
-              <div className="bg-slate-50/50 px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 h-9 border border-slate-200 text-slate-600 text-xs font-bold rounded-xl bg-white hover:bg-slate-50 transition-all cursor-pointer">Đóng lại</button>
-                <button type="submit" className="px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">Tạo tài khoản</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {/* 🌟 THÊM MỚI: POPUP CHỈNH SỬA TÀI KHOẢN (KHI CLICK ICON CÂY BÚT) */}
       {isEditModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -530,7 +465,7 @@ export default function QuanLyTaiKhoan() {
               <X size={18} />
             </button>
 
-            <form onSubmit={handleUpdateUserSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <form onSubmit={(e) => e.preventDefault()}>
               
               {/* CỘT TRÁI: THÔNG TIN PROFILE VÀ HOẠT ĐỘNG */}
               <div className="space-y-4 lg:col-span-1">
@@ -635,13 +570,7 @@ export default function QuanLyTaiKhoan() {
                     type="button" onClick={() => setIsEditModalOpen(false)}
                     className="border border-slate-300 text-slate-700 text-xs font-bold px-5 h-9 rounded-lg hover:bg-slate-50 transition-all cursor-pointer uppercase tracking-wider"
                   >
-                    Hủy
-                  </button>
-                  <button 
-                    type="submit"
-                    className="bg-[#0f172a] hover:bg-slate-800 text-white text-xs font-bold px-5 h-9 rounded-lg transition-all cursor-pointer uppercase tracking-wider"
-                  >
-                    Cập nhật
+                    Đóng
                   </button>
                 </div>
 
