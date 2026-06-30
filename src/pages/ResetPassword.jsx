@@ -1,12 +1,12 @@
 import  { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {  ShieldCheck, Eye, EyeOff, Lock } from 'lucide-react';
 import axios from "axios";
 // Import tấm ảnh nền mờ của bạn
 import loginBanner from '../assets/nen.png'; 
 
 export default function DoiMK() {
-  const [oldPassword, setOldPassword] = useState('');
+  
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showNewPass, setShowNewPass] = useState(false);
@@ -14,30 +14,12 @@ export default function DoiMK() {
   const [error, setError] = useState('');
   
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e) => {
   e.preventDefault();
   setError('');
-  //Mk hiện tại
-  <div className="space-y-2">
-<label className="block text-xs font-bold text-gray-700 uppercase">
-  Mật khẩu hiện tại
-</label>
 
-<div className="relative flex items-center">
-<Lock size={16} className="absolute left-4 text-gray-400"/>
-
-<input
-type="password"
-required
-value={oldPassword}
-onChange={(e)=>setOldPassword(e.target.value)}
-placeholder="Nhập mật khẩu hiện tại"
-className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
-/>
-
-</div>
-</div>
 //MK mới 
   if (newPassword.length < 6) {
     setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
@@ -53,34 +35,25 @@ className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
 
   try {
 
-    const token = localStorage.getItem("access_token");
-
-
-    if(!token){
-      setError("Bạn chưa đăng nhập.");
-      return;
-    }
-
+    
 
     const res = await axios.post(
   "https://tmdt-backend-ego0.onrender.com/api/auth/reset-password",
   {
     email: localStorage.getItem("user_reset_email"),
     otp: location.state?.otp,
-    new_password: newPassword
+    new_password: newPassword,
   }
 );
 
 
-    if(res.data.success){
+    if (res.data.success) {
+  alert("Đặt lại mật khẩu thành công");
 
-      alert("Đổi mật khẩu thành công");
+  localStorage.removeItem("user_reset_email");
 
-      localStorage.removeItem("access_token");
-
-      navigate("/login");
-
-    }
+  navigate("/login");
+}
 
 
   } catch(err){

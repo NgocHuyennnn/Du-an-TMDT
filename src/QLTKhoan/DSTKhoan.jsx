@@ -1,12 +1,15 @@
-import  { useState } from 'react';
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Link } from 'react-router-dom';
-import { 
-  Users, UserCheck, Clock, Search,Plus, 
-  Edit2, Trash2, MoreVertical, ChevronLeft, ChevronRight,
+import {
+  Users, UserCheck, Clock, Search,
+  Trash2, MoreVertical, ChevronLeft, ChevronRight,
   Settings, Bell, HelpCircle, ShoppingBag, Home, ClipboardList,
   AlertTriangle, X, User, Mail, Phone,
-  Store
+  Store,
+  Eye
 } from 'lucide-react';
+
 
 export default function QuanLyTaiKhoan() {
   // 1. Danh sách dữ liệu gốc (Đã bổ sung trường phone, lastLogin, createdAt để đồng bộ giao diện)
@@ -16,6 +19,7 @@ export default function QuanLyTaiKhoan() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('Tất cả vai trò');
   const [selectedStatus, setSelectedStatus] = useState('Tất cả trạng thái');
+
 
   // STATE QUẢN LÝ POPUP XÁC NHẬN KHÓA
   const [userToSuspend, setUserToSuspend] = useState(null);
@@ -94,8 +98,9 @@ setUsers(normalizedData);
   // HÀM KHI CLICK VÀO THÙNG RÁC
   const handleTrashClick = (user) => {
     setUserToSuspend(user);
-    setIsModalOpen(true);   
+    setIsModalOpen(true);  
   };
+
 
   // HÀM XÁC NHẬN ĐÌNH CHỈ TÀI KHOẢN
   const handleConfirmSuspend = async () => {
@@ -126,6 +131,7 @@ setUsers(normalizedData);
     setEditingUser({ ...user }); // Sao chép dữ liệu user được chọn vào bản ghi tạm
     setIsEditModalOpen(true);
   };
+
 
   // 🌟 HÀM XỬ LÝ LƯU THÔNG TIN CHỈNH SỬA
   const handleUpdateRole = async () => {
@@ -158,7 +164,7 @@ setUsers(normalizedData);
     if (!fullName) return 'UN';
     const words = fullName.trim().split(/\s+/);
     if (words.length === 1) return words[0].substring(0, 2).toUpperCase();
-    
+   
     const firstLetter = words[0].charAt(0);
     const lastLetter = words[words.length - 1].charAt(0);
     return (firstLetter + lastLetter).toUpperCase();
@@ -166,17 +172,17 @@ setUsers(normalizedData);
 
   const getRoleStyle = (role) => {
     switch (role) {
-      case 'ADMIN': return 'bg-[#0f172a] text-white border-[#0f172a]'; 
+      case 'ADMIN': return 'bg-[#0f172a] text-white border-[#0f172a]';
       case 'MANAGER': return 'bg-purple-50 text-purple-700 border-purple-200';
       case 'STAFF': return 'bg-amber-50 text-amber-700 border-amber-200';
-      default: return 'bg-slate-50 text-slate-600 border-slate-200'; 
+      default: return 'bg-slate-50 text-slate-600 border-slate-200';
     }
   };
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full">
-      
+     
       {/* 1. SIDEBAR */}
-      <div className="w-60 bg-[#0f172a] text-white border-r border-slate-800 flex flex-col justify-between shrink-0 hidden md:flex">
+      <div className="w-60 bg-[#0f172a] text-white border-r border-slate-800  flex-col justify-between shrink-0 hidden md:flex">
         <div>
           <div className="p-5 border-b border-slate-800 flex items-center gap-1.5 font-black text-xl tracking-tight">
             <ShoppingBag size={22} className="fill-blue-500/10 text-blue-500" />
@@ -205,6 +211,7 @@ setUsers(normalizedData);
           </nav>
         </div>
 
+
         <div className="p-3 border-t border-slate-800 space-y-1 mb-2">
           <Link to="/cai-dat" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-slate-400 hover:text-white">
             <Settings size={14} /> <span>Cài đặt</span>
@@ -215,15 +222,16 @@ setUsers(normalizedData);
         </div>
       </div>
 
+
       {/* 2. RIGHT CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
-        
+       
         {/* TOP BAR */}
         <header className="h-16 bg-white border-b border-slate-100 px-6 lg:px-8 flex items-center justify-between z-10 shrink-0">
           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider hidden sm:block">
             Hệ thống quản trị và Phân quyền
           </div>
-          
+         
           <div className="flex items-center gap-4 text-gray-600 ml-auto">
             <button className="p-1.5 hover:bg-gray-50 rounded-full relative cursor-pointer hover:text-blue-600 transition-colors">
               <Bell size={16} />
@@ -242,9 +250,10 @@ setUsers(normalizedData);
           </div>
         </header>
 
+
         {/* MAIN BODY CONTAINER */}
         <main className="flex-1 p-4 lg:p-8 space-y-6 overflow-y-auto w-full max-w-[1400px] mx-auto">
-          
+         
           {/* PAGE TITLE & BUTTON */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="space-y-1">
@@ -253,6 +262,7 @@ setUsers(normalizedData);
             </div>
           </div>
 
+
           {/* BỘ LỌC */}
           <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-2xs space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -260,19 +270,20 @@ setUsers(normalizedData);
                 <label>TÌM KIẾM</label>
                 <div className="relative">
                   <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Tìm theo tên, email hoặc ID..." 
+                    placeholder="Tìm theo tên, email hoặc ID..."
                     className="w-full bg-slate-50/50 border border-slate-200 rounded-xl pl-10 pr-4 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-700 font-medium transition-all"
                   />
                 </div>
               </div>
 
+
               <div className="space-y-1.5 text-xs font-bold text-slate-500">
                 <label>VAI TRÒ</label>
-                <select 
+                <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value)}
                   className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-600 font-medium transition-all appearance-none cursor-pointer"
@@ -285,9 +296,10 @@ setUsers(normalizedData);
                 </select>
               </div>
 
+
               <div className="space-y-1.5 text-xs font-bold text-slate-500">
                 <label>TRẠNG THÁI</label>
-                <select 
+                <select
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                   className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-3.5 h-10 outline-none focus:border-blue-600 focus:bg-white text-slate-600 font-medium transition-all appearance-none cursor-pointer"
@@ -299,6 +311,7 @@ setUsers(normalizedData);
               </div>
             </div>
           </div>
+
 
           {/* DATATABLE TABLE */}
           <div className="bg-white rounded-xl border border-slate-200/80 shadow-2xs overflow-hidden">
@@ -342,20 +355,20 @@ setUsers(normalizedData);
                         <td className="pr-6 text-right">
                           <div className="flex items-center justify-end gap-1.5 text-slate-400">
                             {/* 🌟 THAY ĐỔI: GỌI HÀM SỬA KHI CLICK VÀO ICON CÂY BÚT */}
-                            <button 
+                            <button
                               onClick={() => handleEditClick(user)}
                               className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded-md cursor-pointer transition-colors"
                             >
-                              <Edit2 size={13} />
+                              <Eye size={13} />
                             </button>
-                            
-                            <button 
+                           
+                            <button
                               onClick={() => handleTrashClick(user)}
                               className="p-1 hover:text-red-500 hover:bg-red-50 rounded-md cursor-pointer transition-colors"
                             >
                               <Trash2 size={13} />
                             </button>
-                            
+                           
                             <button className="p-1 hover:text-slate-600 hover:bg-slate-100 rounded-md cursor-pointer transition-colors"><MoreVertical size={13} /></button>
                           </div>
                         </td>
@@ -372,6 +385,7 @@ setUsers(normalizedData);
               </table>
             </div>
 
+
             {/* PAGINATION FOOTER */}
             <div className="px-6 py-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-50/20">
               <span className="text-[11px] text-slate-400 font-semibold">
@@ -385,6 +399,7 @@ setUsers(normalizedData);
             </div>
           </div>
 
+
           {/* LOWER KPI STATS CARDS */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <div className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-2xs flex items-start justify-between">
@@ -396,6 +411,7 @@ setUsers(normalizedData);
               <div className="w-10 h-10 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center text-blue-600 shrink-0"><Users size={18} /></div>
             </div>
 
+
             <div className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-2xs flex items-start justify-between">
               <div className="space-y-3">
                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Đang hoạt động</p>
@@ -404,6 +420,7 @@ setUsers(normalizedData);
               </div>
               <div className="w-10 h-10 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 shrink-0"><UserCheck size={18} /></div>
             </div>
+
 
             <div className="bg-white border border-slate-200/80 rounded-xl p-5 shadow-2xs flex items-start justify-between sm:col-span-2 lg:col-span-1">
               <div className="space-y-3">
@@ -416,6 +433,7 @@ setUsers(normalizedData);
           </div>
         </main>
       </div>
+
 
       {/* GIAO DIỆN POPUP (MODAL) XÁC NHẬN ĐÌNH CHỈ TÀI KHOẢN */}
       {isModalOpen && (
@@ -458,7 +476,7 @@ setUsers(normalizedData);
       {isEditModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-xs transition-opacity" onClick={() => setIsEditModalOpen(false)}></div>
-          
+         
           <div className="bg-[#f8fafc] md:bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative z-10 overflow-hidden animate-in fade-in zoom-in-95 duration-150 p-4 md:p-8">
             <button onClick={() => setIsEditModalOpen(false)} className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition-colors">
               <X size={18} />
@@ -476,6 +494,7 @@ setUsers(normalizedData);
                   <p className="text-[10px] font-mono font-bold text-slate-400 mt-0.5">ID: {editingUser.id}</p>
                 </div>
 
+
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-2xs space-y-3">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1.5">Thông tin hoạt động</h4>
                   <div className="flex justify-between items-center text-xs">
@@ -489,14 +508,15 @@ setUsers(normalizedData);
                 </div>
               </div>
 
+
               {/* CỘT PHẢI: FORM CHỈNH SỬA CHI TIẾT */}
               <div className="bg-white rounded-2xl border border-slate-200/80 p-6 lg:col-span-2 shadow-2xs space-y-4">
-                
+               
                 <div className="space-y-1.5 text-xs font-bold text-slate-700">
                   <label htmlFor="edit-name">Họ và tên</label>
                   <div className="relative">
                     <User size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input 
+                    <input
                       id="edit-name" type="text" required
                       value={editingUser.name}
                       onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
@@ -505,11 +525,12 @@ setUsers(normalizedData);
                   </div>
                 </div>
 
+
                 <div className="space-y-1.5 text-xs font-bold text-slate-700">
                   <label htmlFor="edit-email">Email</label>
                   <div className="relative">
                     <Mail size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input 
+                    <input
                       id="edit-email" type="email" required
                       value={editingUser.email}
                       onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
@@ -518,11 +539,12 @@ setUsers(normalizedData);
                   </div>
                 </div>
 
+
                 <div className="space-y-1.5 text-xs font-bold text-slate-700">
                   <label htmlFor="edit-phone">Số điện thoại</label>
                   <div className="relative">
                     <Phone size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <input 
+                    <input
                       id="edit-phone" type="text"
                       value={editingUser.phone}
                       onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
@@ -531,10 +553,11 @@ setUsers(normalizedData);
                   </div>
                 </div>
 
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div className="space-y-1.5 text-xs font-bold text-slate-700">
                     <label htmlFor="edit-role">Vai trò</label>
-                    <select 
+                    <select
                       id="edit-role"
                       value={editingUser.role}
                       onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
@@ -546,6 +569,7 @@ setUsers(normalizedData);
                       <option value="ADMIN">ADMIN</option>
                     </select>
                   </div>
+
 
                   <div className="space-y-1.5 text-xs font-bold text-slate-700">
                     <label>Trạng thái</label>
@@ -562,10 +586,12 @@ setUsers(normalizedData);
                   </div>
                 </div>
 
+
                 <div className="w-full h-px bg-slate-100 my-2"></div>
 
+
                 <div className="flex items-center justify-end gap-3 pt-1">
-                  <button 
+                  <button
                     type="button" onClick={() => setIsEditModalOpen(false)}
                     className="border border-slate-300 text-slate-700 text-xs font-bold px-5 h-9 rounded-lg hover:bg-slate-50 transition-all cursor-pointer uppercase tracking-wider"
                   >
@@ -573,12 +599,15 @@ setUsers(normalizedData);
                   </button>
                 </div>
 
+
               </div>
             </form>
           </div>
         </div>
       )}
 
+
     </div>
   );
 }
+

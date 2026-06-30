@@ -109,7 +109,7 @@ export default function NhapOTP() {
       alert("Xác nhận OTP thành công");
 
 
-      navigate("/doi-mat-khau",{
+      navigate("/reset-password",{
         state:{
           email: emailReceived,
           otp: finalOtp
