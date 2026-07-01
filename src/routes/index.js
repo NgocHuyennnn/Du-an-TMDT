@@ -31,7 +31,7 @@ import Baocao from '@/pages/admin/BaoCao';
 import DoanhThu from '@/pages/admin/DoanhThu';
 import CuaHang from '@/pages/admin/CuaHang';
 import CreateStore from '@/pages/admin/CreateStore';
-import CategoriesAdmin from '@/pages/admin/CategoriesAdmin';
+//import CategoriesAdmin from '@/pages/admin/CategoriesAdmin';
 export const publicRoutes = [
   { path: '/', component: HomePage },
   { path: '/login', component: LoginPage },
@@ -54,7 +54,7 @@ export const publicRoutes = [
     { path: '/doanhthu', component: DoanhThu },
     { path: '/chitietsanpham/:id', component: ProductDetailPage },
     { path: '/cuahang', component: CuaHang },
-    { path: '/danhmuc', component: CategoriesAdmin },
+    //{ path: '/danhmuc', component: CategoriesAdmin },
     {
     path: "/roles",
     component: RoleList,
