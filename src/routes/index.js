@@ -16,6 +16,7 @@ import PQuyen from '../QLTKhoan/PQuyen';
 import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
 import DSDHang from '../DonHang/DSDHang';
+import ChatUser from '../pages/manager/ChatUser';
 
 
 import ProductDetailPage from '@/pages/ProductDetailPage';
@@ -54,6 +55,7 @@ export const publicRoutes = [
     { path: '/doanhthu', component: DoanhThu },
     { path: '/chitietsanpham/:id', component: ProductDetailPage },
     { path: '/cuahang', component: CuaHang },
+    { path: '/chat', component: ChatUser },
     //{ path: '/danhmuc', component: CategoriesAdmin },
     {
     path: "/roles",
