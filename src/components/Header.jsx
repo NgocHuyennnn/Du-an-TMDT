@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getCart } from "../api/cartApi";
 import { Search, ShoppingCart, Bell, User, ChevronDown } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -10,26 +11,35 @@ export default function Header() {
   const [searchValue, setSearchValue] = useState(""); 
   const user = JSON.parse(localStorage.getItem("user"));
   useEffect(() => {
-  const loadCartCount = () => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  const loadCartCount = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
 
-    // Tổng số lượng sản phẩm
-    const total = cart.reduce(
-      (sum, item) => sum + (item.quantity || 1),
-      0
-    );
+      // Chưa đăng nhập thì badge = 0
+      if (!token) {
+        setCartCount(res.data.data.items.length);
+        return;
+      }
 
-    setCartCount(total);
+      const res = await getCart();
+
+      const total = res.data.data.items.reduce(
+        (sum, item) => sum + item.quantity,
+        0
+      );
+
+      setCartCount(total);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   loadCartCount();
 
   window.addEventListener("cartUpdated", loadCartCount);
-  window.addEventListener("storage", loadCartCount);
 
   return () => {
     window.removeEventListener("cartUpdated", loadCartCount);
-    window.removeEventListener("storage", loadCartCount);
   };
 }, []);
   return (
