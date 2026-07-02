@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom';
+import { getCart, deleteCartItem,} from "@/api/cartApi";
 import { 
   Trash2, Plus, Minus, ArrowLeft, ShieldCheck, ShoppingBag, Check, 
   Truck, RefreshCw, Award, Ticket, ChevronRight, ChevronLeft, ShoppingCart
@@ -12,38 +13,33 @@ export default function GioHang() {
   const [cartItems, setCartItems] = useState([]);
 
 useEffect(() => {
+  loadCart();
+}, []);
 
-  const loadCart = () => {
+const loadCart = async () => {
+  try {
+    const res = await getCart();
 
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
+    console.log("Cart API:", res.data);
 
-    const data = cart.map(item => ({
-      id: item.ProductID,
-      name: item.ProductName,
-      price: Number(item.Price),
-      quantity: item.quantity || 1,
+    const items = res.data.data.items.map((item) => ({
+      id: item.item_id,                 // CartItemID
+      productId: item.product_id,       // ProductID
+      name: item.product_name,
+      price: Number(item.price),
+      quantity: item.quantity,
       image:
-        item.PrimaryImage ||
-        item.Images?.[0]?.ImageURL ||
+        item.image_url ||
         "https://via.placeholder.com/150",
-      variant: item.variant || "",
+      variant: "",
       checked: true,
     }));
 
-    setCartItems(data);
-  };
-
-  loadCart();
-
-  window.addEventListener("storage", loadCart);
-  window.addEventListener("cartUpdated", loadCart);
-
-  return () => {
-    window.removeEventListener("storage", loadCart);
-    window.removeEventListener("cartUpdated", loadCart);
-  };
-
-}, []);
+    setCartItems(items);
+  } catch (err) {
+    console.error("Lỗi lấy giỏ hàng:", err);
+  }
+};
   // Danh sách sản phẩm gợi ý "Có thể bạn cũng thích" phía dưới
   const suggestedProducts = [
     { id: 101, name: 'Giày thể thao nam trẻ trung', price: 690000, image: 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&auto=format&fit=crop&q=60' },
@@ -52,9 +48,20 @@ useEffect(() => {
     { id: 104, name: 'Kính mát nam phân cực', price: 320000, image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&auto=format&fit=crop&q=60' },
   ];
 
-  const [couponCode, setCouponCode] = useState('');
-  const [appliedDiscount] = useState(30000); // Mặc định giả lập có sẵn FREESHIP30 như ảnh mẫu
-  const shippingFee = 30000;
+  const [couponCode, setCouponCode] = useState("");
+
+const [appliedDiscount, setAppliedDiscount] = useState(0);
+const [couponMessage, setCouponMessage] = useState("");
+const shippingFee = 30000;
+  const applyCoupon = () => {
+  if (couponCode.trim().toUpperCase() === "FREESHIP30") {
+    setAppliedDiscount(30000);
+    setCouponMessage("Áp mã thành công.");
+  } else {
+    setAppliedDiscount(0);
+    setCouponMessage("Mã giảm giá không hợp lệ.");
+  }
+};
 
   const handleCheckChange = (id) => {
     setCartItems(cartItems.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
@@ -90,25 +97,16 @@ useEffect(() => {
   window.dispatchEvent(new Event("cartUpdated"));
 };
 
-  const deleteItem = (id) => {
-  const newCart = cartItems.filter(item => item.id !== id);
+  const deleteItem = async (id) => {
+  try {
+    await deleteCartItem(id);
 
-  setCartItems(newCart);
+    await loadCart();
 
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(
-      newCart.map(item => ({
-        ProductID: item.id,
-        ProductName: item.name,
-        Price: item.price,
-        quantity: item.quantity,
-        PrimaryImage: item.image,
-        variant: item.variant,
-      }))
-    )
-  );
-  window.dispatchEvent(new Event("cartUpdated"));
+    window.dispatchEvent(new Event("cartUpdated"));
+  } catch (err) {
+    console.log(err);
+  }
 };
 
   const tempTotal = cartItems.filter(item => item.checked).reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -350,7 +348,21 @@ useEffect(() => {
                       placeholder="Nhập mã giảm giá..."
                       className="grow bg-transparent px-2 outline-none text-[11px] text-gray-900 placeholder-gray-400"
                     />
-                    <button className="bg-indigo-600 text-white text-[10px] uppercase px-3 py-1.5 rounded-md font-bold hover:bg-indigo-700 transition-all cursor-pointer">
+                    {couponMessage && (
+                      <p
+                        className={`mt-2 text-[11px] ${
+                          appliedDiscount > 0
+                            ? "text-green-600"
+                            : "text-red-500"
+                        }`}
+                      >
+                        {couponMessage}
+                      </p>
+                    )}
+                    <button
+                      onClick={applyCoupon}
+                      className="bg-indigo-600 text-white text-[10px] uppercase px-3 py-1.5 rounded-md font-bold hover:bg-indigo-700"
+                    >
                       Áp dụng
                     </button>
                   </div>

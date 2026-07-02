@@ -1,5 +1,6 @@
 import  { useState, useEffect } from 'react';
 // Khôi phục điều hướng chuẩn của react-router-dom
+import axios from "axios";
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Search, Bell, HelpCircle, Home, ShoppingBag, 
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 
 export default function QuanLyDonHang() {
+  const API_URL = "https://tmdt-backend-ego0.onrender.com/api";
   const navigate = useNavigate(); // Hook điều hướng bằng lập trình (dùng cho button/sự kiện)
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -32,6 +34,7 @@ export default function QuanLyDonHang() {
     window.addEventListener("auth-change", handleAuthChange);
     return () => window.removeEventListener("auth-change", handleAuthChange);
   }, []);
+  
 
   // 3. ĐÃ THÊM: Hàm tạo chữ viết tắt từ tên người dùng (Nguyễn Văn A -> NA)
   const getInitials = (name) => {
@@ -47,58 +50,31 @@ export default function QuanLyDonHang() {
     'Đang giao hàng', 'Hoàn thành', 'Đã hủy', 'Trả hàng/Hoàn tiền'
   ];
 
-  const [orders, setOrders] = useState([
-    {
-      id: 1,
-      shopName: 'TechWorld Official Store',
-      status: 'HOÀN THÀNH',
-      productName: 'Chuột Không Dây Silent Siêu Nhạy M100',
-      variant: 'Màu Đen, Phiên bản Pro',
-      quantity: 1,
-      price: 450000,
-      totalPrice: 450000,
-      image: 'https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=150&auto=format&fit=crop&q=60',
-      isVoucherApplied: true
-    },
-    {
-      id: 2,
-      shopName: 'Sách Hay Mỗi Ngày',
-      status: 'ĐANG GIAO HÀNG',
-      productName: 'Sách: Nghệ Thuật Tư Duy Rành Mạch',
-      variant: 'Bìa mềm',
-      quantity: 2,
-      oldPrice: 240000,
-      price: 180000,
-      totalPrice: 360000,
-      image: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=150&auto=format&fit=crop&q=60',
-      isVoucherApplied: false
-    },
-    {
-      id: 3,
-      shopName: 'Phụ Kiện Xinh',
-      status: 'CHỜ VẬN CHUYỂN',
-      productName: 'Ốp Lưng iPhone 13 Pro Max Silicon',
-      variant: 'Trong suốt',
-      quantity: 1,
-      price: 120000,
-      totalPrice: 120000,
-      image: 'https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=150&auto=format&fit=crop&q=60',
-      isVoucherApplied: false
-    },
-    {
-      id: 4,
-      shopName: 'Anker Official',
-      status: 'ĐÃ HỦY',
-      productName: 'Củ Sạc Nhanh Anker Nano Pro 20W',
-      variant: 'Màu Trắng',
-      quantity: 1,
-      price: 290000,
-      totalPrice: 290000,
-      image: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=150&auto=format&fit=crop&q=60',
-      isVoucherApplied: true
-    }
-  ]);
+  const [orders, setOrders] = useState([]);
+  const fetchOrders = async () => {
+  try {
+    const token = localStorage.getItem("access_token");
 
+    if (!token) {
+      console.log("Chưa có token!");
+      navigate("/login");
+      return;
+    }
+
+    const res = await axios.get(`${API_URL}/orders`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setOrders(res.data.data);
+  } catch (err) {
+    console.log("Lỗi API:", err.response?.data);
+  }
+};
+useEffect(() => {
+  fetchOrders();
+}, []);
   const handleUpdateQuantity = (orderId, type) => {
     setOrders(prevOrders =>
       prevOrders.map(order => {
@@ -379,7 +355,7 @@ export default function QuanLyDonHang() {
                         <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
                       )}
                       
-                      {order.status === 'CHỜ VẬN CHUYỂY' && (
+                      {order.status === 'CHỜ VẬN CHUYỂN' && (
                         <button 
                           onClick={() => handleOpenCancelModal(order.id)}
                           className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-black transition-all shadow-sm cursor-pointer"
