@@ -1,119 +1,214 @@
-import React, { useState } from 'react';
-import { Search, Send, Paperclip, Image, Smile, Filter, CheckCircle, User, MessageSquare } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { Search, Send, Paperclip, Image } from "lucide-react";
 
-// Giả lập dữ liệu hội thoại (Bạn có thể thay thế bằng dữ liệu từ API)
 const initialConversations = [
-  { id: 1, name: 'Nguyễn Văn A', lastMsg: 'Shop ơi, đơn hàng...', time: '10:30', status: 'Đang xử lý', messages: [
-      { sender: 'customer', text: 'Shop cho em hỏi mẫu này bên mình còn size L không ạ?', time: '10:21' },
-      { sender: 'admin', text: 'Mẫu này bên mình vẫn còn size L nhé bạn!', time: '10:26' }
-    ]
+  {
+    id: 1,
+    name: "Nguyễn Văn A",
+    lastMsg: "Shop ơi...",
+    time: "10:30",
+    messages: [
+      { sender: "customer", text: "Shop còn size L không ạ?" },
+      { sender: "admin", text: "Còn bạn nhé 👍" },
+    ],
   },
-  { id: 2, name: 'Trần Thị B', lastMsg: 'Còn hàng không shop?', time: '10:12', status: 'Chưa trả lời', messages: [
-      { sender: 'customer', text: 'Sản phẩm này còn hàng không shop?', time: '10:10' }
-    ]
-  },
-  { id: 3, name: 'Lê Minh C', lastMsg: 'Đơn hàng của mình...', time: '09:45', status: 'Đang xử lý', messages: [
-      { sender: 'customer', text: 'Đơn hàng của mình đến đâu rồi ạ?', time: '09:40' }
-    ]
-  }
+];
+
+const quickReplies = [
+  "Shop cho em xin thêm thông tin",
+  "Sản phẩm này còn không ạ?",
+  "Em muốn đặt hàng",
+  "Cho em xin giá tốt nhất",
 ];
 
 export default function AdminChat() {
-  const [conversations] = useState(initialConversations);
-  const [activeChatId, setActiveChatId] = useState(1); // Mặc định chọn hội thoại đầu tiên
+  const [conversations, setConversations] = useState(initialConversations);
+  const [activeChatId, setActiveChatId] = useState(1);
+  const [input, setInput] = useState("");
 
-  // Tìm cuộc hội thoại đang active
-  const activeChat = conversations.find(c => c.id === activeChatId) || conversations[0];
+  const chatBoxRef = useRef(null);
+
+  const activeChat =
+    conversations.find((c) => c.id === activeChatId);
+
+  // AUTO SCROLL
+  useEffect(() => {
+    chatBoxRef.current?.scrollTo({
+      top: chatBoxRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [activeChat]);
+
+  // SEND MESSAGE
+  const sendMessage = (text) => {
+  if (!text.trim()) return;
+
+  const msg = {
+    sender: "admin",
+    text,
+    time: new Date().toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+};
+
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === activeChatId
+          ? {
+              ...c,
+              messages: [...c.messages, msg],
+              lastMsg: text,
+            }
+          : c
+      )
+    );
+
+    setInput("");
+  };
+
+  // ENTER TO SEND
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage(input);
+    }
+  };
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] font-sans text-gray-800">
-      
-      {/* 1. SIDEBAR DANH SÁCH HỘI THOẠI */}
-      <div className="w-96 bg-white border-r border-gray-100 flex flex-col">
-        <div className="p-5 border-b border-gray-50 flex items-center justify-between">
-          <h2 className="text-sm font-black text-gray-900">Hội thoại</h2>
-          <Filter size={16} className="text-gray-400 cursor-pointer" />
-        </div>
-        
-        <div className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 text-gray-400" size={14} />
-            <input className="w-full bg-gray-50 border border-gray-100 rounded-lg h-9 pl-9 text-xs outline-none" placeholder="Tìm kiếm hội thoại..." />
+    <div className="h-screen flex bg-[#eef2f7] font-sans text-gray-800">
+
+      {/* SIDEBAR */}
+      <div className="w-80 bg-white border-r shadow-sm flex flex-col">
+        <div className="p-4 border-b font-bold">Messages</div>
+
+        <div className="p-3">
+          <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2">
+            <Search size={14} className="text-gray-400" />
+            <input
+              className="ml-2 bg-transparent outline-none text-sm w-full"
+              placeholder="Search chat..."
+            />
           </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((conv) => (
-            <div 
-              key={conv.id} 
-              onClick={() => setActiveChatId(conv.id)}
-              className={`p-4 border-b border-gray-50 cursor-pointer transition-all flex gap-3 ${
-                activeChatId === conv.id ? 'bg-blue-50/50' : 'hover:bg-gray-50'
+          {conversations.map((c) => (
+            <div
+              key={c.id}
+              onClick={() => setActiveChatId(c.id)}
+              className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${
+                activeChatId === c.id ? "bg-blue-50" : ""
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-black text-gray-500 shrink-0">
-                {conv.name.charAt(0)}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
+                {c.name.charAt(0)}
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between">
-                  <span className="text-xs font-black text-gray-900">{conv.name}</span>
-                  <span className="text-[10px] text-gray-400">{conv.time}</span>
-                </div>
-                <p className="text-[10px] text-gray-400 truncate mt-0.5">{conv.lastMsg}</p>
+
+              <div className="flex-1">
+                <p className="text-sm font-semibold">{c.name}</p>
+                <p className="text-xs text-gray-400 truncate">
+                  {c.lastMsg}
+                </p>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${conv.status === 'Đang xử lý' ? 'bg-blue-50 text-blue-600' : 'bg-red-50 text-red-500'}`}>
-                  {conv.status}
-                </span>
-              </div>
+
+              <span className="text-[10px] text-gray-400">
+                {c.time}
+              </span>
             </div>
           ))}
         </div>
       </div>
 
-      {/* 2. KHUNG CHAT CHI TIẾT */}
+      {/* CHAT AREA */}
       <div className="flex-1 flex flex-col">
-        <div className="h-14 bg-white border-b border-gray-100 px-6 flex items-center justify-between">
+
+        {/* HEADER */}
+        <div className="h-14 bg-white shadow-sm flex items-center px-5 justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-black">
-              {activeChat.name.charAt(0)}
+            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
+              {activeChat?.name.charAt(0)}
             </div>
             <div>
-              <p className="text-xs font-black">{activeChat.name}</p>
-              <p className="text-[9px] text-green-500 font-bold">● Đang hoạt động</p>
+              <p className="text-sm font-semibold">
+                {activeChat?.name}
+              </p>
+              <p className="text-xs text-green-500">● Online</p>
             </div>
           </div>
         </div>
 
-        <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-gray-50/30">
-          <div className="text-center text-[10px] text-gray-400 font-bold">HÔM NAY</div>
-          {activeChat.messages.map((msg, idx) => (
-            <div key={idx} className={`flex gap-3 ${msg.sender === 'admin' ? 'justify-end' : ''}`}>
-               {msg.sender === 'customer' && <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-gray-500 font-black">K</div>}
-               <div className={`p-3 rounded-2xl text-xs font-medium max-w-sm ${msg.sender === 'admin' ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white border border-gray-100 shadow-sm rounded-tl-none'}`}>
-                  {msg.text}
-               </div>
+        {/* CHAT BOX */}
+        <div
+          ref={chatBoxRef}
+          className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#f6f8fc]"
+        >
+          {activeChat?.messages.map((m, i) => (
+            <div
+              key={i}
+              className={`flex ${
+                m.sender === "admin"
+                  ? "justify-end"
+                  : "justify-start"
+              }`}
+            >
+              <div
+  className={`px-4 py-2 text-sm max-w-xs leading-relaxed shadow-sm ${
+    m.sender === "admin"
+      ? "bg-blue-600 text-white rounded-2xl rounded-br-md"
+      : "bg-white border rounded-2xl rounded-bl-md"
+  }`}
+>
+  <div>{m.text}</div>
+
+  {/* TIME */}
+  <div
+    className={`text-[10px] mt-1 ${
+      m.sender === "admin"
+        ? "text-blue-100"
+        : "text-gray-400"
+    }`}
+  >
+    {m.time}
+  </div>
+</div>
             </div>
           ))}
         </div>
 
-        <div className="bg-white p-4 border-t border-gray-100">
-           <div className="flex gap-2 mb-3 overflow-x-auto">
-             {['Chào bạn, bạn cần hỗ trợ gì không?', 'Sản phẩm này còn ạ.', 'Cảm ơn bạn!'].map((q, i) => (
-               <button key={i} className="bg-gray-50 border text-gray-600 text-[10px] font-bold px-3 py-1.5 rounded-full hover:bg-blue-50 hover:text-blue-600 transition-all cursor-pointer whitespace-nowrap">
-                 {q}
-               </button>
-             ))}
-           </div>
-           
-           <div className="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-2">
-             <Paperclip size={16} className="text-gray-400 cursor-pointer hover:text-blue-600" />
-             <Image size={16} className="text-gray-400 cursor-pointer hover:text-blue-600" />
-             <input className="flex-1 bg-transparent text-xs outline-none" placeholder="Nhập tin nhắn..." />
-             <button className="bg-blue-600 text-white px-5 py-1.5 rounded-lg text-xs font-black hover:bg-blue-700 cursor-pointer flex items-center gap-1">
-               Gửi <Send size={12} />
-             </button>
-           </div>
+        {/* QUICK REPLIES */}
+        <div className="px-4 py-2 flex gap-2 overflow-x-auto bg-white border-t">
+          {quickReplies.map((q, i) => (
+            <button
+              key={i}
+              onClick={() => sendMessage(q)}
+              className="whitespace-nowrap text-xs px-3 py-1.5 bg-gray-100 hover:bg-blue-100 hover:text-blue-600 rounded-full transition"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* INPUT */}
+        <div className="bg-white p-3 flex items-center gap-2 border-t">
+
+          <Paperclip size={18} className="text-gray-400" />
+          <Image size={18} className="text-gray-400" />
+
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Nhập tin nhắn... (Enter để gửi)"
+            className="flex-1 bg-gray-100 px-4 py-2 rounded-xl text-sm outline-none"
+          />
+
+          <button
+            onClick={() => sendMessage(input)}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-1"
+          >
+            <Send size={16} />
+          </button>
         </div>
       </div>
     </div>

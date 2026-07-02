@@ -19,11 +19,10 @@ API.interceptors.request.use((config) => {
 export const getCart = () => API.get("/cart");
 
 // Thêm sản phẩm vào giỏ hàng
-export const addToCart = (productId, quantity = 1, variantId = null) =>
+export const addToCart = (productId, quantity = 1) =>
   API.post("/cart/items", {
     product_id: productId,
     quantity,
-    variant_id: variantId,
   });
 
 // Cập nhật số lượng
