@@ -10,8 +10,7 @@ import {
   Search, Bell, HelpCircle, Home, ShoppingBag, 
   ClipboardList, Users,  Settings, MessageSquare, ArrowLeft, X,
   Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
-  UserPlus,
-  LogOut
+  UserPlus
 } from 'lucide-react';
 
 
@@ -21,11 +20,7 @@ export default function QuanLyDonHang() {
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-  const isManager = currentUser?.rolename === "Manager";
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  
-  
+
   // 1. ĐÃ THÊM: State quản lý tên người dùng để hiển thị Avatar đồng bộ
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "Khách";
@@ -132,12 +127,6 @@ useEffect(() => {
     return true;
 });
 
-
-  window.dispatchEvent(new Event("auth-change"));
-
-
-  navigate('/');
-};
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative">
       
@@ -164,20 +153,9 @@ useEffect(() => {
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            
-           <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
-              <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
+            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
             </Link>
-            
-            {!isManager && (
-  <Link
-    to="/dktkhoan"
-    className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all"
-  >
-    <UserPlus size={16} />
-    <span>Đăng kí bán hàng</span>
-  </Link>
-)}
           </nav>
         </div>
 
@@ -188,13 +166,6 @@ useEffect(() => {
           <Link to="/ho-tro" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
             <HelpCircle size={14} /> <span>Hỗ trợ</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => setIsLogoutModalOpen(true)}
-            className="w-full flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-red-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg transition-all border-none bg-transparent text-left cursor-pointer"
-          >
-            <LogOut size={14} /> <span>Đăng xuất</span>
-          </button>
         </div>
       </div>
 
@@ -234,7 +205,7 @@ useEffect(() => {
           
           <div className="flex items-center gap-2">
             <button 
-              onClick={() => navigate('/')} 
+              onClick={() => navigate('/page1')} 
               className="text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer p-0"
             >
               <ArrowLeft size={16} />
@@ -459,52 +430,7 @@ useEffect(() => {
           </div>
         </div>
       )}
-        {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
-            onClick={() => setIsLogoutModalOpen(false)}
-          ></div>
-         
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-150">
-            <button
-              onClick={() => setIsLogoutModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X size={16} />
-            </button>
 
-
-            <div className="text-center space-y-3 mt-2">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto font-bold text-xl">
-                ⚠️
-              </div>
-              <h3 className="text-sm font-black text-slate-900 tracking-tight">Xác nhận đăng xuất</h3>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                Bạn có chắc chắn muốn đăng xuất khỏi tài khoản quản trị hệ thống hiện tại không?
-              </p>
-            </div>
-
-
-            <div className="flex items-center gap-2 mt-6">
-              <button
-                type="button"
-                onClick={() => setIsLogoutModalOpen(false)}
-                className="flex-1 h-9 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmLogout}
-                className="flex-1 h-9 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
-              >
-                Đăng xuất
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
