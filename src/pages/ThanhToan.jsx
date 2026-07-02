@@ -1,5 +1,8 @@
-import  { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { checkoutCart } from "@/api/cartApi";
 import { 
   User, Phone, MapPin, FileText, ShoppingBag, CreditCard, 
   CheckCircle, ShieldCheck, RefreshCw, Truck, Headphones, Lock
@@ -21,11 +24,11 @@ export default function ThanhToan() {
 
   // State thông tin giao hàng
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: 'Đào Thị E',
-    phone: '0830 868 535',
-    address: '123 Nguyễn Huệ, Q.1, TP.HCM',
-    note: ''
-  });
+  fullName: "",
+  phone: "",
+  address: "",
+  note: ""
+});
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
 
@@ -42,20 +45,81 @@ export default function ThanhToan() {
     }));
   };
 
-  const handleOrder = (e) => {
-    e.preventDefault(); // Ngăn hành vi tải lại trang mặc định của Form
-    
-    if (total <= 0) {
-      alert('Đơn hàng không hợp lệ hoặc giỏ hàng trống!');
-      return;
-    }
-    
-    alert(`🎉 Đặt hàng thành công!\nTổng tiền: ${formatCurrency(total)}\nPhương thức: ${paymentMethod === 'cod' ? 'COD' : 'Chuyển khoản'}`);
-    
-    // ĐÃ SỬA: Click vào đặt hàng sẽ chuyển hướng tới page /donhang công tác tại đây
-    navigate('/donhang'); 
-  };
+  const handleOrder = async (e) => {
+    e.preventDefault();
 
+    if (total <= 0) {
+        alert("Đơn hàng không hợp lệ hoặc giỏ hàng trống!");
+        return;
+    }
+
+    try {
+
+        const payment =
+            paymentMethod === "cod"
+                ? "COD"
+                : "Chuyển khoản";
+        const handleOrder = async (e) => {
+  e.preventDefault();
+
+  if (total <= 0) {
+    alert("Đơn hàng không hợp lệ!");
+    return;
+  }
+
+  try {
+    const payment =
+      paymentMethod === "cod"
+        ? "COD"
+        : "Chuyển khoản";
+
+    const response = await checkoutCart({
+      payment_method: payment,
+      note: shippingInfo.note,
+      voucher_code: null,
+    });
+
+    if (response.data.success) {
+    alert("🎉 Đặt hàng thành công!");
+
+    navigate("/donhang", {
+        replace: true
+    });
+}
+  } catch (error) {
+    console.error(error);
+
+    alert(
+      error.response?.data?.message ||
+      "Đặt hàng thất bại!"
+    );
+  }
+};
+
+        const response = await checkoutCart({
+            payment_method: payment,
+            note: shippingInfo.note,
+            voucher_code: null,
+        });
+
+        if (response.data.success) {
+            alert("🎉 Đặt hàng thành công!");
+
+            navigate("/donhang");
+        } else {
+            alert(response.data.message);
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            error.response?.data?.message ||
+            "Đặt hàng thất bại!"
+        );
+    }
+};
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] text-gray-800 py-6 px-4 sm:px-6 lg:px-8 font-sans antialiased">
       <div className="max-w-6xl mx-auto">

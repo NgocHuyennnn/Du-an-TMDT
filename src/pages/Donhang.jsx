@@ -1,5 +1,9 @@
 import  { useState, useEffect } from 'react';
-// Khôi phục điều hướng chuẩn của react-router-dom
+import {
+    getOrders,
+    getOrderDetail,
+    cancelOrder
+} from "@/api/orderApi"; "@/api/orderApi";
 import axios from "axios";
 import { useNavigate, Link } from 'react-router-dom';
 import { 
@@ -9,6 +13,7 @@ import {
   UserPlus,
   LogOut
 } from 'lucide-react';
+
 
 export default function QuanLyDonHang() {
   const API_URL = "https://tmdt-backend-ego0.onrender.com/api";
@@ -25,15 +30,20 @@ export default function QuanLyDonHang() {
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "Khách";
   });
+  
 
   // 2. ĐÃ THÊM: Lắng nghe sự thay đổi tên từ localStorage (giống các trang khác)
   useEffect(() => {
-    const handleAuthChange = () => {
-      setUserName(localStorage.getItem("userName") || "Khách");
-    };
-    window.addEventListener("auth-change", handleAuthChange);
-    return () => window.removeEventListener("auth-change", handleAuthChange);
-  }, []);
+        async function test() {
+            const res = await getOrderDetail(
+                "612f63f6-fa87-4142-b308-75f315ce8ea9"
+            );
+
+            console.log("DETAIL =", res.data);
+        }
+
+        test();
+    }, []);
   
 
   // 3. ĐÃ THÊM: Hàm tạo chữ viết tắt từ tên người dùng (Nguyễn Văn A -> NA)
@@ -46,35 +56,33 @@ export default function QuanLyDonHang() {
   };
 
   const tabs = [
-    'Tất cả', 'Chờ thanh toán', 'Chờ vận chuyển', 
-    'Đang giao hàng', 'Hoàn thành', 'Đã hủy', 'Trả hàng/Hoàn tiền'
+    'Tất cả', 'Chờ xác nhận', 
+    'Đang giao', 'Đã giao', 'Đã hủy',
   ];
 
   const [orders, setOrders] = useState([]);
   const fetchOrders = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
+    try {
+        const res = await getOrders();
 
-    if (!token) {
-      console.log("Chưa có token!");
-      navigate("/login");
-      return;
+        console.log(res.data);
+
+        if (res.data.status === "success") {
+            setOrders(res.data.data || []);
+        }
+
+    } catch (err) {
+        console.error(err);
     }
-
-    const res = await axios.get(`${API_URL}/orders`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setOrders(res.data.data);
-  } catch (err) {
-    console.log("Lỗi API:", err.response?.data);
-  }
 };
+
 useEffect(() => {
-  fetchOrders();
+    fetchOrders();
 }, []);
+useEffect(() => {
+    console.log("orders state =", orders);
+}, [orders]);
+
   const handleUpdateQuantity = (orderId, type) => {
     setOrders(prevOrders =>
       prevOrders.map(order => {
@@ -93,31 +101,36 @@ useEffect(() => {
     setIsModalOpen(true);
   };
 
-  const handleConfirmCancel = () => {
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
-        order.id === selectedOrderId ? { ...order, status: 'ĐÃ HỦY' } : order
-      )
-    );
-    setIsModalOpen(false);
-    setSelectedOrderId(null);
-  };
+  const handleConfirmCancel = async () => {
+    try {
+        await cancelOrder(selectedOrderId);
 
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'Tất cả') return true;
-    if (activeTab === 'Chờ vận chuyển') return order.status === 'CHỜ VẬN CHUYỂN';
-    if (activeTab === 'Đang giao hàng') return order.status === 'ĐANG GIAO HÀNG';
-    if (activeTab === 'Hoàn thành') return order.status === 'HOÀN THÀNH';
-    if (activeTab === 'Đã hủy' || activeTab === 'Trả hàng/Hoàn tiền') return order.status === 'ĐÃ HỦY';
-    if (activeTab === 'Chờ thanh toán') return order.status === 'CHỜ THANH TOÁN';
+        setIsModalOpen(false);
+        setSelectedOrderId(null);
+
+        fetchOrders();
+    } catch (err) {
+        alert(err.response?.data?.message || "Hủy đơn thất bại");
+    }
+};
+
+  const filteredOrders = orders.filter((order) => {
+    if (activeTab === "Tất cả") return true;
+
+    if (activeTab === "Chờ xác nhận")
+        return order.Status === "Chờ xác nhận";
+
+    if (activeTab === "Đang giao")
+        return order.Status === "Đang giao";
+
+    if (activeTab === "Đã giao")
+        return order.Status === "Đã giao";
+
+    if (activeTab === "Đã hủy")
+        return order.Status === "Đã hủy";
+
     return true;
-  });
-  const handleConfirmLogout = () => {
-  setIsLogoutModalOpen(false);
-
-
-  localStorage.removeItem("user");
-  localStorage.removeItem("access_token");
+});
 
 
   window.dispatchEvent(new Event("auth-change"));
@@ -260,73 +273,90 @@ useEffect(() => {
           <div className="space-y-4">
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
-                <div key={order.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm space-y-4">
+                <div key={order.OrderID}>
                   
                   {/* Header Đơn hàng */}
                   <div className="flex items-center justify-between border-b border-gray-50 pb-3">
                     <div className="flex items-center gap-2">
                       <Award size={14} className="text-amber-500" />
-                      <span className="text-xs font-black text-gray-900">{order.shopName}</span>
+                      <span className="text-xs font-black text-gray-900">{order.ShopName}</span>
                       <button className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
                         Xem shop
                       </button>
-                      <button className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer">
-                        <MessageSquare size={10} /> Chat
+                      <button
+                        onClick={() => navigate("/chat")}
+                        className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <MessageSquare size={10} />
+                        Chat
                       </button>
                     </div>
                     
-                    <div className={`text-[11px] font-extrabold tracking-wider uppercase flex items-center gap-1.5 ${
-                      order.status === 'ĐÃ HỦY' ? 'text-gray-400' : 'text-blue-600'
-                    }`}>
-                      {order.status === 'ĐANG GIAO HÀNG' && <Truck size={12} className="text-blue-500 animate-pulse" />}
-                      {order.status === 'HOÀN THÀNH' && <Check size={12} className="text-green-500" />}
-                      <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'ĐÃ HỦY' ? 'bg-gray-400' : 'bg-blue-500'}`}></span>
-                      {order.status}
-                    </div>
+                    <div
+  className={`text-[11px] font-extrabold tracking-wider uppercase flex items-center gap-1.5 ${
+    order.Status === "Đã hủy"
+      ? "text-red-600"
+      : order.Status === "Đã giao"
+      ? "text-green-600"
+      : "text-blue-600"
+  }`}
+>
+  {order.Status === "Đang giao" && (
+    <Truck size={12} className="text-blue-500 animate-pulse" />
+  )}
+
+  {order.Status === "Đã giao" && (
+    <Check size={12} className="text-green-500" />
+  )}
+
+  <span
+    className={`w-1.5 h-1.5 rounded-full ${
+      order.Status === "Đã hủy"
+        ? "bg-red-500"
+        : order.Status === "Đã giao"
+        ? "bg-green-500"
+        : "bg-blue-500"
+    }`}
+  ></span>
+
+  {order.Status}
+</div>
                   </div>
 
                   {/* Chi tiết sản phẩm trong đơn */}
                   <div className="flex items-start gap-4 py-1">
-                    <img 
-                      src={order.image} 
-                      alt={order.productName} 
-                      className="w-16 h-16 object-cover bg-gray-50 rounded border border-gray-100 shrink-0" 
-                    />
+                    <img
+                      src={
+                          order.Items?.[0]?.ImageURL ||
+                          "https://placehold.co/80x80"
+                      }
+                      alt={order.Items?.[0]?.ProductName}
+                      className="w-16 h-16 object-cover rounded"
+                  />
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <h4 className="text-xs font-bold text-gray-900 truncate">{order.productName}</h4>
+                        <h4 className="text-xs font-bold">
+                            {order.Items?.[0]?.ProductName || "Không có tên sản phẩm"}
+                        </h4>
                         <ShieldCheck size={13} className="text-blue-500 shrink-0" />
                       </div>
-                      <p className="text-[10px] text-gray-400 font-medium">Phân loại: {order.variant}</p>
+                      <p className="text-[10px] text-gray-400">
+                          Phương thức thanh toán: {order.PaymentMethod}
+                      </p>
                       
                       {/* Bộ tăng giảm số lượng */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <button 
-                          onClick={() => handleUpdateQuantity(order.id, 'dec')}
-                          className="p-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
-                        >
-                          <Minus size={10} />
-                        </button>
-                        <span className="text-[11px] font-bold text-gray-800 w-4 text-center">{order.quantity}</span>
-                        <button 
-                          onClick={() => handleUpdateQuantity(order.id, 'inc')}
-                          className="p-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
-                        >
-                          <Plus size={10} />
-                        </button>
-                      </div>
+                      <p className="text-[11px] text-gray-500">
+                          x{order.Items?.[0]?.Quantity}
+                      </p>
                     </div>
 
                     <div className="text-right shrink-0 space-y-0.5">
-                      {order.oldPrice && (
-                        <p className="text-[10px] text-gray-300 line-through font-medium">₫{order.oldPrice.toLocaleString('vi-VN')}</p>
-                      )}
-                      <p className="text-xs font-black text-gray-900">₫{order.price.toLocaleString('vi-VN')}</p>
-                      {order.isVoucherApplied && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] bg-red-50 text-red-500 px-1 rounded font-bold border border-red-100">
-                          <Ticket size={8} /> Mã giảm giá
-                        </span>
-                      )}
+                      <div className="text-right shrink-0 space-y-0.5">
+                          <p className="text-xs font-black text-gray-900">
+                            ₫{Number(order.TotalAmount).toLocaleString("vi-VN")}
+                          </p>
+                        </div>
+
                     </div>
                   </div>
 
@@ -335,12 +365,12 @@ useEffect(() => {
                     <div className="flex items-center justify-end sm:justify-start gap-1 text-xs font-bold ml-auto sm:ml-0">
                       <span className="text-[11px] text-gray-400 font-medium">💰 Tổng số tiền:</span>
                       <span className="text-sm font-black text-blue-600 underline tracking-tight">
-                        ₫{order.totalPrice.toLocaleString('vi-VN')}
+                        ₫{order.TotalAmount.toLocaleString('vi-VN')}
                       </span>
                     </div>
                     
                     <div className="flex items-center justify-end gap-2">
-                      {order.status === 'HOÀN THÀNH' && (
+                      {order.Status === 'HOÀN THÀNH' && (
                         <>
                           <button className="flex items-center gap-1 bg-blue-600 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm cursor-pointer">
                             <RefreshCw size={12} /> Mua lại
@@ -351,20 +381,24 @@ useEffect(() => {
                         </>
                       )}
                       
-                      {order.status === 'ĐANG GIAO HÀNG' && (
+                      {order.Status === 'ĐANG GIAO HÀNG' && (
                         <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
                       )}
                       
-                      {order.status === 'CHỜ VẬN CHUYỂN' && (
-                        <button 
-                          onClick={() => handleOpenCancelModal(order.id)}
-                          className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-black transition-all shadow-sm cursor-pointer"
-                        >
-                          <Trash2 size={12} /> Hủy đơn hàng
-                        </button>
+                      {order.Status === "Chờ xác nhận" && (
+                          <button
+                              onClick={() => handleOpenCancelModal(order.OrderID)}
+                              className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
+                          >
+                              <Trash2 size={12} />
+                              Hủy đơn hàng
+                          </button>
                       )}
                       
-                      <button className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer">
+                      <button
+                        onClick={() => navigate("/chat")}
+                        className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer"
+                      >
                         Liên hệ người bán
                       </button>
                     </div>

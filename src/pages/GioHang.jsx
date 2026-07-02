@@ -82,18 +82,14 @@ const shippingFee = 30000;
   setCartItems(newCart);
 
   localStorage.setItem(
-    "cart",
-    JSON.stringify(
-      newCart.map(item => ({
-        ProductID: item.id,
-        ProductName: item.name,
-        Price: item.price,
-        quantity: item.quantity,
-        PrimaryImage: item.image,
-        variant: item.variant,
-      }))
-    )
-  );
+  "cart",
+  JSON.stringify(
+    newCart.map(item => ({
+      ProductID: item.productId,
+      Quantity: item.quantity
+    }))
+  )
+);
   window.dispatchEvent(new Event("cartUpdated"));
 };
 
@@ -298,9 +294,12 @@ const shippingFee = 30000;
                     </div>
                     <div className="flex justify-between items-center mt-2 pt-1 border-t border-gray-50">
                       <span className="text-xs font-black text-blue-600">{formatCurrency(prod.price)}</span>
-                      <button className="bg-blue-50 text-blue-600 p-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors cursor-pointer">
-                        <ShoppingCart size={12} strokeWidth={2.5} />
-                      </button>
+                      <button
+                      onClick={() => handleAddSuggestedProduct(prod)}
+                      className="bg-blue-50 text-blue-600 p-1.5 rounded-lg hover:bg-blue-600 hover:text-white transition-colors cursor-pointer"
+                    >
+                      <ShoppingCart size={12} strokeWidth={2.5} />
+                    </button>
                     </div>
                   </div>
                 ))}
@@ -395,12 +394,37 @@ const shippingFee = 30000;
               {/* Nút thanh toán hành động chính */}
               <div className="px-4 pt-1">
                 <button
-                  onClick={() => tempTotal > 0 ? navigate('/thanhtoan') : alert('Vui lòng chọn sản phẩm!')}
-                  className="w-full bg-indigo-600 text-white h-11 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  <ShieldCheck size={16} />
-                  <span>Tiến hành thanh toán</span>
-                </button>
+  onClick={() => {
+    if (tempTotal <= 0) {
+      alert("Vui lòng chọn sản phẩm!");
+      return;
+    }
+    const selectedItems = cartItems
+  .filter(item => item.checked)
+  .map(item => ({
+    ProductID: item.productId,
+    Quantity: item.quantity,
+    ShopID: localStorage.getItem("shop_id")
+  }));
+
+localStorage.setItem("cart", JSON.stringify(selectedItems));
+
+console.log("SAVE CART =", JSON.stringify(selectedItems, null, 2));
+
+    navigate("/thanhtoan", {
+      state: {
+        subTotal: tempTotal,
+        shippingFee,
+        discount: discountAmount,
+        couponCode,
+      },
+    });
+  }}
+  className="w-full bg-indigo-600 text-white h-11 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-indigo-700 active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+>
+  <ShieldCheck size={16} />
+  <span>Tiến hành thanh toán</span>
+</button>
                 
                 <p className="text-[10px] text-gray-400 text-center mt-2.5 flex items-center justify-center gap-1">
                   🔒 Thanh toán an toàn & bảo mật
