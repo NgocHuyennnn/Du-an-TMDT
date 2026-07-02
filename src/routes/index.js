@@ -17,10 +17,7 @@ import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
 import DSDHang from '../DonHang/DSDHang';
 import ChatUser from '../pages/manager/ChatUser';
-
-
 import ProductDetailPage from '@/pages/ProductDetailPage';
-
 
 import EditStore from '@/pages/EditStore';
 import RoleList from '@/pages/admin/RoleList';
