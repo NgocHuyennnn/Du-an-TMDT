@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { addToCart } from "@/api/cartApi";
 import { ChevronLeft, ChevronRight, Star, ShoppingCart } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 
@@ -13,7 +14,7 @@ export default function FeaturedProducts() {
 const [showPopup, setShowPopup] = useState(false);
 const [showLoginPopup, setShowLoginPopup] = useState(false);
   const VISIBLE = 6;
-const handleAddToCart = (e, product) => {
+const handleAddToCart = async (e, product) => {
   e.preventDefault();
   e.stopPropagation();
 
@@ -24,33 +25,22 @@ const handleAddToCart = (e, product) => {
     return;
   }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  try {
+    await addToCart(product.id, 1);
 
-  const exist = cart.find(
-    (item) => item.ProductID === product.id
-  );
+    window.dispatchEvent(new Event("cartUpdated"));
 
-  if (exist) {
-    exist.quantity += 1;
-  } else {
-    cart.push({
-      ProductID: product.id,
-      ProductName: product.name,
-      Price: product.price,
-      quantity: 1,
-      PrimaryImage: product.image,
-    });
+    setShowPopup(true);
+
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 2000);
+
+  } catch (err) {
+    console.error(err);
+
+    alert("Không thể thêm sản phẩm vào giỏ hàng.");
   }
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  window.dispatchEvent(new Event("cartUpdated"));
-
-  setShowPopup(true);
-
-  setTimeout(() => {
-    setShowPopup(false);
-  }, 2000);
 };
   // Cấu trúc để cắm API thật vào sau này
   useEffect(() => {
