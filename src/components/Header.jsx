@@ -122,47 +122,60 @@ export default function Header() {
 
 
     {showMenu && (
-      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
-        
-        <button
-          onClick={() => {
-            setShowMenu(false);
+  <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg z-50">
 
-            switch (user.rolename) {
-  case "Admin":
-    navigate("/dstkhoan");
-    break;
-
-  case "Manager":
-    navigate("/accounts");
-    break;
-
-  case "Customer":
-    navigate("/tkcnhan");
-    break;
-
-  default:
-    navigate("/");
-}
-          }}
-          className="w-full text-left px-4 py-3 hover:bg-gray-100"
-        >
-          Tài khoản của tôi
-        </button>
-
-        <button
-          onClick={() => {
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("user");
-            navigate("/login");
-          }}
-          className="w-full text-left px-4 py-3 hover:bg-gray-100 text-red-500"
-        >
-          Đăng xuất
-        </button>
-
-      </div>
+    {/* Chỉ hiện với Manager */}
+    {user.rolename === "Manager" && (
+      <button
+        onClick={() => {
+          setShowMenu(false);
+          navigate("/accounts"); // hoặc "/manager"
+        }}
+        className="w-full text-left px-4 py-3 hover:bg-gray-100"
+      >
+         Kênh bán hàng
+      </button>
     )}
+
+    <button
+      onClick={() => {
+        setShowMenu(false);
+
+        switch (user.rolename) {
+          case "Admin":
+            navigate("/dstkhoan");
+            break;
+
+          case "Manager":
+            navigate("/tkcnhan");
+            break;
+
+          case "Customer":
+            navigate("/tkcnhan");
+            break;
+
+          default:
+            navigate("/");
+        }
+      }}
+      className="w-full text-left px-4 py-3 hover:bg-gray-100"
+    >
+      Tài khoản của tôi
+    </button>
+
+    <button
+      onClick={() => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("user");
+        navigate("/login");
+      }}
+      className="w-full text-left px-4 py-3 hover:bg-gray-100 text-red-500"
+    >
+      Đăng xuất
+    </button>
+
+  </div>
+)}
   </div>
 ) : (
   <>

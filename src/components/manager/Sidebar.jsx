@@ -18,7 +18,7 @@ import { useState } from "react";
 const navItems = [
   { icon: LayoutDashboard, label: "Trang chủ", path: "/" },
   { icon: User, label: "Tài khoản", path: "/accounts" },
-  { icon: Store, label: "Cửa hàng", path: "/stores" },
+  //{ icon: Store, label: "Cửa hàng", path: "/stores" },
   { icon: Package, label: "Sản phẩm", path: "/products" },
   //{ icon: BarChart3, label: "Danh mục", path: "/categories" },
   { icon: ShoppingCart, label: "Đơn hàng", path: "/orders" },

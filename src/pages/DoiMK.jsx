@@ -12,88 +12,63 @@ export default function DoiMK() {
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);
   const [error, setError] = useState('');
-  
+  const [showOldPass, setShowOldPass] = useState(false);
   const navigate = useNavigate();
-
+  
   const handleSubmit = async (e) => {
   e.preventDefault();
-  setError('');
-  //Mk hiện tại
-  <div className="space-y-2">
-<label className="block text-xs font-bold text-gray-700 uppercase">
-  Mật khẩu hiện tại
-</label>
 
-<div className="relative flex items-center">
-<Lock size={16} className="absolute left-4 text-gray-400"/>
+  setError("");
 
-<input
-type="password"
-required
-value={oldPassword}
-onChange={(e)=>setOldPassword(e.target.value)}
-placeholder="Nhập mật khẩu hiện tại"
-className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
-/>
+  if (!oldPassword) {
+    setError("Vui lòng nhập mật khẩu hiện tại.");
+    return;
+  }
 
-</div>
-</div>
-//MK mới 
   if (newPassword.length < 6) {
     setError("Mật khẩu mới phải có ít nhất 6 ký tự.");
     return;
   }
-
 
   if (newPassword !== confirmPassword) {
     setError("Xác nhận mật khẩu không khớp.");
     return;
   }
 
-
   try {
-
     const token = localStorage.getItem("access_token");
 
-
-    if(!token){
+    if (!token) {
       setError("Bạn chưa đăng nhập.");
       return;
     }
 
-
     const res = await axios.post(
-  "https://tmdt-backend-ego0.onrender.com/api/auth/reset-password",
-  {
-    email: localStorage.getItem("user_reset_email"),
-    otp: location.state?.otp,
-    new_password: newPassword
-  }
-);
-
-
-    if(res.data.success){
-
-      alert("Đổi mật khẩu thành công");
-
-      localStorage.removeItem("access_token");
-
-      navigate("/login");
-
-    }
-
-
-  } catch(err){
-
-    console.log(err);
-
-    setError(
-      err.response?.data?.message ||
-      "Đổi mật khẩu thất bại"
+      "https://tmdt-backend-ego0.onrender.com/api/auth/change-password",
+      {
+        old_password: oldPassword,
+        new_password: newPassword,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
-  }
+    alert(res.data.message || "Đổi mật khẩu thành công.");
 
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("user");
+
+    navigate("/login");
+
+  } catch (err) {
+    setError(
+      err.response?.data?.message ||
+      "Mật khẩu hiện tại không đúng."
+    );
+  }
 };
 
   return (
@@ -122,7 +97,7 @@ className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
 
           {/* Dòng chữ Bước 3 nhỏ định hướng giống wireframe */}
           <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase mb-4">
-            Bước 3: Đặt lại mật khẩu
+             Đặt lại mật khẩu
           </span>
 
           {/* Tiêu đề lớn căn trái */}
@@ -144,7 +119,35 @@ className="w-full h-12 pl-11 border border-gray-200 rounded-xl"
 
           {/* Form nhập mật khẩu mới */}
           <form onSubmit={handleSubmit} className="w-full space-y-5">
-            
+            <div className="space-y-2">
+  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+    Mật khẩu hiện tại
+  </label>
+
+  <div className="relative flex items-center">
+    <Lock
+      size={16}
+      className="absolute left-4 text-gray-400 pointer-events-none"
+    />
+
+    <input
+      type={showOldPass ? "text" : "password"}
+      required
+      value={oldPassword}
+      onChange={(e) => setOldPassword(e.target.value)}
+      placeholder="Nhập mật khẩu hiện tại"
+      className="w-full h-12 pl-11 pr-11 border border-gray-200 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 bg-white transition-all text-sm text-gray-900 placeholder-gray-400"
+    />
+
+    <button
+      type="button"
+      onClick={() => setShowOldPass(!showOldPass)}
+      className="absolute right-4 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
+    >
+      {showOldPass ? <EyeOff size={18} /> : <Eye size={18} />}
+    </button>
+  </div>
+</div>
             {/* Ô nhập mật khẩu mới */}
             <div className="space-y-2">
               <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">

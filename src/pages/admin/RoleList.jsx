@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
+import { Link, useNavigate } from 'react-router-dom';
+import api from "@/lib/axios";
 import {
   Plus,
   Search,
@@ -18,14 +19,16 @@ import {
   HelpCircle,
   Bell,
   Store,
+  Tag,
 } from 'lucide-react';
 
 import ConfirmModal from '@/components/admin/ConfirmModal';
-import { ROLES } from '@/data/mockDataAd';
+
 
 export default function RoleList() {
   const navigate = useNavigate();
-  const [roles, setRoles] = useState(ROLES);
+  const [roles, setRoles] = useState([]);
+const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteModal, setDeleteModal] = useState({ open: false, role: null });
   const [toast, setToast] = useState(null);
@@ -37,16 +40,118 @@ export default function RoleList() {
 );
   const activeCount = roles.filter((r) => r.status === 'active').length;
   const totalUsers = roles.reduce((sum, r) => sum + r.userCount, 0);
+ 
 
-  const handleDelete = () => {
-    if (deleteModal.role) {
-      setRoles(roles.filter((r) => r.id !== deleteModal.role.id));
-      setDeleteModal({ open: false, role: null });
-      setToast(`Đã xóa vai trò "${deleteModal.role.name}"`);
-      setTimeout(() => setToast(null), 3000);
-    }
-  };
+const fetchRoles = async () => {
+  try {
+    const res = await api.get("/api/roles");
 
+    const data = res.data.data || res.data;
+
+
+    const userRes = await api.get(
+      "/api/users?page=1&limit=100"
+    );
+
+    const users = userRes.data.data || userRes.data || [];
+
+
+    setRoles(
+      data.map(item => {
+
+        const roleId = item.RoleID ?? item.roleid;
+
+
+        const countUser = users.filter(
+          u =>
+            String(
+              u.RoleID ||
+              u.roleid ||
+              u.Role?.RoleID ||
+              u.role?.RoleID
+            )
+            === String(roleId)
+        ).length;
+
+
+        return {
+          id: roleId,
+          name: item.RoleName || item.rolename,
+          description: item.Description || item.description || "",
+          userCount: countUser,
+          status: "active"
+        };
+
+      })
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "❌ Lỗi lấy Role:",
+      error.response?.data || error.message
+    );
+
+    alert("Không thể lấy danh sách vai trò!");
+
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+useEffect(() => {
+  fetchRoles();
+}, []);
+  const handleDelete = async () => {
+  if (!deleteModal.role) return;
+
+  try {
+
+    console.log("ID xóa:", deleteModal.role.id);
+
+    const res = await api.delete(
+      `/api/roles/${deleteModal.role.id}`
+    );
+
+    console.log("Xóa thành công:", res.data);
+
+
+    setRoles(prev =>
+      prev.filter(
+        r => r.id !== deleteModal.role.id
+      )
+    );
+
+
+    setDeleteModal({
+      open:false,
+      role:null
+    });
+
+
+    setToast(
+      `Đã xóa vai trò "${deleteModal.role.name}"`
+    );
+
+
+    setTimeout(() => setToast(null),3000);
+
+
+  } catch(error){
+
+    console.log(
+      "LỖI DELETE:",
+      error.response?.data || error.message
+    );
+
+    alert(
+      error.response?.data?.message ||
+      "Xóa thất bại"
+    );
+  }
+};
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full">
       
@@ -59,11 +164,17 @@ export default function RoleList() {
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-500">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Home size={16} /> <span>Trang chủ</span>
+            </Link>
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-600 text-white rounded-xl shadow-sm transition-all">
-              <Home size={16} /> <span>Quản lý vai trò</span>
+              <Shield size={16} /> <span>Quản lý vai trò</span>
             </Link>
             <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
+            <Link to="/danhmuc" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Tag size={16} /> <span>Danh mục</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
@@ -201,7 +312,17 @@ export default function RoleList() {
               </tr>
             </thead>
             <tbody>
-              {filteredRoles.map((role, index) => (
+              {loading ? (
+
+<tr>
+<td colSpan={6} className="text-center py-10">
+Đang tải dữ liệu...
+</td>
+</tr>
+
+) : (
+
+filteredRoles.map((role,index)=>(
                 <tr
                   key={role.id}
                   className="border-b border-gray-50 hover:bg-blue-50/30 transition-colors group"
@@ -261,7 +382,7 @@ export default function RoleList() {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
               {filteredRoles.length === 0 && (
                 <tr>
                   <td colSpan={6} className="px-5 py-12 text-center">

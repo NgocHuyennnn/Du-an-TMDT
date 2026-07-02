@@ -15,6 +15,8 @@ import {
   Settings,
   HelpCircle,
   Bell,
+  Tag,
+  Shield,
 } from 'lucide-react';
 import { Link, useNavigate } from "react-router-dom";
 const categories = [
@@ -113,11 +115,17 @@ const [refCode] = useState(() => 'STR-GEN-' + Math.random().toString(36).slice(2
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-500">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Home size={16} /> <span>Trang chủ</span>
+            </Link>
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
-              <Home size={16} /> <span>Quản lý vai trò</span>
+              <Shield size={16} /> <span>Quản lý vai trò</span>
             </Link>
             <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-600 text-white rounded-xl shadow-sm transition-all">
               <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
+            <Link to="/danhmuc" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Tag size={16} /> <span>Danh mục</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
