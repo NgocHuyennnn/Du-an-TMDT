@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 
 import {
@@ -9,25 +9,105 @@ import {
   Shield,
   CheckCircle2,
   Clock,
-  ChevronRight,
+  
   ShoppingBag,
   Home,
   ClipboardList,
   Settings,
   HelpCircle,
   Bell,
-  Store
+  Store,
+  Tag
 } from 'lucide-react';
-import {  MOCK_PERMISSION_MATRIX, ROLES } from '@/data/mockDataAd';
+
+import api from "@/lib/axios";
 
 
 export default function RoleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const role = ROLES.find((r) => r.id === Number(id));
+  
   const [activeTab, setActiveTab] = useState('info');
+const [role, setRole] = useState(null);
+const [loading, setLoading] = useState(true);
+const [permissions, setPermissions] = useState([]);
+const [users, setUsers] = useState([]);
 
-  if (!role) {
+useEffect(() => {
+  const getRole = async () => {
+    try {
+      const res = await api.get(`/api/roles`);
+
+const list = res.data.data || res.data;
+console.log(res.data);
+const item = list.find(
+  r => String(r.RoleID || r.roleid) === String(id)
+);
+
+if (!item) {
+  setRole(null);
+  return;
+}
+
+      setRole({
+        id: item.RoleID || item.roleid,
+        name: item.RoleName || item.rolename,
+        description: item.Description || item.description || "",
+        userCount: Number(item.UserCount || item.usercount || 0),
+        status: "active",
+        createdAt: item.CreatedAt || "",
+        updatedAt: item.UpdatedAt || ""
+      });
+
+
+      const permRes = await api.get(
+        `/api/roles/${id}/permissions`
+      );
+
+      setPermissions(
+        permRes.data.data || permRes.data || []
+      );
+      const userRes = await api.get(
+  `/api/users?page=1&limit=100`
+);
+
+
+const allUsers = userRes.data.data || userRes.data || [];
+
+const roleUsers = allUsers.filter(
+  u =>
+    String(
+      u.RoleID ||
+      u.roleid ||
+      u.Role?.RoleID ||
+      u.role?.RoleID
+    )
+    ===
+    String(item.RoleID || item.roleid)
+);
+
+setUsers(roleUsers);
+
+    } catch(error){
+      console.log("Lỗi lấy role detail:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  getRole();
+
+},[id]);
+  if (loading) {
+ return (
+  <div className="text-center py-20">
+    Đang tải...
+  </div>
+ )
+}
+
+
+if (!role) {
     return (
       <div className="text-center py-20">
         <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -44,26 +124,9 @@ export default function RoleDetail() {
     );
   }
 
-  const mockUsers = [
-    { id: 1, name: 'Nguyễn Văn A', email: 'a@example.com', avatar: 'A' },
-    { id: 2, name: 'Trần Thị B', email: 'b@example.com', avatar: 'B' },
-    { id: 3, name: 'Lê Văn C', email: 'c@example.com', avatar: 'C' },
-  ];
+  
 
-  const mockHistory = [
-    { id: 1, action: 'Cập nhật quyền', by: 'Admin', date: '2024-06-10 14:30' },
-    { id: 2, action: 'Thay đổi mô tả', by: 'Admin', date: '2024-05-18 09:15' },
-    { id: 3, action: 'Tạo vai trò', by: 'System', date: role.createdAt + ' 08:00' },
-  ];
-
-  const totalPerms = MOCK_PERMISSION_MATRIX.reduce(
-  (sum, group) =>
-    sum +
-    group.permissions.filter(
-      perm => perm[role.key]
-    ).length,
-  0
-);
+  const totalPerms = permissions.length;
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full">
       
@@ -76,11 +139,17 @@ export default function RoleDetail() {
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-500">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Home size={16} /> <span>Trang chủ</span>
+            </Link>
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-600 text-white rounded-xl shadow-sm transition-all">
-              <Home size={16} /> <span>Quản lý vai trò</span>
+              <Shield size={16} /> <span>Quản lý vai trò</span>
             </Link>
             <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
+            <Link to="/danhmuc" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Tag size={16} /> <span>Danh mục</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
@@ -195,7 +264,7 @@ export default function RoleDetail() {
               <Users size={20} className="text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{role.userCount}</p>
+              <p className="text-2xl font-bold text-gray-900">{users.length}</p>
               <p className="text-xs text-gray-500">Người dùng</p>
             </div>
           </div>
@@ -217,7 +286,7 @@ export default function RoleDetail() {
               <Shield size={20} className="text-amber-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{MOCK_PERMISSION_MATRIX.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{permissions.filter(perm => perm[role.name.toLowerCase()]).length}</p>
               <p className="text-xs text-gray-500">Nhóm quyền</p>
             </div>
           </div>
@@ -286,87 +355,96 @@ export default function RoleDetail() {
 
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-5">
-              <h3 className="text-base font-bold text-gray-900">Người dùng ({role.userCount})</h3>
+              <h3 className="text-base font-bold text-gray-900"> Người dùng ({users.length})</h3>
               <button className="text-sm text-blue-600 hover:text-blue-700 font-medium">
                 Xem tất cả
               </button>
             </div>
             <div className="space-y-3">
-              {mockUsers.map((user) => (
-                <div key={user.id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors">
-                  <div className="w-10 h-10 bg-linear-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center text-sm font-bold text-gray-600">
-                    {user.avatar}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{user.name}</p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
-                  </div>
-                  <ChevronRight size={16} className="text-gray-300" />
-                </div>
-              ))}
+              {users.map((user) => (
+<div 
+ key={user.UserID || user.userid}
+ className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50"
+>
+  <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+    {(user.FullName || user.fullname || "U")
+      .charAt(0)
+      .toUpperCase()}
+  </div>
+
+  <div>
+    <p className="text-sm font-semibold">
+      {user.FullName || user.fullname}
+    </p>
+
+    <p className="text-xs text-gray-500">
+      {user.Email || user.email}
+    </p>
+  </div>
+
+</div>
+))}
             </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm lg:col-span-2">
             <h3 className="text-base font-bold text-gray-900 mb-5">Lịch sử thay đổi</h3>
             <div className="space-y-0">
-              {mockHistory.map((item, index) => (
-                <div key={item.id} className="flex items-start gap-4 relative">
-                  {index < mockHistory.length - 1 && (
-                    <div className="absolute left-4.75 top-8 w-0.5 h-full bg-gray-100" />
-                  )}
-                  <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center shrink-0">
-                    <Clock size={16} className="text-gray-400" />
-                  </div>
-                  <div className="flex-1 pb-5">
-                    <p className="text-sm font-semibold text-gray-900">{item.action}</p>
-                    <p className="text-xs text-gray-500 mt-0.5">
-                      Bởi <span className="font-medium text-gray-700">{item.by}</span> · {item.date}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm lg:col-span-2">
+  <h3 className="text-base font-bold text-gray-900 mb-5">
+    Lịch sử thay đổi
+  </h3>
+
+  <div className="text-sm text-gray-500">
+    Chưa có dữ liệu lịch sử thay đổi
+  </div>
+</div>
             </div>
           </div>
         </div>
       )}
 
       {activeTab === 'permissions' && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-base font-bold text-gray-900">Phân quyền</h3>
-            <p className="text-sm text-gray-500">{totalPerms} quyền · {MOCK_PERMISSION_MATRIX.length} nhóm</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {MOCK_PERMISSION_MATRIX.map((group) => (
-              <div key={group.id} className="border border-gray-100 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <CheckCircle2 size={16} className="text-green-500" />
-                  <h4 className="text-sm font-semibold text-gray-900">{group.name}</h4>
-                </div>
-                <div className="space-y-2">
-                  {group.permissions.map((perm) => (
-                    <div key={perm.id} className="flex items-center gap-2">
-                      <div
-  className={`w-4 h-4 rounded border flex items-center justify-center ${
-    perm[role.key]
-      ? 'bg-blue-500 border-blue-500'
-      : 'bg-gray-50 border-gray-300'
-  }`}
+<div className="bg-white rounded-2xl border border-gray-100 p-6">
+
+<h3 className="text-base font-bold mb-6">
+Phân quyền
+</h3>
+
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+{permissions.map((perm)=>(
+
+<div 
+key={perm.PermissionID || perm.permissionid}
+className="border rounded-xl p-4"
 >
-  {perm[role.key] && (
-    <div className="w-2 h-2 rounded-sm bg-white" />
-  )}
+
+<div className="flex items-center gap-2">
+
+<CheckCircle2 
+size={16}
+className="text-green-500"
+/>
+
+
+<h4 className="font-semibold">
+{perm.PermissionName || perm.permissionname}
+</h4>
+
+
 </div>
-                      <span className="text-sm text-gray-600">{perm.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
+
+</div>
+
+))}
+
+</div>
+
+</div>
+)}
     </div>
     </div>
     </div>

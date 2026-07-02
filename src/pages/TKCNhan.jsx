@@ -17,7 +17,7 @@ export default function TaiKhoanCaNhan() {
 
   // 1. ĐÃ SỬA: Lấy tên từ localStorage để đồng bộ với Header, nếu không có mới dùng tên mặc định
   const currentUser = JSON.parse(localStorage.getItem("user"));
-
+  const isManager = currentUser?.rolename === "Manager";
 
 const [profileData, setProfileData] = useState({
   fullName: currentUser?.fullname || "",
@@ -147,9 +147,19 @@ const handleConfirmLogout = () => {
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
-              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
+            <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
             </Link>
+            
+            {!isManager && (
+  <Link
+    to="/dktkhoan"
+    className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all"
+  >
+    <UserPlus size={16} />
+    <span>Đăng kí bán hàng</span>
+  </Link>
+)}
           </nav>
         </div>
 
@@ -339,6 +349,7 @@ const handleConfirmLogout = () => {
 
 </div>
                 <div className="flex justify-end pt-3">
+                  
                   <button
                     type="submit"
                     disabled={isSaving}
@@ -353,7 +364,9 @@ const handleConfirmLogout = () => {
                       </>
                     )}
                   </button>
+                  
                 </div>
+                
               </form>
             </div>
           </div>
