@@ -17,7 +17,6 @@ export default function QuanLyTaiKhoan() {
   // 1. Danh sách dữ liệu gốc (Đã bổ sung trường phone, lastLogin, createdAt để đồng bộ giao diện)
   const [users, setUsers] = useState([]);
 
-
   // Các state lưu giá trị bộ lọc
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('Tất cả vai trò');
@@ -28,7 +27,6 @@ export default function QuanLyTaiKhoan() {
   const [userToSuspend, setUserToSuspend] = useState(null);
 const [isModalOpen, setIsModalOpen] = useState(false);
 
-
   // 🌟 STATE QUẢN LÝ POPUP CHỈNH SỬA TÀI KHOẢN
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
@@ -36,10 +34,8 @@ const [isModalOpen, setIsModalOpen] = useState(false);
   loadUsers();
 }, []);
 
-
 const loadUsers = () => {
   const token = localStorage.getItem("access_token");
-
 
   axios.get(
     `https://tmdt-backend-ego0.onrender.com/api/users?page=1&limit=10`,{
@@ -50,9 +46,7 @@ const loadUsers = () => {
     .then((res) => {
       console.log("DATA:", res.data);
 
-
       const apiUsers = res.data.data;
-
 
 const normalizedData = apiUsers.map((u) => ({
   id: u.UserID,
@@ -66,7 +60,6 @@ const normalizedData = apiUsers.map((u) => ({
     ? "Hoạt động"
     : "Đang khóa",
 
-
   short: u.FullName
     ? u.FullName
         .split(" ")
@@ -75,7 +68,6 @@ const normalizedData = apiUsers.map((u) => ({
         .toUpperCase()
     : "UN",
 }));
-
 
 setUsers(normalizedData);
     })
@@ -90,26 +82,20 @@ setUsers(normalizedData);
   const email = user?.email || "";
   const id = user?.id || "";
 
-
   const matchesSearch =
     name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     id.toLowerCase().includes(searchTerm.toLowerCase());
 
-
   const matchesRole =
 
-
     selectedRole === "Tất cả vai trò" || user?.role === selectedRole;
-
 
   const matchesStatus =
     selectedStatus === "Tất cả trạng thái" || user?.status === selectedStatus;
 
-
   return matchesSearch && matchesRole && matchesStatus;
 });
-
 
   // HÀM KHI CLICK VÀO THÙNG RÁC
   const handleTrashClick = (user) => {
@@ -123,7 +109,6 @@ setUsers(normalizedData);
   try {
     const token = localStorage.getItem("access_token");
 
-
     await axios.patch(
   `https://tmdt-backend-ego0.onrender.com/api/users/${userToSuspend.id}/status`,
   {},
@@ -134,17 +119,14 @@ setUsers(normalizedData);
   }
 );
 
-
     loadUsers();
     setIsModalOpen(false);
     setUserToSuspend(null);
-
 
   } catch (err) {
     console.log(err.response?.data || err);
   }
 };
-
 
   // 🌟 HÀM KHI CLICK VÀO ICON CÂY BÚT (MỞ POPUP CHỈNH SỬA)
   const handleEditClick = (user) => {
@@ -158,7 +140,6 @@ setUsers(normalizedData);
   try {
     const token = localStorage.getItem("access_token");
 
-
     await axios.patch(
       `https://tmdt-backend-ego0.onrender.com/api/users/${editingUser.id}/role`,
       {
@@ -171,17 +152,14 @@ setUsers(normalizedData);
       }
     );
 
-
     await loadUsers();
     setIsEditModalOpen(false);
     setEditingUser(null);
-
 
   } catch (err) {
     console.log(err.response?.data || err);
   }
 };
-
 
   // HÀM TỰ ĐỘNG LẤY CHỮ CÁI VIẾT TẮT ĐỂ LÀM AVATAR
   const getShortName = (fullName) => {
@@ -193,7 +171,6 @@ setUsers(normalizedData);
     const lastLetter = words[words.length - 1].charAt(0);
     return (firstLetter + lastLetter).toUpperCase();
   };
-
 
   const getRoleStyle = (role) => {
     switch (role) {
@@ -503,7 +480,6 @@ setUsers(normalizedData);
         </div>
       )}
 
-
       {/* 🌟 THÊM MỚI: POPUP CHỈNH SỬA TÀI KHOẢN (KHI CLICK ICON CÂY BÚT) */}
       {isEditModalOpen && editingUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -514,9 +490,8 @@ setUsers(normalizedData);
               <X size={18} />
             </button>
 
-
             <form onSubmit={(e) => e.preventDefault()}>
-             
+              
               {/* CỘT TRÁI: THÔNG TIN PROFILE VÀ HOẠT ĐỘNG */}
               <div className="space-y-4 lg:col-span-1">
                 <div className="bg-white rounded-2xl border border-slate-200/80 p-6 flex flex-col items-center justify-center text-center shadow-2xs">
