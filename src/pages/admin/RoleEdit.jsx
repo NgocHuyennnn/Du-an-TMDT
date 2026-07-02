@@ -12,21 +12,77 @@ import {
   Settings,
   HelpCircle,
   Bell,
-  Store
+  Store,
+  Tag,
+  Shield
 } from 'lucide-react';
-import { MOCK_ROLES } from '@/data/mockDataCH';
+import { useEffect } from 'react';
+import api from "@/lib/axios";
 import PermissionPanel from '@/components/admin/PermissionPanel';
 
 
 export default function RoleEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const role = MOCK_ROLES.find((r) => r.id === Number(id));
-
+  const [role,setRole] = useState(null);
+const [loading,setLoading] = useState(true);
   const [name, setName] = useState(role?.name || '');
   const [description, setDescription] = useState(role?.description || '');
   const [status, setStatus] = useState(role?.status || 'active');
+useEffect(()=>{
 
+ const getRole = async()=>{
+
+  try{
+
+   const res = await api.get("/api/roles");
+
+   const list = res.data.data || res.data;
+
+
+   const item = list.find(
+    r =>
+    String(r.RoleID ?? r.roleid) === String(id)
+   );
+
+
+   if(item){
+
+    setRole({
+      id:item.RoleID ?? item.roleid,
+      name:item.RoleName ?? item.rolename,
+      description:item.Description ?? item.description ?? "",
+      status:"active"
+    });
+
+
+    setName(item.RoleName ?? item.rolename);
+    setDescription(item.Description ?? item.description ?? "");
+
+   }
+
+
+  }catch(err){
+
+   console.log("Lỗi lấy role",err);
+
+  }finally{
+
+   setLoading(false);
+
+  }
+
+ }
+
+
+ getRole();
+
+},[id]);
+if(loading){
+ return <div className="text-center py-20">
+   Đang tải...
+ </div>
+}
   if (!role) {
     return (
         
@@ -45,10 +101,35 @@ export default function RoleEdit() {
     );
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    navigate('/roles');
-  };
+  const handleSubmit = async(e)=>{
+
+ e.preventDefault();
+
+ try{
+
+  await api.patch(
+    `/api/roles/${id}`,
+    {
+    rolename: name,
+    description: description,
+      IsActive: status === "active"
+    }
+  );
+
+
+  navigate('/roles');
+
+
+ }catch(error){
+
+  console.log(
+   "Lỗi cập nhật role:",
+   error.response?.data || error.message
+  );
+
+ }
+
+};
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full">
@@ -62,11 +143,17 @@ export default function RoleEdit() {
             <span className="text-base sm:text-xl font-black tracking-tight text-blue-500">TONIC</span>
           </div>
           <nav className="p-3 space-y-1">
+            <Link to="/" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Home size={16} /> <span>Trang chủ</span>
+            </Link>
             <Link to="/roles" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-600 text-white rounded-xl shadow-sm transition-all">
-              <Home size={16} /> <span>Quản lý vai trò</span>
+              <Shield size={16} /> <span>Quản lý vai trò</span>
             </Link>
             <Link to="/cuahang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <Store size={16} /> <span>Quản lý cửa hàng</span>
+            </Link>
+            <Link to="/danhmuc" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
+              <Tag size={16} /> <span>Danh mục</span>
             </Link>
             <Link to="/baocao" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all">
               <ShoppingBag size={16} /> <span>Báo cáo</span>
