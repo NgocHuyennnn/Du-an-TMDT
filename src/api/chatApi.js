@@ -1,27 +1,28 @@
 import axios from "axios";
 
-const BASE_URL = "https://tmdt-backend-ego0.onrender.com/api";
+const API = axios.create({
+    baseURL: "https://tmdt-backend-ego0.onrender.com/api",
+});
 
-const getToken = () => localStorage.getItem("access_token");
+API.interceptors.request.use((config) => {
+    const token = localStorage.getItem("access_token");
 
-// Lấy lịch sử chat
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
+
 export const getChatHistory = (userId, shopId) => {
-  return axios.get(`${BASE_URL}/chat/history`, {
-    params: {
-      user_id: userId,
-      shop_id: shopId,
-    },
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
+    return API.get("/chat/history", {
+        params: {
+            user_id: userId,
+            shop_id: shopId,
+        },
+    });
 };
 
-// Gửi tin nhắn
 export const sendMessage = (data) => {
-  return axios.post(`${BASE_URL}/chat/send`, data, {
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-    },
-  });
+    return API.post("/chat/send", data);
 };
