@@ -257,7 +257,7 @@ const reviewedOrders =
                         Xem shop
                       </button>
                       <button
-                        onClick={() => navigate("/chat")}
+                        onClick={() => navigate("/chatkhach")}
                         className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer"
                       >
                         <MessageSquare size={10} />
@@ -391,7 +391,7 @@ const reviewedOrders =
 
   {/* Luôn hiển thị */}
   <button
-    onClick={() => navigate("/chat")}
+    onClick={() => navigate("/chatkhach")}
     className="border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer"
   >
     Liên hệ người bán

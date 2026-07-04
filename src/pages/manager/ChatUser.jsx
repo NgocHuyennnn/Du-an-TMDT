@@ -68,10 +68,10 @@ const loadConversations = async () => {
         setConversations(unique);
 
     } catch (err) {
-
-        console.log(err);
-
-    }
+    console.log(err);
+    console.log(err.response);
+    console.log(err.response?.data);
+}
 };
 
 
@@ -83,6 +83,7 @@ const loadConversations = async () => {
     });
   }, [messages]);
   const handleSelectConversation = async (conversation) => {
+    
 
     setActiveChat(conversation);
 
@@ -110,31 +111,28 @@ const loadConversations = async () => {
 };
 useEffect(() => {
 
-    socket.on("receive_message", (msg) => {
+    const receive = (msg) => {
 
-        setMessages(prev => [...prev, msg]);
+        if (!activeChat) return;
 
-    });
-
-    return () => {
-
-        socket.off("receive_message");
+        if (
+            msg.UserID === activeChat.UserID &&
+            msg.ShopID === activeChat.ShopID
+        ) {
+            setMessages(prev => [...prev, msg]);
+        }
 
     };
 
-}, []);
+    socket.on("receive_message", receive);
+
+    return () => socket.off("receive_message", receive);
+
+}, [activeChat]);
 
   // SEND MESSAGE
   const handleSend = async () => {
-    const data = {
-    userid: activeChat.UserID,
-    shopid: activeChat.ShopID,
-    content: input,
-};
 
-console.log(data);
-
-await sendMessageApi(data);
     if (!input.trim()) return;
 
     if (!activeChat) return;
@@ -142,13 +140,9 @@ await sendMessageApi(data);
     try {
 
         await sendMessageApi({
-
             userid: activeChat.UserID,
-
             shopid: activeChat.ShopID,
-
-            content: input,
-
+            content: input.trim(),
         });
 
         setInput("");
@@ -239,40 +233,57 @@ await sendMessageApi(data);
           ref={chatBoxRef}
           className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#f6f8fc]"
         >
-          {messages.map((m,i)=>(
-            <div
-              key={m.MessageID}
-              className={`flex ${
-                m.SenderRole==="Shop"
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
-            >
-              <div
-  className={`px-4 py-2 text-sm max-w-xs leading-relaxed shadow-sm ${
-    m.SenderRole==="Shop"
-      ? "bg-blue-600 text-white rounded-2xl rounded-br-md"
-      : "bg-white border rounded-2xl rounded-bl-md"
-  }`}
->
-  <div>{m.Content}</div>
+          {messages.map((m) => {
 
-  {/* TIME */}
-  <div
-    className={`text-[10px] mt-1 ${
-      m.SenderRole==="Shop"
-        ? "text-blue-100"
-        : "text-gray-400"
-    }`}
-  >
-    {new Date(m.SentAt).toLocaleTimeString("vi-VN",{
-    hour:"2-digit",
-    minute:"2-digit"
-})}
-  </div>
-</div>
+    const isShop = m.SenderRole === "Shop";
+
+    return (
+
+        <div
+            key={m.MessageID}
+            className={`flex ${isShop ? "justify-end" : "justify-start"}`}
+        >
+
+            <div
+                className={`max-w-md px-4 py-2 rounded-2xl shadow ${
+                    isShop
+                        ? "bg-blue-600 text-white rounded-br-sm"
+                        : "bg-white border text-gray-800 rounded-bl-sm"
+                }`}
+            >
+
+                {m.Content && (
+                    <div>{m.Content}</div>
+                )}
+
+                {m.ImageURL && (
+                    <img
+                        src={m.ImageURL}
+                        alt=""
+                        className="mt-2 rounded-lg max-h-60"
+                    />
+                )}
+
+                <div
+                    className={`text-[10px] mt-2 ${
+                        isShop
+                            ? "text-blue-100"
+                            : "text-gray-400"
+                    }`}
+                >
+                    {new Date(m.SentAt).toLocaleTimeString("vi-VN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                    })}
+                </div>
+
             </div>
-          ))}
+
+        </div>
+
+    );
+
+})}
         </div>
 
         {/* QUICK REPLIES */}
