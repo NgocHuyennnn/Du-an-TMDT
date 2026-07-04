@@ -1,8 +1,8 @@
 import { TrendingUp, ShoppingCart, Package, Users, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { orders } from '@/data/mockDataCH';
-import { useState } from 'react';
+import { useState, useEffect } from "react";
+import { getOrders } from "@/api/orderApi";
 import ActivityChart from '@/components/admin/Activitychar';
-
+import axios from "axios";
 const tabs = [
   {
     key: 'dashboard',
@@ -200,18 +200,51 @@ const segments = orderStats.reduce((acc, item) => {
 
 // ── Page ────────────────────────────────────────────────────────────────────
 function DashboardContent() {
-  const [filter, setFilter] = useState('month');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [orders, setOrders] = useState([]);
+  const [filter, setFilter] = useState("month");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [products, setProducts] = useState([]);
+  useEffect(() => {
+  const loadData = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
 
+      const [orderRes, productRes] = await Promise.all([
+        getOrders(1, 1000),
+        axios.get(
+          "https://tmdt-backend-ego0.onrender.com/api/products",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ),
+      ]);
 
+      setOrders(orderRes.data.data);
+      setProducts(productRes.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  loadData();
+}, []);
+
+  useEffect(() => {
+  console.log("Orders:", orders);
+}, [orders]);
+console.log(orders.map(o => o.Status));
+  // Lọc đơn hàng
   const currentMonth = new Date().getMonth() + 1;
-  const currentYear = new Date().getFullYear();
-  const filteredAllOrders = orders.filter(order => {
-  const orderDate = new Date(order.date);
+const currentYear = new Date().getFullYear();
+
+const filteredAllOrders = orders.filter((order) => {
+  const orderDate = new Date(order.OrderDate || order.CreatedAt);
+
   const month = orderDate.getMonth() + 1;
   const year = orderDate.getFullYear();
-
 
   if (startDate && endDate) {
     return (
@@ -220,88 +253,54 @@ function DashboardContent() {
     );
   }
 
-
-  if (filter === 'month') {
+  if (filter === "month") {
     return month === currentMonth && year === currentYear;
   }
 
-
-  if (filter === 'quarter') {
-    const currentQuarter = Math.ceil(currentMonth / 3);
-    const orderQuarter = Math.ceil(month / 3);
-
-
-    return currentQuarter === orderQuarter && year === currentYear;
+  if (filter === "quarter") {
+    return (
+      Math.ceil(month / 3) === Math.ceil(currentMonth / 3) &&
+      year === currentYear
+    );
   }
-
 
   return year === currentYear;
 });
-  // Lọc đơn hàng
-  const filteredOrders = orders.filter(order => {
-    if (order.status !== 'HOÀN THÀNH') return false;
 
+const isCompleted = (status) =>
+  ["Đã giao", "Hoàn thành", "DELIVERED", "COMPLETED"].includes(status);
 
-    const orderDate = new Date(order.date);
-    const month = orderDate.getMonth() + 1;
-    const year = orderDate.getFullYear();
-
-
-    if (startDate && endDate) {
-      return (
-        orderDate >= new Date(startDate) &&
-        orderDate <= new Date(endDate)
-      );
-    }
-
-
-    if (filter === 'month') {
-      return month === currentMonth && year === currentYear;
-    }
-
-
-    if (filter === 'quarter') {
-      const currentQuarter = Math.ceil(currentMonth / 3);
-      const orderQuarter = Math.ceil(month / 3);
-
-
-      return (
-        currentQuarter === orderQuarter &&
-        year === currentYear
-      );
-    }
-
-
-    return year === currentYear;
-  });
+const filteredOrders = filteredAllOrders.filter(
+  (order) => isCompleted(order.Status)
+);
 const orderStats = [
   {
-    label: 'Chờ xử lý',
+    label: "Chờ xử lý",
     count: filteredAllOrders.filter(
-      order => order.status === 'CHỜ XỬ LÝ'
+      order => order.Status === "Chờ xác nhận"
     ).length,
-    color: '#f59e0b',
+    color: "#f59e0b",
   },
   {
-    label: 'Đang giao',
+    label: "Đang giao",
     count: filteredAllOrders.filter(
-      order => order.status === 'ĐANG GIAO'
+      order => order.Status === "Đang giao"
     ).length,
-    color: '#3b82f6',
+    color: "#3b82f6",
   },
   {
-    label: 'Hoàn thành',
+    label: "Đã giao",
     count: filteredAllOrders.filter(
-      order => order.status === 'HOÀN THÀNH'
+      order => order.Status === "Đã giao"
     ).length,
-    color: '#10b981',
+    color: "#10b981",
   },
   {
-    label: 'Đã huỷ',
+    label: "Đã huỷ",
     count: filteredAllOrders.filter(
-      order => order.status === 'ĐÃ HỦY'
+      order => order.Status === "Đã hủy"
     ).length,
-    color: '#ef4444',
+    color: "#ef4444",
   },
 ];
 const orderTotal = orderStats.reduce(
@@ -310,74 +309,62 @@ const orderTotal = orderStats.reduce(
 );
   // KPI
   const totalRevenue = filteredOrders.reduce(
-    (sum, order) => sum + order.total,
+    (sum, order) => sum + order.TotalAmount,
     0
   );
 
 
   const totalOrders = filteredOrders.length;
-  const topProducts = orders.reduce((acc, order) => {
+  const topProducts = orders
+  .reduce((acc, order) => {
+    (order.Items || []).forEach(item => {
+      const exist = acc.find(p => p.id === item.ProductID);
 
-
-  order.products.forEach(product => {
-
-
-    const exist = acc.find(
-      item => item.name === product.name
-    );
-
-
-    if (exist) {
-      exist.sold += product.qty;
-      exist.revenue += product.qty * product.price;
-
-
-      // nếu có đơn hoàn thành thì ưu tiên trạng thái
-      if (order.status === 'HOÀN THÀNH') {
-        exist.status = 'active';
+      if (exist) {
+        exist.sold += item.Quantity;
+        exist.revenue += item.Quantity * item.UnitPrice;
+      } else {
+        acc.push({
+          id: item.ProductID,
+          name: item.ProductName,
+          sold: item.Quantity,
+          revenue: item.Quantity * item.UnitPrice,
+        });
       }
+    });
 
+    return acc;
+  }, [])
+  .map(item => {
+  const product = products.find(
+    p => p.ProductID === item.id
+  );
 
-    } else {
-
-
-      acc.push({
-        name: product.name,
-        sold: product.qty,
-        revenue: product.qty * product.price,
-        status:
-          order.status === 'HOÀN THÀNH'
-            ? 'active'
-            : 'pending'
-      });
-
-
-    }
-
-
-  });
-
-
-  return acc;
-
-
-}, [])
-.sort((a,b)=> b.sold - a.sold)
-.slice(0,3);
+  return {
+    ...item,
+    status: !product?.IsActive
+      ? "hidden"
+      : product?.StockQuantity === 0
+      ? "soldout"
+      : "active",
+  };
+})
+.sort((a, b) => b.sold - a.sold)
+.slice(0, 3);
   const totalCustomers = new Set(
-    filteredOrders.map(order => order.customerEmail)
-  ).size;
+  filteredOrders.map(order => order.UserID)
+).size;
 
 
   const totalProducts = filteredOrders.reduce(
-    (sum, order) =>
-      sum +
-      order.products.reduce(
-        (qty, product) => qty + product.qty,
-        0
-      ),
-    0
-  );
+  (sum, order) =>
+    sum +
+    (order.Items || []).reduce(
+      (qty, item) => qty + item.Quantity,
+      0
+    ),
+  0
+);
 
 
   // Biểu đồ
@@ -385,8 +372,8 @@ const orderTotal = orderStats.reduce(
 
 
   filteredOrders.forEach(order => {
-    const month = new Date(order.date).getMonth();
-    revenueByMonth[month] += order.total;
+    const month = new Date(order.OrderDate || order.CreatedAt).getMonth();
+   revenueByMonth[month] += Number(order.TotalAmount || 0);
   });
 
 
@@ -536,7 +523,7 @@ const orderTotal = orderStats.reduce(
               <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left w-12">Ảnh</th>
               <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-left">Tên sản phẩm</th>
               <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Đã bán</th>
-              <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Doanh thu</th>
+              <th className="px-3 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-right">Tổng tiền</th>
               <th className="px-5 py-3 text-xs font-semibold text-slate-400 uppercase tracking-wider text-center">Trạng thái</th>
             </tr>
           </thead>
@@ -572,53 +559,43 @@ const orderTotal = orderStats.reduce(
     </div>
   );
 }
-export default function DashboardPage(){
+export default function DashboardPage() {
+  const [activePage, setActivePage] = useState('dashboard');
+  const [orders, setOrders] = useState([]);
 
-  const [activePage,setActivePage] = useState('dashboard');
+  useEffect(() => {
+    const loadOrders = async () => {
+      try {
+        const res = await getOrders(1, 1000);
+        setOrders(res.data.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
+    loadOrders();
+  }, []);
 
   return (
-
     <div className="min-h-screen bg-slate-50">
+      <NavTabs active={activePage} onChange={setActivePage} />
 
-      <NavTabs
-        active={activePage}
-        onChange={setActivePage}
-      />
+      {activePage === 'dashboard' && (
+        <DashboardContent orders={orders} />
+      )}
 
-
-      {
-        activePage === 'dashboard'
-        &&
-        <DashboardContent/>
-      }
-
-
-      {
-        activePage === 'products'
-        &&
+      {activePage === 'products' && (
         <div className="p-6">
-
           <div className="bg-white rounded-2xl p-5">
-
             <h2 className="font-bold text-slate-700 mb-4">
               Phân tích hoạt động
             </h2>
 
-
-            <ActivityChart
-              orders={orders}
-            />
-
+            <ActivityChart orders={orders} />
           </div>
-
         </div>
-      }
-
-
+      )}
     </div>
-
-  )
+  );
 }
-
 

@@ -1,14 +1,20 @@
 import  { useState, useEffect } from 'react';
-// Khôi phục điều hướng chuẩn của react-router-dom
-import axios from "axios";
+import {
+    getOrders,
+    getOrderDetail,
+    cancelOrder
+} from "@/api/orderApi"; "@/api/orderApi";
+
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Search, Bell, HelpCircle, Home, ShoppingBag, 
+import {
+  Search, Bell, HelpCircle, Home, ShoppingBag,
   ClipboardList, Users,  Settings, MessageSquare, ArrowLeft, X,
-  Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
-  UserPlus,
-  LogOut
+  Trash2, ShieldCheck, Check, Truck, RefreshCw, Award,
+  UserPlus
 } from 'lucide-react';
+
+
+
 
 export default function QuanLyDonHang() {
   const API_URL = "https://tmdt-backend-ego0.onrender.com/api";
@@ -16,25 +22,32 @@ export default function QuanLyDonHang() {
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
-  const currentUser = JSON.parse(localStorage.getItem("user"));
-  const isManager = currentUser?.rolename === "Manager";
-  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-  
-  
+
+
   // 1. ĐÃ THÊM: State quản lý tên người dùng để hiển thị Avatar đồng bộ
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "Khách";
   });
+ 
+   const currentUser = JSON.parse(localStorage.getItem("user"));
+  const isManager = currentUser?.rolename === "Manager";
 
   // 2. ĐÃ THÊM: Lắng nghe sự thay đổi tên từ localStorage (giống các trang khác)
   useEffect(() => {
-    const handleAuthChange = () => {
-      setUserName(localStorage.getItem("userName") || "Khách");
-    };
-    window.addEventListener("auth-change", handleAuthChange);
-    return () => window.removeEventListener("auth-change", handleAuthChange);
-  }, []);
-  
+        async function test() {
+            const res = await getOrderDetail(
+                "612f63f6-fa87-4142-b308-75f315ce8ea9"
+            );
+
+
+            console.log("DETAIL =", res.data);
+        }
+
+
+        test();
+    }, []);
+ 
+
 
   // 3. ĐÃ THÊM: Hàm tạo chữ viết tắt từ tên người dùng (Nguyễn Văn A -> NA)
   const getInitials = (name) => {
@@ -45,36 +58,41 @@ export default function QuanLyDonHang() {
     return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
   };
 
+
   const tabs = [
-    'Tất cả', 'Chờ thanh toán', 'Chờ vận chuyển', 
-    'Đang giao hàng', 'Hoàn thành', 'Đã hủy', 'Trả hàng/Hoàn tiền'
+    'Tất cả', 'Chờ xác nhận',
+    'Đang giao', 'Đã giao', 'Đã hủy',
   ];
+
 
   const [orders, setOrders] = useState([]);
   const fetchOrders = async () => {
-  try {
-    const token = localStorage.getItem("access_token");
+    try {
+        const res = await getOrders();
 
-    if (!token) {
-      console.log("Chưa có token!");
-      navigate("/login");
-      return;
+
+        console.log(res.data);
+
+
+        if (res.data.status === "success") {
+            setOrders(res.data.data || []);
+        }
+
+
+    } catch (err) {
+        console.error(err);
     }
-
-    const res = await axios.get(`${API_URL}/orders`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    setOrders(res.data.data);
-  } catch (err) {
-    console.log("Lỗi API:", err.response?.data);
-  }
 };
+
+
 useEffect(() => {
-  fetchOrders();
+    fetchOrders();
 }, []);
+useEffect(() => {
+    console.log("orders state =", orders);
+}, [orders]);
+
+
   const handleUpdateQuantity = (orderId, type) => {
     setOrders(prevOrders =>
       prevOrders.map(order => {
@@ -88,46 +106,56 @@ useEffect(() => {
     );
   };
 
+
   const handleOpenCancelModal = (orderId) => {
     setSelectedOrderId(orderId);
     setIsModalOpen(true);
   };
 
-  const handleConfirmCancel = () => {
-    setOrders(prevOrders => 
-      prevOrders.map(order => 
-        order.id === selectedOrderId ? { ...order, status: 'ĐÃ HỦY' } : order
-      )
-    );
-    setIsModalOpen(false);
-    setSelectedOrderId(null);
-  };
 
-  const filteredOrders = orders.filter(order => {
-    if (activeTab === 'Tất cả') return true;
-    if (activeTab === 'Chờ vận chuyển') return order.status === 'CHỜ VẬN CHUYỂN';
-    if (activeTab === 'Đang giao hàng') return order.status === 'ĐANG GIAO HÀNG';
-    if (activeTab === 'Hoàn thành') return order.status === 'HOÀN THÀNH';
-    if (activeTab === 'Đã hủy' || activeTab === 'Trả hàng/Hoàn tiền') return order.status === 'ĐÃ HỦY';
-    if (activeTab === 'Chờ thanh toán') return order.status === 'CHỜ THANH TOÁN';
-    return true;
-  });
-  const handleConfirmLogout = () => {
-  setIsLogoutModalOpen(false);
+  const handleConfirmCancel = async () => {
+    try {
+        await cancelOrder(selectedOrderId);
 
 
-  localStorage.removeItem("user");
-  localStorage.removeItem("access_token");
+        setIsModalOpen(false);
+        setSelectedOrderId(null);
 
 
-  window.dispatchEvent(new Event("auth-change"));
-
-
-  navigate('/');
+        fetchOrders();
+    } catch (err) {
+        alert(err.response?.data?.message || "Hủy đơn thất bại");
+    }
 };
+
+
+  const filteredOrders = orders.filter((order) => {
+    if (activeTab === "Tất cả") return true;
+
+
+    if (activeTab === "Chờ xác nhận")
+        return order.Status === "Chờ xác nhận";
+
+
+    if (activeTab === "Đang giao")
+        return order.Status === "Đang giao";
+
+
+    if (activeTab === "Đã giao")
+        return order.Status === "Đã giao";
+
+
+    if (activeTab === "Đã hủy")
+        return order.Status === "Đã hủy";
+
+
+    return true;
+});
+
+
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative">
-      
+     
       {/* 1. SIDEBAR */}
       <div className="w-60 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0">
         <div>
@@ -147,12 +175,11 @@ useEffect(() => {
             <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Users size={16} /> <span>Tài khoản</span>
             </Link>
-            
+           
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            
-           <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+            <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
             </Link>
             
@@ -168,6 +195,7 @@ useEffect(() => {
           </nav>
         </div>
 
+
         <div className="p-3 border-t border-gray-100 space-y-1">
           <Link to="/cai-dat" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
             <Settings size={14} /> <span>Cài đặt</span>
@@ -175,30 +203,24 @@ useEffect(() => {
           <Link to="/ho-tro" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
             <HelpCircle size={14} /> <span>Hỗ trợ</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => setIsLogoutModalOpen(true)}
-            className="w-full flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-red-400 hover:text-red-600 hover:bg-red-50/50 rounded-lg transition-all border-none bg-transparent text-left cursor-pointer"
-          >
-            <LogOut size={14} /> <span>Đăng xuất</span>
-          </button>
         </div>
       </div>
 
+
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+       
         {/* HEADER TOPBAR */}
         <header className="h-14 bg-white border-b border-gray-100 px-6 flex items-center justify-between shrink-0">
           <div className="w-96 relative flex items-center">
             <Search size={14} className="absolute left-3 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm đơn hàng..." 
+            <input
+              type="text"
+              placeholder="Tìm kiếm đơn hàng..."
               className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 h-8 text-xs outline-none focus:border-blue-500 focus:bg-white transition-all"
             />
           </div>
-          
+         
           <div className="flex items-center gap-4 text-gray-600">
             <button className="p-1 hover:bg-gray-50 rounded-full relative cursor-pointer hover:text-blue-600">
               <Bell size={16} />
@@ -216,18 +238,20 @@ useEffect(() => {
           </div>
         </header>
 
+
         {/* MAIN BODY COMPONENT */}
         <main className="flex-1 p-6 overflow-y-auto space-y-4">
-          
+         
           <div className="flex items-center gap-2">
-            <button 
-              onClick={() => navigate('/')} 
+            <button
+              onClick={() => navigate('/page1')}
               className="text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer p-0"
             >
               <ArrowLeft size={16} />
             </button>
             <h2 className="text-lg font-black tracking-tight text-gray-900">Đơn mua</h2>
           </div>
+
 
           {/* TÁP TRẠNG THÁI */}
           <div className="bg-white border-b border-gray-200 flex overflow-x-auto rounded-t-xl scrollbar-none">
@@ -236,8 +260,8 @@ useEffect(() => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-5 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
-                  activeTab === tab 
-                    ? 'border-blue-600 text-blue-600 font-black' 
+                  activeTab === tab
+                    ? 'border-blue-600 text-blue-600 font-black'
                     : 'border-transparent text-gray-400 hover:text-gray-700'
                 }`}
               >
@@ -246,101 +270,127 @@ useEffect(() => {
             ))}
           </div>
 
+
           {/* THANH TÌM KIẾM ĐƠN HÀNG PHỤ */}
           <div className="bg-gray-50 border border-gray-200 p-3 flex items-center relative rounded-md">
             <Search size={14} className="absolute left-6 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Bạn có thể tìm kiếm theo ID đơn hàng hoặc Tên Sản phẩm" 
+            <input
+              type="text"
+              placeholder="Bạn có thể tìm kiếm theo ID đơn hàng hoặc Tên Sản phẩm"
               className="w-full bg-white border border-gray-200 rounded pl-10 pr-4 h-9 text-xs outline-none focus:border-blue-500/50 transition-all"
             />
           </div>
+
 
           {/* DANH SÁCH ĐƠN HÀNG CHUYỂN ĐỔI */}
           <div className="space-y-4">
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
-                <div key={order.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm space-y-4">
-                  
+                <div key={order.OrderID}>
+                 
                   {/* Header Đơn hàng */}
                   <div className="flex items-center justify-between border-b border-gray-50 pb-3">
                     <div className="flex items-center gap-2">
                       <Award size={14} className="text-amber-500" />
-                      <span className="text-xs font-black text-gray-900">{order.shopName}</span>
+                      <span className="text-xs font-black text-gray-900">{order.ShopName}</span>
                       <button className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-blue-700 transition-colors shadow-sm cursor-pointer">
                         Xem shop
                       </button>
-                      <button className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer">
-                        <MessageSquare size={10} /> Chat
+                      <button
+                        onClick={() => navigate("/chat")}
+                        className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer"
+                      >
+                        <MessageSquare size={10} />
+                        Chat
                       </button>
                     </div>
-                    
-                    <div className={`text-[11px] font-extrabold tracking-wider uppercase flex items-center gap-1.5 ${
-                      order.status === 'ĐÃ HỦY' ? 'text-gray-400' : 'text-blue-600'
-                    }`}>
-                      {order.status === 'ĐANG GIAO HÀNG' && <Truck size={12} className="text-blue-500 animate-pulse" />}
-                      {order.status === 'HOÀN THÀNH' && <Check size={12} className="text-green-500" />}
-                      <span className={`w-1.5 h-1.5 rounded-full ${order.status === 'ĐÃ HỦY' ? 'bg-gray-400' : 'bg-blue-500'}`}></span>
-                      {order.status}
-                    </div>
+                   
+                    <div
+  className={`text-[11px] font-extrabold tracking-wider uppercase flex items-center gap-1.5 ${
+    order.Status === "Đã hủy"
+      ? "text-red-600"
+      : order.Status === "Đã giao"
+      ? "text-green-600"
+      : "text-blue-600"
+  }`}
+>
+  {order.Status === "Đang giao" && (
+    <Truck size={12} className="text-blue-500 animate-pulse" />
+  )}
+
+
+  {order.Status === "Đã giao" && (
+    <Check size={12} className="text-green-500" />
+  )}
+
+
+  <span
+    className={`w-1.5 h-1.5 rounded-full ${
+      order.Status === "Đã hủy"
+        ? "bg-red-500"
+        : order.Status === "Đã giao"
+        ? "bg-green-500"
+        : "bg-blue-500"
+    }`}
+  ></span>
+
+
+  {order.Status}
+</div>
                   </div>
+
 
                   {/* Chi tiết sản phẩm trong đơn */}
                   <div className="flex items-start gap-4 py-1">
-                    <img 
-                      src={order.image} 
-                      alt={order.productName} 
-                      className="w-16 h-16 object-cover bg-gray-50 rounded border border-gray-100 shrink-0" 
-                    />
+                    <img
+                      src={
+                          order.Items?.[0]?.ImageURL ||
+                          "https://placehold.co/80x80"
+                      }
+                      alt={order.Items?.[0]?.ProductName}
+                      className="w-16 h-16 object-cover rounded"
+                  />
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-1.5">
-                        <h4 className="text-xs font-bold text-gray-900 truncate">{order.productName}</h4>
+                        <h4 className="text-xs font-bold">
+                            {order.Items?.[0]?.ProductName || "Không có tên sản phẩm"}
+                        </h4>
                         <ShieldCheck size={13} className="text-blue-500 shrink-0" />
                       </div>
-                      <p className="text-[10px] text-gray-400 font-medium">Phân loại: {order.variant}</p>
-                      
+                      <p className="text-[10px] text-gray-400">
+                          Phương thức thanh toán: {order.PaymentMethod}
+                      </p>
+                     
                       {/* Bộ tăng giảm số lượng */}
-                      <div className="flex items-center gap-2 mt-1">
-                        <button 
-                          onClick={() => handleUpdateQuantity(order.id, 'dec')}
-                          className="p-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
-                        >
-                          <Minus size={10} />
-                        </button>
-                        <span className="text-[11px] font-bold text-gray-800 w-4 text-center">{order.quantity}</span>
-                        <button 
-                          onClick={() => handleUpdateQuantity(order.id, 'inc')}
-                          className="p-0.5 bg-gray-100 hover:bg-gray-200 rounded text-gray-600 transition-colors cursor-pointer"
-                        >
-                          <Plus size={10} />
-                        </button>
-                      </div>
+                      <p className="text-[11px] text-gray-500">
+                          x{order.Items?.[0]?.Quantity}
+                      </p>
                     </div>
 
+
                     <div className="text-right shrink-0 space-y-0.5">
-                      {order.oldPrice && (
-                        <p className="text-[10px] text-gray-300 line-through font-medium">₫{order.oldPrice.toLocaleString('vi-VN')}</p>
-                      )}
-                      <p className="text-xs font-black text-gray-900">₫{order.price.toLocaleString('vi-VN')}</p>
-                      {order.isVoucherApplied && (
-                        <span className="inline-flex items-center gap-0.5 text-[9px] bg-red-50 text-red-500 px-1 rounded font-bold border border-red-100">
-                          <Ticket size={8} /> Mã giảm giá
-                        </span>
-                      )}
+                      <div className="text-right shrink-0 space-y-0.5">
+                          <p className="text-xs font-black text-gray-900">
+                            ₫{Number(order.TotalAmount).toLocaleString("vi-VN")}
+                          </p>
+                        </div>
+
+
                     </div>
                   </div>
+
 
                   {/* Bảng giá & Nút Action */}
                   <div className="border-t border-gray-50 pt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center justify-end sm:justify-start gap-1 text-xs font-bold ml-auto sm:ml-0">
                       <span className="text-[11px] text-gray-400 font-medium">💰 Tổng số tiền:</span>
                       <span className="text-sm font-black text-blue-600 underline tracking-tight">
-                        ₫{order.totalPrice.toLocaleString('vi-VN')}
+                        ₫{order.TotalAmount.toLocaleString('vi-VN')}
                       </span>
                     </div>
-                    
+                   
                     <div className="flex items-center justify-end gap-2">
-                      {order.status === 'HOÀN THÀNH' && (
+                      {order.Status === 'HOÀN THÀNH' && (
                         <>
                           <button className="flex items-center gap-1 bg-blue-600 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm cursor-pointer">
                             <RefreshCw size={12} /> Mua lại
@@ -350,25 +400,30 @@ useEffect(() => {
                           </Link>
                         </>
                       )}
-                      
-                      {order.status === 'ĐANG GIAO HÀNG' && (
+                     
+                      {order.Status === 'ĐANG GIAO HÀNG' && (
                         <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
                       )}
-                      
-                      {order.status === 'CHỜ VẬN CHUYỂN' && (
-                        <button 
-                          onClick={() => handleOpenCancelModal(order.id)}
-                          className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-black transition-all shadow-sm cursor-pointer"
-                        >
-                          <Trash2 size={12} /> Hủy đơn hàng
-                        </button>
+                     
+                      {order.Status === "Chờ xác nhận" && (
+                          <button
+                              onClick={() => handleOpenCancelModal(order.OrderID)}
+                              className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
+                          >
+                              <Trash2 size={12} />
+                              Hủy đơn hàng
+                          </button>
                       )}
-                      
-                      <button className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer">
+                     
+                      <button
+                        onClick={() => navigate("/chat")}
+                        className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer"
+                      >
                         Liên hệ người bán
                       </button>
                     </div>
                   </div>
+
 
                 </div>
               ))
@@ -379,24 +434,27 @@ useEffect(() => {
             )}
           </div>
 
+
         </main>
       </div>
+
 
       {/* 3. MODAL XÁC NHẬN HỦY ĐƠN */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
           ></div>
-          
+         
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-gray-100">
-            <button 
+            <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-slate-50 transition-colors"
             >
               <X size={16} />
             </button>
+
 
             <div className="text-center space-y-3 mt-2">
               <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto font-bold text-xl">
@@ -408,14 +466,15 @@ useEffect(() => {
               </p>
             </div>
 
+
             <div className="flex items-center gap-2 mt-6">
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="flex-1 h-9 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 Đóng
               </button>
-              <button 
+              <button
                 onClick={handleConfirmCancel}
                 className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
               >
@@ -425,52 +484,9 @@ useEffect(() => {
           </div>
         </div>
       )}
-        {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-xs"
-            onClick={() => setIsLogoutModalOpen(false)}
-          ></div>
-         
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-slate-100 animate-in zoom-in-95 duration-150">
-            <button
-              onClick={() => setIsLogoutModalOpen(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1 rounded-full hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X size={16} />
-            </button>
 
 
-            <div className="text-center space-y-3 mt-2">
-              <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto font-bold text-xl">
-                ⚠️
-              </div>
-              <h3 className="text-sm font-black text-slate-900 tracking-tight">Xác nhận đăng xuất</h3>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                Bạn có chắc chắn muốn đăng xuất khỏi tài khoản quản trị hệ thống hiện tại không?
-              </p>
-            </div>
-
-
-            <div className="flex items-center gap-2 mt-6">
-              <button
-                type="button"
-                onClick={() => setIsLogoutModalOpen(false)}
-                className="flex-1 h-9 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmLogout}
-                className="flex-1 h-9 bg-red-600 hover:bg-red-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
-              >
-                Đăng xuất
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
+

@@ -1,40 +1,96 @@
-import { useState } from 'react';
+
 import { Package } from 'lucide-react';
-import { productCategories, orders } from '@/data/mockDataCH';
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { getOrders } from "@/api/orderApi";
 
 
-function buildReportRows(orders) {
+function buildReportRows(orders, products, categories) {
   const reportMap = {};
 
   orders.forEach(order => {
-    if (order.status !== 'HOÀN THÀNH') return;
+    if (order.Status !== "Đã giao") return;
 
-    order.products.forEach(item => {
-      if (!reportMap[item.name]) {
-        reportMap[item.name] = {
-          id: item.name,
-          name: item.name,
-          category: '-',
+    (order.Items || []).forEach(item => {
+
+      if (!reportMap[item.ProductID]) {
+
+        const product = products.find(
+          p => p.ProductID === item.ProductID
+        );
+
+        const category = categories.find(
+          c => c.CategoryID === product?.CategoryID
+        );
+
+        reportMap[item.ProductID] = {
+          id: item.ProductID,
+          name: item.ProductName,
+          category: category?.CategoryName || "-",
           sold: 0,
           revenue: 0,
         };
       }
 
-      reportMap[item.name].sold += item.qty;
-      reportMap[item.name].revenue += item.qty * item.price;
+      reportMap[item.ProductID].sold += item.Quantity;
+      reportMap[item.ProductID].revenue +=
+        item.Quantity * item.UnitPrice;
     });
   });
 
   return Object.values(reportMap);
 }
-
 export default function ReportsPage() {
   const [fromDate, setFromDate] = useState();
   const [toDate, setToDate] = useState();
   const [catFilter, setCatFilter] = useState('');
   const [period, setPeriod] = useState('year');
-  const now = new Date();
+  const [orders, setOrders] = useState([]);
+const [products, setProducts] = useState([]);
 
+const [categories, setCategories] = useState([]);
+const categoryOptions = categories.map(c => ({
+  id: c.CategoryID,
+  name: c.CategoryName,
+}));
+  const now = new Date();
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+
+      const [orderRes, productRes, categoryRes] = await Promise.all([
+  getOrders(1, 1000),
+
+  axios.get(
+    "https://tmdt-backend-ego0.onrender.com/api/products",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  ),
+
+  axios.get(
+    "https://tmdt-backend-ego0.onrender.com/api/categories",
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  ),
+]);
+
+      setOrders(orderRes.data.data);
+      setProducts(productRes.data.data);
+      setCategories(categoryRes.data.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  loadData();
+}, []);
 let startDate = null;
 let endDate = null;
 switch (period) {
@@ -89,25 +145,40 @@ switch (period) {
     break;
 }
 const filteredOrders = orders.filter(order => {
-  if (order.status !== 'HOÀN THÀNH') return false;
-
-  const orderDate = new Date(order.date);
+if (order.Status !== "Đã giao") return false;
+const orderDate = new Date(
+  order.OrderDate || order.CreatedAt
+);
 
   return orderDate >= startDate && orderDate <= endDate;
 });
-  const rows = buildReportRows(filteredOrders);
+  const rows = buildReportRows(filteredOrders, products, categories);
   const finalRows = catFilter
   ? rows.filter(row => row.category === catFilter)
   : rows;
-  const totalSold = rows.reduce(
+  const totalRevenue = finalRows.reduce(
+  (sum, row) => sum + row.revenue,
+  0
+);
+
+const totalSold = finalRows.reduce(
   (sum, row) => sum + row.sold,
   0
 );
-  const totalRevenue = filteredOrders.reduce(
-  (sum, order) => sum + order.total,
-  0
-);
-  const totalOrders = filteredOrders.length;
+
+  const totalOrders = filteredOrders.filter(order =>
+  (order.Items || []).some(item => {
+    const product = products.find(
+      p => p.ProductID === item.ProductID
+    );
+
+    const category = categories.find(
+      c => c.CategoryID === product?.CategoryID
+    );
+
+    return !catFilter || category?.CategoryName === catFilter;
+  })
+).length;
   const avgOrder =
   totalOrders > 0
     ? Math.round(totalRevenue / totalOrders)
@@ -194,31 +265,30 @@ const filteredOrders = orders.filter(order => {
   )}
 
   {/* Danh mục */}
+  
+  
   <div>
+    
     <label className="block text-[10px] font-bold text-emerald-500 uppercase tracking-widest mb-1.5">
       Danh mục
     </label>
 
     <select
-      value={catFilter}
-      onChange={(e) => setCatFilter(e.target.value)}
-      className="
-        text-sm
-        border border-emerald-100
-        rounded-xl
-        px-3 py-2
-        bg-emerald-50
-        text-slate-700
-      "
-    >
-      <option value="">Tất cả</option>
+  value={catFilter}
+  onChange={(e) => setCatFilter(e.target.value)}
+  className="text-sm border border-emerald-100 rounded-xl px-3 py-2 bg-emerald-50"
+>
+  <option value="">Tất cả danh mục</option>
 
-      {productCategories.map((c) => (
-        <option key={c} value={c}>
-          {c}
-        </option>
-      ))}
-    </select>
+  {categoryOptions.map(c => (
+    <option
+      key={c.id}
+      value={c.name}
+    >
+      {c.name}
+    </option>
+  ))}
+</select>
   </div>
 
   <button

@@ -1,37 +1,48 @@
-import  { useState } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { 
-  User, Phone, MapPin, FileText, ShoppingBag, CreditCard, 
+
+
+import axios from "axios";
+import { useEffect, useState } from "react";
+import { useNavigate, Link, useLocation } from "react-router-dom";
+import { checkoutCart } from "@/api/cartApi";
+import {
+  User, Phone, MapPin, FileText, ShoppingBag, CreditCard,
   CheckCircle, ShieldCheck, RefreshCw, Truck, Headphones, Lock
 } from 'lucide-react';
+
 
 export default function ThanhToan() {
   const navigate = useNavigate();
   const location = useLocation();
 
+
   // Nếu location.state trống (khi F5), hệ thống tự lấy data giả lập để không bị lỗi total = 0
-  const { 
-    subTotal = 350000, 
-    shippingFee = 30000, 
-    discount = 50000 
+  const {
+    subTotal = 350000,
+    shippingFee = 30000,
+    discount = 50000
   } = location.state || {};
+
 
   // Tổng tiền cuối cùng
   const total = subTotal + shippingFee - discount;
 
+
   // State thông tin giao hàng
   const [shippingInfo, setShippingInfo] = useState({
-    fullName: 'Đào Thị E',
-    phone: '0830 868 535',
-    address: '123 Nguyễn Huệ, Q.1, TP.HCM',
-    note: ''
-  });
+  fullName: "",
+  phone: "",
+  address: "",
+  note: ""
+});
+
 
   const [paymentMethod, setPaymentMethod] = useState('cod');
+
 
   const formatCurrency = (value) => {
     return value.toLocaleString('vi-VN') + ' đ';
   };
+
 
   // Đồng bộ hàm xử lý thay đổi text cho các ô input gõ chữ mượt mà
   const handleInputChange = (e) => {
@@ -42,31 +53,108 @@ export default function ThanhToan() {
     }));
   };
 
-  const handleOrder = (e) => {
-    e.preventDefault(); // Ngăn hành vi tải lại trang mặc định của Form
-    
-    if (total <= 0) {
-      alert('Đơn hàng không hợp lệ hoặc giỏ hàng trống!');
-      return;
-    }
-    
-    alert(`🎉 Đặt hàng thành công!\nTổng tiền: ${formatCurrency(total)}\nPhương thức: ${paymentMethod === 'cod' ? 'COD' : 'Chuyển khoản'}`);
-    
-    // ĐÃ SỬA: Click vào đặt hàng sẽ chuyển hướng tới page /donhang công tác tại đây
-    navigate('/donhang'); 
-  };
 
+  const handleOrder = async (e) => {
+    e.preventDefault();
+
+
+    if (total <= 0) {
+        alert("Đơn hàng không hợp lệ hoặc giỏ hàng trống!");
+        return;
+    }
+
+
+    try {
+
+
+        const payment =
+            paymentMethod === "cod"
+                ? "COD"
+                : "Chuyển khoản";
+        const handleOrder = async (e) => {
+  e.preventDefault();
+
+
+  if (total <= 0) {
+    alert("Đơn hàng không hợp lệ!");
+    return;
+  }
+
+
+  try {
+    const payment =
+      paymentMethod === "cod"
+        ? "COD"
+        : "Chuyển khoản";
+
+
+    const response = await checkoutCart({
+      payment_method: payment,
+      note: shippingInfo.note,
+      voucher_code: null,
+    });
+
+
+    if (response.data.success) {
+    alert("🎉 Đặt hàng thành công!");
+
+
+    navigate("/donhang", {
+        replace: true
+    });
+}
+  } catch (error) {
+    console.error(error);
+
+
+    alert(
+      error.response?.data?.message ||
+      "Đặt hàng thất bại!"
+    );
+  }
+};
+
+
+        const response = await checkoutCart({
+            payment_method: payment,
+            note: shippingInfo.note,
+            voucher_code: null,
+        });
+
+
+        if (response.data.success) {
+            alert("🎉 Đặt hàng thành công!");
+
+
+            navigate("/donhang");
+        } else {
+            alert(response.data.message);
+        }
+
+
+    } catch (error) {
+
+
+        console.error(error);
+
+
+        alert(
+            error.response?.data?.message ||
+            "Đặt hàng thất bại!"
+        );
+    }
+};
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] text-gray-800 py-6 px-4 sm:px-6 lg:px-8 font-sans antialiased">
       <div className="max-w-6xl mx-auto">
-        
+       
         {/* LOGO & STEP PROGRESS BAR */}
         <div className="flex flex-col items-center justify-center mb-6 bg-white py-4 rounded-xl border border-gray-100 shadow-xs">
           <div className="flex items-center gap-1.5 text-blue-600 font-black text-xl tracking-tight mb-4">
             <ShoppingBag size={22} className="fill-blue-600/10" />
             <span>TechTonic</span>
           </div>
-          
+         
           <div className="flex items-center w-full max-w-md justify-between px-4 text-xs font-bold text-gray-400">
             <Link to="/giohang" className="flex items-center gap-1.5 text-gray-500 hover:text-blue-600 transition-colors cursor-pointer">
               <span className="w-5 h-5 rounded-full border border-gray-300 flex items-center justify-center text-[10px]">🛒</span>
@@ -85,9 +173,10 @@ export default function ThanhToan() {
           </div>
         </div>
 
+
         {/* BỐ CỤC CHÍNH HAI CỘT */}
         <form onSubmit={handleOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          
+         
           {/* CỘT TRÁI */}
           <div className="lg:col-span-7 space-y-4">
             <div className="bg-linear-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white flex items-center justify-between relative overflow-hidden shadow-sm">
@@ -103,6 +192,7 @@ export default function ThanhToan() {
               </div>
             </div>
 
+
             {/* THÔNG TIN GIAO HÀNG */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-5 relative">
               <div className="flex items-center gap-2 border-b border-gray-50 pb-3 mb-4">
@@ -110,14 +200,15 @@ export default function ThanhToan() {
                 <h2 className="text-sm font-black text-gray-900">Thông tin giao hàng</h2>
               </div>
 
+
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                 <div className="md:col-span-8 space-y-3.5 text-xs">
                   <div>
                     <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Họ và tên</label>
                     <div className="relative flex items-center">
                       <User size={14} className="absolute left-3 text-gray-400" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="fullName"
                         value={shippingInfo.fullName}
                         onChange={handleInputChange}
@@ -127,12 +218,13 @@ export default function ThanhToan() {
                     </div>
                   </div>
 
+
                   <div>
                     <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Số điện thoại</label>
                     <div className="relative flex items-center">
                       <Phone size={14} className="absolute left-3 text-gray-400" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="phone"
                         value={shippingInfo.phone}
                         onChange={handleInputChange}
@@ -142,12 +234,13 @@ export default function ThanhToan() {
                     </div>
                   </div>
 
+
                   <div>
                     <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Địa chỉ</label>
                     <div className="relative flex items-center">
                       <MapPin size={14} className="absolute left-3 text-gray-400" />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         name="address"
                         value={shippingInfo.address}
                         onChange={handleInputChange}
@@ -157,11 +250,12 @@ export default function ThanhToan() {
                     </div>
                   </div>
 
+
                   <div>
                     <label className="block text-[11px] font-bold text-gray-500 mb-1.5">Ghi chú (Nếu có)</label>
                     <div className="relative">
                       <FileText size={14} className="absolute left-3 top-2.5 text-gray-400" />
-                      <textarea 
+                      <textarea
                         rows="2"
                         name="note"
                         placeholder="Nhập ghi chú cho đơn hàng..."
@@ -173,6 +267,7 @@ export default function ThanhToan() {
                   </div>
                 </div>
 
+
                 <div className="hidden md:flex md:col-span-4 flex-col items-center justify-center p-4">
                   <div className="relative w-full max-w-35 aspect-square bg-blue-50/40 rounded-full flex items-center justify-center border border-blue-100/40">
                     <div className="absolute text-blue-600"><MapPin size={32} className="fill-blue-500/20" /></div>
@@ -182,6 +277,7 @@ export default function ThanhToan() {
                 </div>
               </div>
             </div>
+
 
             {/* BOX MUA SẮM AN TÂM */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-4">
@@ -207,6 +303,7 @@ export default function ThanhToan() {
             </div>
           </div>
 
+
           {/* CỘT PHẢI */}
           <div className="lg:col-span-5 space-y-4">
             <div className="grid grid-cols-4 gap-1 bg-white p-2.5 rounded-xl border border-gray-100 shadow-xs text-center text-gray-500 text-[10px] font-bold">
@@ -216,13 +313,14 @@ export default function ThanhToan() {
               <div className="space-y-1"><Headphones size={12} className="mx-auto text-amber-600" /><span>24/7</span></div>
             </div>
 
+
             {/* BOX THÔNG TIN GIÁ TIỀN */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-4 space-y-3">
               <div className="flex items-center gap-2 border-b border-gray-50 pb-2">
                 <FileText size={16} className="text-blue-600" />
                 <h3 className="text-xs font-black text-gray-900">Thông tin đơn hàng</h3>
               </div>
-              
+             
               <div className="space-y-2 text-xs">
                 <div className="flex justify-between items-center text-gray-400 font-medium">
                   <span>Tạm tính:</span>
@@ -243,12 +341,14 @@ export default function ThanhToan() {
               </div>
             </div>
 
+
             {/* PHƯƠNG THỨC THANH TOÁN */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-4 space-y-3">
               <div className="flex items-center gap-2 border-b border-gray-50 pb-2">
                 <CreditCard size={16} className="text-blue-600" />
                 <h3 className="text-xs font-black text-gray-900">Phương thức thanh toán</h3>
               </div>
+
 
               <div className="space-y-2.5">
                 <label className={`flex items-center gap-3 border p-3 rounded-xl cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-blue-600 bg-blue-50/5' : 'border-gray-100 hover:bg-gray-50'}`}>
@@ -258,6 +358,7 @@ export default function ThanhToan() {
                     <p className="font-extrabold text-gray-900">Thanh toán khi nhận hàng (COD)</p>
                   </div>
                 </label>
+
 
                 <label className={`flex items-center gap-3 border p-3 rounded-xl cursor-pointer transition-all ${paymentMethod === 'bank' ? 'border-blue-600 bg-blue-50/5' : 'border-gray-100 hover:bg-gray-50'}`}>
                   <input type="radio" name="payment" checked={paymentMethod === 'bank'} onChange={() => setPaymentMethod('bank')} className="w-4 h-4 text-blue-600" />
@@ -269,9 +370,10 @@ export default function ThanhToan() {
               </div>
             </div>
 
+
             {/* NÚT BẤM ĐẶT HÀNG */}
             <div>
-              <button 
+              <button
                 type="submit"
                 className="w-full bg-blue-600 text-white h-11 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-blue-700 transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
               >
@@ -280,10 +382,13 @@ export default function ThanhToan() {
               </button>
             </div>
 
+
           </div>
         </form>
+
 
       </div>
     </div>
   );
 }
+
