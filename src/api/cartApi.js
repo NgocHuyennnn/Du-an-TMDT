@@ -39,6 +39,13 @@ export const deleteCartItem = (itemId) =>
 export const clearCart = () =>
   API.delete("/cart");
 
-// Checkout
-export const checkoutCart = (data) =>
-  API.post("/cart/checkout", data);
+export const checkoutCart = (data) => {
+    return API.post("/cart/checkout", {
+        payment_method: data.payment_method,
+        shipping_name: data.shipping_name,
+        shipping_phone: data.shipping_phone,
+        shipping_address: data.shipping_address,
+        note: data.note,
+        voucher_code: data.voucher_code,
+    });
+};
