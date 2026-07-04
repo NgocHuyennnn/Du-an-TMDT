@@ -7,8 +7,8 @@ import {
 import axios from "axios";
 import { addToCart } from "@/api/cartApi";
 import { useNavigate, Link } from 'react-router-dom';
-import { 
-  Search, Bell, HelpCircle, Home, ShoppingBag, 
+import {
+  Search, Bell, HelpCircle, Home, ShoppingBag,
   ClipboardList, Users,  Settings, MessageSquare, ArrowLeft, X,
   Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
   UserPlus
@@ -50,10 +50,12 @@ export default function QuanLyDonHang() {
     return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
   };
 
+
   const tabs = [
     'Tất cả', 'Chờ xác nhận', 
     'Đang giao', 'Đã giao', 'Đã hủy',
   ];
+
 
   const [orders, setOrders] = useState([]);
   const fetchOrders = async () => {
@@ -90,6 +92,7 @@ useEffect(() => {
       })
     );
   };
+
 
   const handleOpenCancelModal = (orderId) => {
     setSelectedOrderId(orderId);
@@ -131,7 +134,7 @@ const reviewedOrders =
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative">
-      
+     
       {/* 1. SIDEBAR */}
       <div className="w-60 bg-white border-r border-gray-100 flex flex-col justify-between shrink-0">
         <div>
@@ -151,7 +154,7 @@ const reviewedOrders =
             <Link to="/tkcnhan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <Users size={16} /> <span>Tài khoản</span>
             </Link>
-            
+           
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
@@ -160,6 +163,7 @@ const reviewedOrders =
             </Link>
           </nav>
         </div>
+
 
         <div className="p-3 border-t border-gray-100 space-y-1">
           <Link to="/cai-dat" className="flex items-center gap-3 px-3 py-1.5 text-xs font-bold text-gray-400 hover:text-blue-600">
@@ -171,20 +175,21 @@ const reviewedOrders =
         </div>
       </div>
 
+
       {/* 2. MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col min-w-0">
-        
+       
         {/* HEADER TOPBAR */}
         <header className="h-14 bg-white border-b border-gray-100 px-6 flex items-center justify-between shrink-0">
           <div className="w-96 relative flex items-center">
             <Search size={14} className="absolute left-3 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Tìm kiếm đơn hàng..." 
+            <input
+              type="text"
+              placeholder="Tìm kiếm đơn hàng..."
               className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 h-8 text-xs outline-none focus:border-blue-500 focus:bg-white transition-all"
             />
           </div>
-          
+         
           <div className="flex items-center gap-4 text-gray-600">
             <button className="p-1 hover:bg-gray-50 rounded-full relative cursor-pointer hover:text-blue-600">
               <Bell size={16} />
@@ -202,9 +207,10 @@ const reviewedOrders =
           </div>
         </header>
 
+
         {/* MAIN BODY COMPONENT */}
         <main className="flex-1 p-6 overflow-y-auto space-y-4">
-          
+         
           <div className="flex items-center gap-2">
             <button 
               onClick={() => navigate('/page1')} 
@@ -215,6 +221,7 @@ const reviewedOrders =
             <h2 className="text-lg font-black tracking-tight text-gray-900">Đơn mua</h2>
           </div>
 
+
           {/* TÁP TRẠNG THÁI */}
           <div className="bg-white border-b border-gray-200 flex overflow-x-auto rounded-t-xl scrollbar-none">
             {tabs.map((tab) => (
@@ -222,8 +229,8 @@ const reviewedOrders =
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-5 py-3 text-xs font-bold whitespace-nowrap border-b-2 transition-all cursor-pointer ${
-                  activeTab === tab 
-                    ? 'border-blue-600 text-blue-600 font-black' 
+                  activeTab === tab
+                    ? 'border-blue-600 text-blue-600 font-black'
                     : 'border-transparent text-gray-400 hover:text-gray-700'
                 }`}
               >
@@ -232,15 +239,17 @@ const reviewedOrders =
             ))}
           </div>
 
+
           {/* THANH TÌM KIẾM ĐƠN HÀNG PHỤ */}
           <div className="bg-gray-50 border border-gray-200 p-3 flex items-center relative rounded-md">
             <Search size={14} className="absolute left-6 text-gray-400" />
-            <input 
-              type="text" 
-              placeholder="Bạn có thể tìm kiếm theo ID đơn hàng hoặc Tên Sản phẩm" 
+            <input
+              type="text"
+              placeholder="Bạn có thể tìm kiếm theo ID đơn hàng hoặc Tên Sản phẩm"
               className="w-full bg-white border border-gray-200 rounded pl-10 pr-4 h-9 text-xs outline-none focus:border-blue-500/50 transition-all"
             />
           </div>
+
 
           {/* DANH SÁCH ĐƠN HÀNG CHUYỂN ĐỔI */}
           <div className="space-y-4">
@@ -296,6 +305,7 @@ const reviewedOrders =
 </div>
                   </div>
 
+
                   {/* Chi tiết sản phẩm trong đơn */}
                   <div className="flex items-start gap-4 py-1">
                     <img
@@ -336,6 +346,7 @@ const reviewedOrders =
                       </p>
                     </div>
 
+
                     <div className="text-right shrink-0 space-y-0.5">
                       <div className="text-right shrink-0 space-y-0.5">
                           <p className="text-xs font-black text-gray-900">
@@ -346,6 +357,7 @@ const reviewedOrders =
                     </div>
                   </div>
 
+
                   {/* Bảng giá & Nút Action */}
                   <div className="border-t border-gray-50 pt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center justify-end sm:justify-start gap-1 text-xs font-bold ml-auto sm:ml-0">
@@ -354,7 +366,7 @@ const reviewedOrders =
                         ₫{order.TotalAmount.toLocaleString('vi-VN')}
                       </span>
                     </div>
-                    
+                   
                     <div className="flex items-center justify-end gap-2">
 
   {/* Chờ xác nhận */}
@@ -400,6 +412,7 @@ const reviewedOrders =
 </div>
                   </div>
 
+
                 </div>
               ))
             ) : (
@@ -409,24 +422,27 @@ const reviewedOrders =
             )}
           </div>
 
+
         </main>
       </div>
+
 
       {/* 3. MODAL XÁC NHẬN HỦY ĐƠN */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-black/40 backdrop-blur-xs"
             onClick={() => setIsModalOpen(false)}
           ></div>
-          
+         
           <div className="bg-white rounded-2xl p-6 max-w-sm w-full relative z-10 shadow-xl border border-gray-100">
-            <button 
+            <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-slate-50 transition-colors"
             >
               <X size={16} />
             </button>
+
 
             <div className="text-center space-y-3 mt-2">
               <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-red-500 mx-auto font-bold text-xl">
@@ -438,14 +454,15 @@ const reviewedOrders =
               </p>
             </div>
 
+
             <div className="flex items-center gap-2 mt-6">
-              <button 
+              <button
                 onClick={() => setIsModalOpen(false)}
                 className="flex-1 h-9 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 Đóng
               </button>
-              <button 
+              <button
                 onClick={handleConfirmCancel}
                 className="flex-1 h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer"
               >
@@ -459,3 +476,4 @@ const reviewedOrders =
     </div>
   );
 }
+
