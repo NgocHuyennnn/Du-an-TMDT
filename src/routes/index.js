@@ -17,10 +17,7 @@ import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
 import DSDHang from '../DonHang/DSDHang';
 import ChatUser from '../pages/manager/ChatUser';
-
-
 import ProductDetailPage from '@/pages/ProductDetailPage';
-
 
 import EditStore from '@/pages/EditStore';
 import RoleList from '@/pages/admin/RoleList';
@@ -46,7 +43,10 @@ export const publicRoutes = [
     { path: '/giohang', component: GioHang },
     { path: '/thanhtoan', component: ThanhToan },
     { path: '/donhang', component: Donhang },
-    { path: '/danhgia', component: Danhgia },
+    {
+    path: '/danhgia',
+    component: Danhgia
+},
     { path: '/dstkhoan', component: DSTKhoan },
     { path: '/phanquyen', component: PQuyen },
     { path: '/dktkhoan', component: DKTKhoan },

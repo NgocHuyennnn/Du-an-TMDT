@@ -1,79 +1,35 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Send, Paperclip, Image } from "lucide-react";
-import { io } from "socket.io-client";
-import { getOrders } from "@/api/orderApi";
 
-import {
-    getChatHistory,
-    sendMessage as sendMessageApi,
-} from "@/api/chatApi";
+const initialConversations = [
+  {
+    id: 1,
+    name: "Nguyễn Văn A",
+    lastMsg: "Shop ơi...",
+    time: "10:30",
+    messages: [
+      { sender: "customer", text: "Shop còn size L không ạ?" },
+      { sender: "admin", text: "Còn bạn nhé 👍" },
+    ],
+  },
+];
 
-const socket = io("https://tmdt-backend-ego0.onrender.com");
 const quickReplies = [
-    "Xin chào!",
-    "Shop sẽ kiểm tra giúp bạn.",
-    "Đơn hàng đang được xử lý.",
-    "Cảm ơn bạn.",
-    "Xin lỗi vì sự bất tiện."
+  "Shop cho em xin thêm thông tin",
+  "Sản phẩm này còn không ạ?",
+  "Em muốn đặt hàng",
+  "Cho em xin giá tốt nhất",
 ];
 
 export default function AdminChat() {
-  const [conversations, setConversations] = useState([]);
-const [messages, setMessages] = useState([]);
-const [activeChat, setActiveChat] = useState(null);
-const [input, setInput] = useState("");
+  const [conversations, setConversations] = useState(initialConversations);
+  const [activeChatId, setActiveChatId] = useState(1);
+  const [input, setInput] = useState("");
 
   const chatBoxRef = useRef(null);
-  useEffect(() => {
-    loadConversations();
-}, []);
-const loadConversations = async () => {
-    try {
 
-        const res = await getOrders();
-        console.log(res.data.data);
-
-        const orders = res.data.data || [];
-
-        const unique = [];
-
-        orders.forEach((o) => {
-
-            const exist = unique.find(
-                (x) =>
-                    x.UserID === o.UserID &&
-                    x.ShopID === o.ShopID
-            );
-
-            if (!exist) {
-
-                unique.push({
-
-                    UserID: o.UserID,
-
-                    ShopID: o.ShopID,
-
-                    name: o.ShippingName,
-
-                    lastMsg: "Nhấn để xem",
-
-                    time: new Date(o.OrderDate).toLocaleDateString(),
-
-                });
-
-            }
-
-        });
-
-        setConversations(unique);
-
-    } catch (err) {
-
-        console.log(err);
-
-    }
-};
-
+  const activeChat =
+    conversations.find((c) => c.id === activeChatId);
 
   // AUTO SCROLL
   useEffect(() => {
@@ -81,91 +37,41 @@ const loadConversations = async () => {
       top: chatBoxRef.current.scrollHeight,
       behavior: "smooth",
     });
-  }, [messages]);
-  const handleSelectConversation = async (conversation) => {
-
-    setActiveChat(conversation);
-
-    try {
-
-        const res = await getChatHistory(
-            conversation.UserID,
-            conversation.ShopID
-        );
-
-        setMessages(res.data.data);
-
-        socket.emit("join_chat", {
-            token: localStorage.getItem("access_token"),
-            user_id: conversation.UserID,
-            shop_id: conversation.ShopID,
-        });
-
-    } catch (err) {
-
-        console.log(err);
-
-    }
-
-};
-useEffect(() => {
-
-    socket.on("receive_message", (msg) => {
-
-        setMessages(prev => [...prev, msg]);
-
-    });
-
-    return () => {
-
-        socket.off("receive_message");
-
-    };
-
-}, []);
+  }, [activeChat]);
 
   // SEND MESSAGE
-  const handleSend = async () => {
-    const data = {
-    userid: activeChat.UserID,
-    shopid: activeChat.ShopID,
-    content: input,
+  const sendMessage = (text) => {
+  if (!text.trim()) return;
+
+  const msg = {
+    sender: "admin",
+    text,
+    time: new Date().toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
 };
 
-console.log(data);
+    setConversations((prev) =>
+      prev.map((c) =>
+        c.id === activeChatId
+          ? {
+              ...c,
+              messages: [...c.messages, msg],
+              lastMsg: text,
+            }
+          : c
+      )
+    );
 
-await sendMessageApi(data);
-    if (!input.trim()) return;
-
-    if (!activeChat) return;
-
-    try {
-
-        await sendMessageApi({
-
-            userid: activeChat.UserID,
-
-            shopid: activeChat.ShopID,
-
-            content: input,
-
-        });
-
-        setInput("");
-
-    } catch (err) {
-
-        console.log(err);
-
-    }
-
-};
+    setInput("");
+  };
 
   // ENTER TO SEND
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      handleSend();
+      sendMessage(input);
     }
   };
 
@@ -188,13 +94,11 @@ await sendMessageApi(data);
 
         <div className="flex-1 overflow-y-auto">
           {conversations.map((c) => (
-            
             <div
-              key={`${c.UserID}-${c.ShopID}`}
-              
-              onClick={() => handleSelectConversation(c)}
+              key={c.id}
+              onClick={() => setActiveChatId(c.id)}
               className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${
-                activeChat?.UserID===c.UserID ?  "bg-blue-50" : ""
+                activeChatId === c.id ? "bg-blue-50" : ""
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
@@ -223,7 +127,7 @@ await sendMessageApi(data);
         <div className="h-14 bg-white shadow-sm flex items-center px-5 justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-              {activeChat?.name?.charAt(0)}
+              {activeChat?.name.charAt(0)}
             </div>
             <div>
               <p className="text-sm font-semibold">
@@ -239,36 +143,33 @@ await sendMessageApi(data);
           ref={chatBoxRef}
           className="flex-1 overflow-y-auto p-6 space-y-3 bg-[#f6f8fc]"
         >
-          {messages.map((m,i)=>(
+          {activeChat?.messages.map((m, i) => (
             <div
-              key={m.MessageID}
+              key={i}
               className={`flex ${
-                m.SenderRole==="Shop"
+                m.sender === "admin"
                   ? "justify-end"
                   : "justify-start"
               }`}
             >
               <div
   className={`px-4 py-2 text-sm max-w-xs leading-relaxed shadow-sm ${
-    m.SenderRole==="Shop"
+    m.sender === "admin"
       ? "bg-blue-600 text-white rounded-2xl rounded-br-md"
       : "bg-white border rounded-2xl rounded-bl-md"
   }`}
 >
-  <div>{m.Content}</div>
+  <div>{m.text}</div>
 
   {/* TIME */}
   <div
     className={`text-[10px] mt-1 ${
-      m.SenderRole==="Shop"
+      m.sender === "admin"
         ? "text-blue-100"
         : "text-gray-400"
     }`}
   >
-    {new Date(m.SentAt).toLocaleTimeString("vi-VN",{
-    hour:"2-digit",
-    minute:"2-digit"
-})}
+    {m.time}
   </div>
 </div>
             </div>
@@ -280,7 +181,7 @@ await sendMessageApi(data);
           {quickReplies.map((q, i) => (
             <button
               key={i}
-              onClick={() => setInput(q)}
+              onClick={() => sendMessage(q)}
               className="whitespace-nowrap text-xs px-3 py-1.5 bg-gray-100 hover:bg-blue-100 hover:text-blue-600 rounded-full transition"
             >
               {q}
@@ -303,7 +204,7 @@ await sendMessageApi(data);
           />
 
           <button
-            onClick={handleSend}
+            onClick={() => sendMessage(input)}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl flex items-center gap-1"
           >
             <Send size={16} />
