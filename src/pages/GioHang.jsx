@@ -445,12 +445,9 @@ const shippingFee = 30000;
     ShopID: localStorage.getItem("shop_id")
   }));
 
-
 localStorage.setItem("cart", JSON.stringify(selectedItems));
 
-
 console.log("SAVE CART =", JSON.stringify(selectedItems, null, 2));
-
 
     navigate("/thanhtoan", {
       state: {
@@ -466,7 +463,7 @@ console.log("SAVE CART =", JSON.stringify(selectedItems, null, 2));
   <ShieldCheck size={16} />
   <span>Tiến hành thanh toán</span>
 </button>
-               
+                
                 <p className="text-[10px] text-gray-400 text-center mt-2.5 flex items-center justify-center gap-1">
                   🔒 Thanh toán an toàn & bảo mật
                 </p>

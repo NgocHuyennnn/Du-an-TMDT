@@ -17,15 +17,6 @@ const quickReplies = [
     "Xin lỗi vì sự bất tiện."
 ];
 
-
-const quickReplies = [
-  "Shop cho em xin thêm thông tin",
-  "Sản phẩm này còn không ạ?",
-  "Em muốn đặt hàng",
-  "Cho em xin giá tốt nhất",
-];
-
-
 export default function AdminChat() {
   const [conversations, setConversations] = useState([]);
 const [messages, setMessages] = useState([]);
@@ -189,7 +180,6 @@ useEffect(() => {
           </div>
         </div>
 
-
         <div className="flex-1 overflow-y-auto">
           {conversations.map((c) => (
             
@@ -334,4 +324,3 @@ useEffect(() => {
     </div>
   );
 }
-
