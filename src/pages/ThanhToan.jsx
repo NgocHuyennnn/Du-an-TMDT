@@ -59,48 +59,15 @@ export default function ThanhToan() {
             paymentMethod === "cod"
                 ? "COD"
                 : "Chuyển khoản";
-        const handleOrder = async (e) => {
-  e.preventDefault();
-
-  if (total <= 0) {
-    alert("Đơn hàng không hợp lệ!");
-    return;
-  }
-
-  try {
-    const payment =
-      paymentMethod === "cod"
-        ? "COD"
-        : "Chuyển khoản";
-
-    const response = await checkoutCart({
-      payment_method: payment,
-      note: shippingInfo.note,
-      voucher_code: null,
-    });
-
-    if (response.data.success) {
-    alert("🎉 Đặt hàng thành công!");
-
-    navigate("/donhang", {
-        replace: true
-    });
-}
-  } catch (error) {
-    console.error(error);
-
-    alert(
-      error.response?.data?.message ||
-      "Đặt hàng thất bại!"
-    );
-  }
-};
 
         const response = await checkoutCart({
-            payment_method: payment,
-            note: shippingInfo.note,
-            voucher_code: null,
-        });
+    payment_method: payment,
+    shipping_name: shippingInfo.fullName,
+    shipping_phone: shippingInfo.phone,
+    shipping_address: shippingInfo.address,
+    note: shippingInfo.note,
+    voucher_code: null,
+});
 
         if (response.data.success) {
             alert("🎉 Đặt hàng thành công!");
