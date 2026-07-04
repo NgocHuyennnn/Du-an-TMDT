@@ -5,6 +5,7 @@ import {
     cancelOrder
 } from "@/api/orderApi"; "@/api/orderApi";
 import axios from "axios";
+import { addToCart } from "@/api/cartApi";
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   Search, Bell, HelpCircle, Home, ShoppingBag, 
@@ -31,7 +32,6 @@ export default function QuanLyDonHang() {
     return localStorage.getItem("userName") || "Khách";
   });
   
-
   // 2. ĐÃ THÊM: Lắng nghe sự thay đổi tên từ localStorage (giống các trang khác)
   useEffect(() => {
         async function test() {
@@ -65,10 +65,11 @@ export default function QuanLyDonHang() {
     try {
         const res = await getOrders();
 
-        console.log(res.data);
+        console.log(JSON.stringify(res.data.data, null, 2));
 
         if (res.data.status === "success") {
             setOrders(res.data.data || []);
+            console.log("API Orders:", res.data.data);
         }
 
     } catch (err) {
@@ -113,6 +114,8 @@ useEffect(() => {
         alert(err.response?.data?.message || "Hủy đơn thất bại");
     }
 };
+const reviewedOrders =
+    JSON.parse(localStorage.getItem("reviewedOrders")) || [];
 
   const filteredOrders = orders.filter((order) => {
     if (activeTab === "Tất cả") return true;
@@ -273,6 +276,7 @@ useEffect(() => {
           <div className="space-y-4">
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
+                
                 <div key={order.OrderID}>
                   
                   {/* Header Đơn hàng */}
@@ -343,6 +347,19 @@ useEffect(() => {
                       <p className="text-[10px] text-gray-400">
                           Phương thức thanh toán: {order.PaymentMethod}
                       </p>
+                      <div className="mt-2 rounded-lg bg-gray-50 border border-gray-100 p-2 text-[11px] space-y-1">
+    <p>
+        <span className="font-semibold">Người nhận:</span> {order.ShippingName}
+    </p>
+
+    <p>
+        <span className="font-semibold">SĐT:</span> {order.ShippingPhone}
+    </p>
+
+    <p className="break-words">
+        <span className="font-semibold">Địa chỉ:</span> {order.ShippingAddress}
+    </p>
+</div>
                       
                       {/* Bộ tăng giảm số lượng */}
                       <p className="text-[11px] text-gray-500">
@@ -370,38 +387,48 @@ useEffect(() => {
                     </div>
                     
                     <div className="flex items-center justify-end gap-2">
-                      {order.Status === 'HOÀN THÀNH' && (
-                        <>
-                          <button className="flex items-center gap-1 bg-blue-600 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm cursor-pointer">
-                            <RefreshCw size={12} /> Mua lại
-                          </button>
-                          <Link to='/danhgia' className="flex items-center justify-center border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer">
-                            Đánh giá
-                          </Link>
-                        </>
-                      )}
-                      
-                      {order.Status === 'ĐANG GIAO HÀNG' && (
-                        <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
-                      )}
-                      
-                      {order.Status === "Chờ xác nhận" && (
-                          <button
-                              onClick={() => handleOpenCancelModal(order.OrderID)}
-                              className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
-                          >
-                              <Trash2 size={12} />
-                              Hủy đơn hàng
-                          </button>
-                      )}
-                      
-                      <button
-                        onClick={() => navigate("/chat")}
-                        className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer"
-                      >
-                        Liên hệ người bán
-                      </button>
-                    </div>
+
+  {/* Chờ xác nhận */}
+  {order.Status === "Chờ xác nhận" && (
+    <button
+      onClick={() => handleOpenCancelModal(order.OrderID)}
+      className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
+    >
+      <Trash2 size={12} />
+      Hủy đơn hàng
+    </button>
+  )}
+
+  {/* Đang giao */}
+  {order.Status === "Đang giao" && (
+    <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all">
+      Đã nhận được hàng
+    </button>
+  )}
+
+  {order.Status === "Đã giao" &&
+ !reviewedOrders.includes(order.OrderID) && (
+    <Link
+        to="/danhgia"
+        state={{
+            product: order.Items[0],
+            orderId: order.OrderID,
+        }}
+        className="border border-yellow-500 bg-yellow-500 text-white text-xs font-bold h-8 px-4 rounded-xl hover:bg-yellow-600 flex items-center"
+    >
+        Đánh giá
+    </Link>
+)}
+
+  {/* Luôn hiển thị */}
+  <button
+    onClick={() => navigate("/chat")}
+    className="border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer"
+  >
+    Liên hệ người bán
+  </button>
+
+</div>
                   </div>
 
                 </div>

@@ -46,7 +46,10 @@ export const publicRoutes = [
     { path: '/giohang', component: GioHang },
     { path: '/thanhtoan', component: ThanhToan },
     { path: '/donhang', component: Donhang },
-    { path: '/danhgia', component: Danhgia },
+    {
+    path: '/danhgia',
+    component: Danhgia
+},
     { path: '/dstkhoan', component: DSTKhoan },
     { path: '/phanquyen', component: PQuyen },
     { path: '/dktkhoan', component: DKTKhoan },
