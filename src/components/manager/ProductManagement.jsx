@@ -53,11 +53,10 @@ export default function ProductList() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("access_token");
+      
 
-      const shopId = localStorage.getItem("shop_id"); // hoặc lấy từ API/profile
-
-const res = await axios.get(
-  `https://tmdt-backend-ego0.onrender.com/api/products?shop_id=${shopId}`,
+      const res = await axios.get(
+  "https://tmdt-backend-ego0.onrender.com/api/products",
   {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -65,7 +64,7 @@ const res = await axios.get(
   }
 );
 
-      setProducts(res.data.data);
+      setProducts(res.data.data || []);
     } catch (error) {
       console.error("Lỗi lấy sản phẩm:", error);
     } finally {
