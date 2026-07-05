@@ -340,8 +340,16 @@ const orderTotal = orderStats.reduce(
     p => p.ProductID === item.id
   );
 
+  const image =
+    product?.Images?.[0]?.ImageURL ||
+    product?.PrimaryImage ||
+    "";
+
   return {
     ...item,
+    image: image
+      ? `https://tmdt-backend-ego0.onrender.com${image}`
+      : "",
     status: !product?.IsActive
       ? "hidden"
       : product?.StockQuantity === 0
@@ -532,10 +540,21 @@ const orderTotal = orderStats.reduce(
               <tr key={p.name} className="hover:bg-slate-50/60 transition-colors">
                 <td className="px-5 py-4 text-sm text-slate-400 font-mono">{i + 1}</td>
                 <td className="px-3 py-4">
-                  <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center">
-                    <Package size={14} className="text-slate-400" />
-                  </div>
-                </td>
+  <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center">
+    {p.image ? (
+      <img
+        src={p.image}
+        alt={p.name}
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <Package
+        size={14}
+        className="text-slate-400"
+      />
+    )}
+  </div>
+</td>
                 <td className="px-3 py-4 text-sm font-semibold text-slate-700">{p.name}</td>
                 <td className="px-3 py-4 text-sm font-bold text-slate-700 text-right">{p.sold.toLocaleString('vi-VN')}</td>
                 <td className="px-3 py-4 text-sm font-bold text-slate-700 text-right">{p.revenue.toLocaleString('vi-VN')}đ</td>

@@ -22,23 +22,46 @@ function Label({ children, required }) {
   );
 }
 
-function ImageSlot({ label, main }) {
-  const [preview, setPreview] = useState(null);
+function ImageSlot({ label, main, imageUrl, onSelect }) {
+  const [preview, setPreview] = useState(imageUrl || "");
+  
+  useEffect(() => {
+  console.log("ImageSlot nhận:", imageUrl);
+  setPreview(imageUrl || "");
+}, [imageUrl]);
+
   return (
     <label className="block cursor-pointer group">
-      <input type="file" accept="image/*" className="hidden" onChange={(e) => {
-        const f = e.target.files[0];
-        if (f) setPreview(URL.createObjectURL(f));
-      }} />
-      <div className={`border-2 border-dashed border-slate-200 group-hover:border-blue-400 rounded-2xl flex flex-col items-center justify-center transition-colors bg-slate-50 group-hover:bg-blue-50/30 ${main ? 'aspect-4/3' : 'aspect-square'}`}>
+      <input
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          setPreview(URL.createObjectURL(file));
+          onSelect?.(file);
+        }}
+      />
+
+      <div
+        className={`border-2 border-dashed border-slate-200 rounded-2xl ${
+          main ? "aspect-4/3" : "aspect-square"
+        }`}
+      >
         {preview ? (
-          <img src={preview} alt="preview" className="w-full h-full object-cover rounded-xl" />
-        ) : (
-          <>
-            <ImagePlus size={main ? 24 : 16} className="text-slate-400 group-hover:text-blue-400 mb-1 transition-colors" />
-            <span className="text-[11px] text-slate-400 group-hover:text-blue-500 font-medium transition-colors">{label}</span>
-          </>
-        )}
+  <img
+  src={preview}
+  alt=""
+  className="w-full h-full object-cover rounded-xl"
+/>
+) : (
+  <div className="w-full h-full flex flex-col items-center justify-center">
+    <ImagePlus />
+    <span>{label}</span>
+  </div>
+)}
       </div>
     </label>
   );
@@ -52,7 +75,8 @@ const location = useLocation();
 const product = location.state?.product;
 const [categories, setCategories] = useState([]);
   const isEdit = !!id;
-  
+  const [images, setImages] = useState([]);
+  const [primaryImage, setPrimaryImage] = useState("");
   const [form, setForm] = useState({
   name: product?.ProductName ?? "",
   brand: "",
@@ -99,21 +123,34 @@ useEffect(() => {
       );
 
       const p = res.data.data;
+      const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+setForm({
+  name: p.ProductName || "",
+  brand: "",
+  description: p.Description || "",
+  price: p.Price || "",
+  stock: p.StockQuantity || "",
+  comparePrice: "",
+  weight: "",
+  origin: "",
+  category: p.CategoryID || "",
+  statusActive: p.IsActive,
+  statusSoldout: p.StockQuantity === 0,
+  statusHidden: !p.IsActive,
+});
 
-      setForm({
-        name: p.ProductName || "",
-        brand: "",
-        description: p.Description || "",
-        price: p.Price || "",
-        stock: p.StockQuantity || "",
-        comparePrice: "",
-        weight: "",
-        origin: "",
-        category: p.CategoryID || "",
-        statusActive: true,
-        statusSoldout: false,
-        statusHidden: false,
-      });
+const image =
+  p.Images?.[0]?.ImageURL ||
+  p.PrimaryImage ||
+  "";
+
+setPrimaryImage(
+  image
+    ? `https://tmdt-backend-ego0.onrender.com${image}`
+    : ""
+);
+
+console.log("Primary:", p.PrimaryImage);
 
     } catch (err) {
       console.log(err);
@@ -121,8 +158,9 @@ useEffect(() => {
   };
 
   fetchProduct();
-
+  console.log("Product:", product);
 }, [id]);
+
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
   const handleSubmit = async () => {
   try {
@@ -140,6 +178,11 @@ useEffect(() => {
     formData.append("CategoryID", form.category);
     formData.append("ShopID", shopId);
     formData.append("Description", form.description);
+    images.forEach((file) => {
+  if (file) {
+    formData.append("images", file);
+  }
+});
     console.log("ShopID:", localStorage.getItem("shop_id"));
     if (isEdit) {
 
@@ -268,12 +311,27 @@ navigate("/products");
               <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest">Hình ảnh</h3>
             </div>
             <div className="space-y-3">
-              <ImageSlot label="Tải ảnh lên" main />
+              <ImageSlot
+  label="Tải ảnh lên"
+  main
+  imageUrl={primaryImage}
+  onSelect={(file) => setImages([file])}
+/>
               <div className="grid grid-cols-3 gap-2">
-                <ImageSlot label="Tải ảnh lên" />
-                <ImageSlot label="Tải ảnh lên" />
-                <ImageSlot label="Tải ảnh lên" />
-              </div>
+  {[0,1,2].map(index=>(
+      <ImageSlot
+          key={index}
+          label="Tải ảnh"
+          onSelect={(file)=>{
+              setImages(prev=>{
+                  const arr=[...prev];
+                  arr[index]=file;
+                  return arr;
+              });
+          }}
+      />
+  ))}
+</div>
             </div>
           </div>
 

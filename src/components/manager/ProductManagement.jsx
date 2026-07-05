@@ -53,17 +53,22 @@ export default function ProductList() {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem("access_token");
+      
 
       const res = await axios.get(
-        "https://tmdt-backend-ego0.onrender.com/api/products",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+  "https://tmdt-backend-ego0.onrender.com/api/products",
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: {
+      page: 1,
+      limit: 100,
+    },
+  }
+);
 
-      setProducts(res.data.data);
+      setProducts(res.data.data || []);
     } catch (error) {
       console.error("Lỗi lấy sản phẩm:", error);
     } finally {
@@ -196,10 +201,18 @@ export default function ProductList() {
                       <input type="checkbox" className="rounded border-slate-300" />
                     </td>
                     <td className="px-3 py-3.5">
-                      <div className="w-11 h-11 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center">
-                        <Package size={16} className="text-slate-400" />
-                      </div>
-                    </td>
+  <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
+    {product.PrimaryImage ? (
+      <img
+        src={`https://tmdt-backend-ego0.onrender.com${product.PrimaryImage}`}
+        alt={product.ProductName}
+        className="w-full h-full object-cover"
+      />
+    ) : (
+      <Package size={16} className="text-slate-400" />
+    )}
+  </div>
+</td>
                     <td className="px-3 py-3.5">
                       <p className="text-sm font-semibold text-slate-700">{product.ProductName}</p>
                       <p className="text-xs text-slate-400 font-mono mt-0.5">{product.sku}</p>
