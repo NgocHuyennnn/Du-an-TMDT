@@ -48,21 +48,18 @@ const handleAddToCart = async (e, product) => {
       try {
         const response = await fetch("https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=100");
         const result = await response.json();
-        
+        const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
         // Map dữ liệu từ API về giao diện
         const formattedData = result.data
   .sort((a, b) => {
-    // Ưu tiên lượt bán
     if (b.SoldQuantity !== a.SoldQuantity) {
       return b.SoldQuantity - a.SoldQuantity;
     }
 
-    // Nếu bằng nhau thì ưu tiên đánh giá
     if ((b.AverageRating || 0) !== (a.AverageRating || 0)) {
       return (b.AverageRating || 0) - (a.AverageRating || 0);
     }
 
-    // Nếu vẫn bằng thì ưu tiên nhiều review hơn
     return (b.ReviewCount || 0) - (a.ReviewCount || 0);
   })
   .map(item => ({
@@ -73,10 +70,10 @@ const handleAddToCart = async (e, product) => {
     rating: item.AverageRating || 5,
     reviews: item.ReviewCount || item.SoldQuantity || 0,
     sold: item.SoldQuantity || 0,
-    image:
-      item.Images?.[0]?.ImageURL ||
-      item.PrimaryImage ||
-      "https://via.placeholder.com/300",
+
+    image: item.PrimaryImage
+      ? `${BASE_URL}${item.PrimaryImage}`
+      : "https://via.placeholder.com/300",
   }));
 
 setProducts(formattedData);
