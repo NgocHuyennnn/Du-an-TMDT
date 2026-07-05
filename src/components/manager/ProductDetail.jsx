@@ -12,6 +12,7 @@ const { id } = useParams();
 const [product, setProduct] = useState(null);
 const [categories, setCategories] = useState([]);
 const [loading, setLoading] = useState(true);
+const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
 useEffect(() => {
   const fetchProduct = async () => {
     try {
@@ -95,17 +96,21 @@ const categoryName =
         {/* Image */}
         <div className="col-span-2">
           <div className="bg-slate-100 border border-slate-200 rounded-2xl aspect-square overflow-hidden">
-  {product.Images?.length > 0 ? (
-    <img
-      src={product.Images[0].ImageURL}
-      alt={product.ProductName}
-      className="w-full h-full object-cover"
-    />
-  ) : (
-    <div className="w-full h-full flex items-center justify-center">
-      <Package size={48} className="text-slate-400" />
-    </div>
-  )}
+  {product.Images?.length > 0 || product.PrimaryImage ? (
+  <img
+    src={
+      product.Images?.length
+        ? `${BASE_URL}${product.Images[0].ImageURL}`
+        : `${BASE_URL}${product.PrimaryImage}`
+    }
+    alt={product.ProductName}
+    className="w-full h-full object-cover"
+  />
+) : (
+  <div className="w-full h-full flex items-center justify-center">
+    <Package size={48} className="text-slate-400" />
+  </div>
+)}
 </div>
         </div>
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Star, ShoppingCart, Heart } from "lucide-react";
+import { addToCart } from "@/api/cartApi";
 //import { Products } from "@/data/productData";
 
 
@@ -22,7 +23,7 @@ const [liked,setLiked] = useState(new Set());
 const [showPopup, setShowPopup] = useState(false);
 const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-const handleAddToCart = (e, product) => {
+const handleAddToCart = async (e, product) => {
   e.stopPropagation();
 
   const user = JSON.parse(localStorage.getItem("user"));
@@ -32,36 +33,27 @@ const handleAddToCart = (e, product) => {
     return;
   }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
+  try {
+    await addToCart(product.ProductID, 1);
 
-  const exist = cart.find(
-    (item) => item.ProductID === product.ProductID
-  );
+    window.dispatchEvent(new Event("cartUpdated"));
 
-  if (exist) {
-    exist.quantity += 1;
-  } else {
-    cart.push({
-      ...product,
-      quantity: 1,
-    });
+    setShowPopup(true);
+
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 2000);
+  } catch (err) {
+    console.error(err);
+    alert("Không thể thêm sản phẩm vào giỏ hàng.");
   }
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-window.dispatchEvent(new Event("cartUpdated"));
-
-setShowPopup(true);
-  setTimeout(() => {
-    setShowPopup(false);
-  }, 2000);
 };
 useEffect(()=>{
 
  async function fetchProducts(){
 
   try{
-
+    
    const res = await axios.get(
     `https://tmdt-backend-ego0.onrender.com/api/products?page=${page}&limit=12`
 
@@ -106,7 +98,7 @@ if(!products.length){
   </section>
  )
 }
-
+const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
 const toggleLike=(id,e)=>{
 
  e.preventDefault();
@@ -156,14 +148,16 @@ const toggleLike=(id,e)=>{
 
               <div className="aspect-square bg-gray-50 overflow-hidden">
                 <img
-                  src={
-  product.Images?.[0]?.ImageURL ||
-  product.PrimaryImage ||
-  "https://via.placeholder.com/300"
-}
-                  alt={product.ProductName}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
+  src={
+    product.Images?.length
+      ? `${BASE_URL}${product.Images[0].ImageURL}`
+      : product.PrimaryImage
+      ? `${BASE_URL}${product.PrimaryImage}`
+      : "https://via.placeholder.com/300"
+  }
+  alt={product.ProductName}
+  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+/>
               </div>
 
               {/* Thêm padding-bottom pb-12 để chừa sẵn chỗ trống cố định cho nút Mua trượt lên, không lo bị đè chữ */}

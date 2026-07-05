@@ -23,13 +23,18 @@ function buildReportRows(orders, products, categories) {
           c => c.CategoryID === product?.CategoryID
         );
 
-        reportMap[item.ProductID] = {
-          id: item.ProductID,
-          name: item.ProductName,
-          category: category?.CategoryName || "-",
-          sold: 0,
-          revenue: 0,
-        };
+        const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+
+reportMap[item.ProductID] = {
+  id: item.ProductID,
+  name: item.ProductName,
+  category: category?.CategoryName || "-",
+  image: product?.PrimaryImage
+    ? BASE_URL + product.PrimaryImage
+    : "",
+  sold: 0,
+  revenue: 0,
+};
       }
 
       reportMap[item.ProductID].sold += item.Quantity;
@@ -331,9 +336,17 @@ const totalSold = finalRows.reduce(
                     <tr key={row.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="px-5 py-4 text-sm text-slate-400 font-mono">{i + 1}</td>
                       <td className="px-3 py-4">
-                        <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-xl flex items-center justify-center">
-                          <Package size={14} className="text-slate-400" />
-                        </div>
+                        <div className="w-10 h-10 bg-slate-100 border border-slate-200 rounded-xl overflow-hidden flex items-center justify-center">
+  {row.image ? (
+    <img
+      src={row.image}
+      alt={row.name}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <Package size={14} className="text-slate-400" />
+  )}
+</div>
                       </td>
                       <td className="px-3 py-4">
                         <p className="text-sm font-semibold text-slate-700">{row.name}</p>
