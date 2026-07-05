@@ -3,7 +3,7 @@ import {
   getOrders,
   updateOrderStatus,
 } from "../../api/orderApi";
-
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   RefreshCw,
@@ -16,12 +16,14 @@ import {
   Package,
   ShoppingBag,
   X,
+  MessageCircle,
 } from "lucide-react";
 
 import { createPortal } from "react-dom";
 import hinhNenTechTonic from "@/assets/nen.png"; 
 
 export default function DanhSachDonHang() {
+  const navigate = useNavigate();
   // 1. DỮ LIỆU ĐƠN HÀNG
   const [orders, setOrders] = useState([]);
 
@@ -55,6 +57,7 @@ export default function DanhSachDonHang() {
     alert("Không thể cập nhật trạng thái.");
   }
 };
+
 
   // XỬ LÝ LỌC DỮ LIỆU REAL-TIME
 const filteredOrders = useMemo(() => {
@@ -149,6 +152,7 @@ const filteredOrders = useMemo(() => {
   }
 
   fetchOrders();
+
 }, []);
 
   const fetchOrders = async () => {
@@ -193,7 +197,26 @@ console.log(
     console.log(err);
   }
 };
+const openChat = () => {
+    console.log("Đã click chat");
 
+    console.log(orders);
+
+    if (orders.length === 0) {
+        alert("Chưa có đơn hàng");
+        return;
+    }
+
+    const shopId = orders[0].shopId;
+
+    console.log("ShopID =", shopId);
+
+    sessionStorage.setItem("shop_id", shopId);
+
+    console.log(sessionStorage.getItem("shop_id"));
+
+    navigate("/chat");
+};
   const formatDateDisplay = (dateStr) => {
   if (!dateStr) return "";
 
@@ -217,7 +240,13 @@ console.log(
               <h2 className="text-xl font-black text-slate-900 tracking-tight">Danh sách đơn hàng</h2>
               <p className="text-xs font-medium text-slate-400">Quản lý và theo dõi tất cả các giao dịch hệ thống thương mại điện tử.</p>
             </div>
-
+            <button
+  onClick={openChat}
+  className="relative h-11 w-11 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-200 flex items-center justify-center"
+  title="Chat với khách hàng"
+>
+  <MessageCircle size={22} />
+</button>
 
             <div className="flex items-center gap-3">
               <div className="relative w-72">

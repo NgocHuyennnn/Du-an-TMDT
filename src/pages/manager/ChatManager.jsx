@@ -1,14 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search, Send, Paperclip, Image } from "lucide-react";
 import { io } from "socket.io-client";
-import { getOrders } from "@/api/orderApi";
-
 import {
+    getConversations,
     getChatHistory,
     sendMessage as sendMessageApi,
 } from "@/api/chatApi";
-
-const socket = io("https://tmdt-backend-ego0.onrender.com");
 const quickReplies = [
   "Xin chào 👋",
   "Đơn hàng của bạn đang được xử lý.",
@@ -18,60 +15,72 @@ const quickReplies = [
 
 
 export default function AdminChat() {
+  const socket = useRef(null);
+  const chatBoxRef = useRef(null);
   const [conversations, setConversations] = useState([]);
 const [messages, setMessages] = useState([]);
 const [activeChat, setActiveChat] = useState(null);
 const [input, setInput] = useState("");
+const handleKeyDown = (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    handleSend();
+  }
+};
+useEffect(() => {
+  socket.current = io("https://tmdt-backend-ego0.onrender.com", {
+    transports: ["websocket"],
+  });
 
-  const chatBoxRef = useRef(null);
+  socket.current.on("connect", () => {
+    console.log("Socket connected:", socket.current.id);
+  });
+
+  socket.current.on("receive_message", (msg) => {
+  console.log("RECEIVE:", msg);
+  console.log("SentAt =", msg.SentAt);
+
+  setMessages(prev => [...prev, msg]);
+});
+
+  return () => {
+    socket.current.disconnect();
+  };
+}, []);
+
+
   useEffect(() => {
     loadConversations();
 }, []);
 const loadConversations = async () => {
     try {
 
-        const res = await getOrders();
-        console.log(res.data.data);
+        const shopId = sessionStorage.getItem("shop_id");
 
-        const orders = res.data.data || [];
+        if (!shopId) {
+            console.log("Không tìm thấy shop_id");
+            return;
+        }
 
-        const unique = [];
+        const res = await getConversations(shopId);
+        console.log(JSON.stringify(res.data, null, 2));
 
-        orders.forEach((o) => {
+        const data = (res.data.data || []).map(item => ({
+    ...item,
+    ShopID: sessionStorage.getItem("shop_id"),
+    UserID: item.user_id,
+    UserName: item.user_name,
+}));
 
-            const exist = unique.find(
-                (x) =>
-                    x.UserID === o.UserID &&
-                    x.ShopID === o.ShopID
-            );
+setConversations(data);
 
-            if (!exist) {
-
-                unique.push({
-
-                    UserID: o.UserID,
-
-                    ShopID: o.ShopID,
-
-                    name: o.ShippingName,
-
-                    lastMsg: "Nhấn để xem",
-
-                    time: new Date(o.OrderDate).toLocaleDateString(),
-
-                });
-
-            }
-
-        });
-
-        setConversations(unique);
+console.log(data);
 
     } catch (err) {
-    console.log(err);
-    console.log(err.response);
-    console.log(err.response?.data);
-}
+
+        console.log(err);
+
+    }
 };
 
 
@@ -83,85 +92,48 @@ const loadConversations = async () => {
     });
   }, [messages]);
   const handleSelectConversation = async (conversation) => {
-    
+  setActiveChat(conversation);
 
-    setActiveChat(conversation);
+  const res = await getChatHistory(
+    conversation.UserID,
+    conversation.ShopID
+  );
 
-    try {
+  setMessages(res.data.data);
 
-        const res = await getChatHistory(
-            conversation.UserID,
-            conversation.ShopID
-        );
+  // ❗ QUAN TRỌNG: phải dùng đúng logic BE
+  const room = `chat_${conversation.UserID}_${conversation.ShopID}`;
 
-        setMessages(res.data.data);
+  console.log("JOIN ROOM:", room);
 
-        socket.emit("join_chat", {
-            token: localStorage.getItem("access_token"),
-            user_id: conversation.UserID,
-            shop_id: conversation.ShopID,
-        });
-
-    } catch (err) {
-
-        console.log(err);
-
-    }
-
+  socket.current.emit("join_chat", {
+    token: localStorage.getItem("access_token"),
+    user_id: conversation.UserID,
+    shop_id: conversation.ShopID,
+  });
 };
-useEffect(() => {
 
-    const receive = (msg) => {
-
-        if (!activeChat) return;
-
-        if (
-            msg.UserID === activeChat.UserID &&
-            msg.ShopID === activeChat.ShopID
-        ) {
-            setMessages(prev => [...prev, msg]);
-        }
-
-    };
-
-    socket.on("receive_message", receive);
-
-    return () => socket.off("receive_message", receive);
-
-}, [activeChat]);
 
   // SEND MESSAGE
-  const handleSend = async () => {
+const handleSend = async () => {
+  if (!input.trim() || !activeChat) return;
 
-    if (!input.trim()) return;
-
-    if (!activeChat) return;
-
-    try {
-
-        await sendMessageApi({
-            userid: activeChat.UserID,
-            shopid: activeChat.ShopID,
-            content: input.trim(),
-        });
-
-        setInput("");
-
-    } catch (err) {
-
-        console.log(err);
-
-    }
-
-};
-
-  // ENTER TO SEND
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleSend();
-    }
+  const payload = {
+    user_id: activeChat.UserID,
+    shop_id: activeChat.ShopID,
+    content: input.trim(),
   };
+
+  try {
+    // 1. lưu DB + trigger BE emit
+    await sendMessageApi(payload);
+
+    // 2. clear input
+    setInput("");
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   return (
     <div className="h-screen flex bg-[#eef2f7] font-sans text-gray-800">
@@ -185,26 +157,26 @@ useEffect(() => {
           {conversations.map((c) => (
             
             <div
-              key={`${c.UserID}-${c.ShopID}`}
+              key={c.user_id}
               
               onClick={() => handleSelectConversation(c)}
               className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${
-                activeChat?.UserID===c.UserID ?  "bg-blue-50" : ""
+                activeChat?.user_id === c.user_id?  "bg-blue-50" : ""
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
-                {c.name.charAt(0)}
+                {c.user_name?.charAt(0)}
               </div>
 
               <div className="flex-1">
-                <p className="text-sm font-semibold">{c.name}</p>
+                <p className="text-sm font-semibold">{c.user_name}</p>
                 <p className="text-xs text-gray-400 truncate">
-                  {c.lastMsg}
+                  {c.last_message}
                 </p>
               </div>
 
               <span className="text-[10px] text-gray-400">
-                {c.time}
+                {new Date(c.last_sent).toLocaleDateString()}
               </span>
             </div>
           ))}
@@ -218,11 +190,11 @@ useEffect(() => {
         <div className="h-14 bg-white shadow-sm flex items-center px-5 justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-              {activeChat?.name?.charAt(0)}
+              {activeChat?.user_name?.charAt(0)}
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {activeChat?.name}
+                {activeChat?.user_name}
               </p>
               <p className="text-xs text-green-500">● Online</p>
             </div>
@@ -272,10 +244,14 @@ useEffect(() => {
                             : "text-gray-400"
                     }`}
                 >
-                    {new Date(m.SentAt).toLocaleTimeString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                    })}
+                    {
+  new Date(
+    new Date(m.SentAt).getTime() + 7 * 60 * 60 * 1000
+  ).toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
                 </div>
 
             </div>
