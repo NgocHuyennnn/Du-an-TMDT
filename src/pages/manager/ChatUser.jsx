@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import  { useState, useRef, useEffect } from "react";
 import { Search, Send, Paperclip, Image } from "lucide-react";
 import { io } from "socket.io-client";
 import { getOrders } from "@/api/orderApi";
