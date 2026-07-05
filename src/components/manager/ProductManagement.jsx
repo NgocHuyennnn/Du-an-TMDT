@@ -61,6 +61,10 @@ export default function ProductList() {
     headers: {
       Authorization: `Bearer ${token}`,
     },
+    params: {
+      page: 1,
+      limit: 100,
+    },
   }
 );
 
