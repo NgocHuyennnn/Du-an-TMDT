@@ -4,7 +4,6 @@ import {
   updateOrderStatus,
 } from "../../api/orderApi";
 
-
 import {
   Search,
   RefreshCw,
@@ -12,26 +11,23 @@ import {
   Calendar,
   CreditCard,
   Phone,
- 
+  User,
   MapPin,
   Package,
   ShoppingBag,
   X,
 } from "lucide-react";
 
-
 import { createPortal } from "react-dom";
-import hinhNenTechTonic from "@/assets/nen.png";
-
+import hinhNenTechTonic from "@/assets/nen.png"; 
 
 export default function DanhSachDonHang() {
   // 1. DỮ LIỆU ĐƠN HÀNG
   const [orders, setOrders] = useState([]);
 
-
   // STATE ĐIỀU KHIỂN MODAL CHI TIẾT
   const [selectedOrder, setSelectedOrder] = useState(null);
- 
+  
   // STATE BỘ LỌC
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('Tất cả trạng thái');
@@ -41,42 +37,33 @@ export default function DanhSachDonHang() {
   const handleUpdateStatus = async () => {
   if (!selectedOrder) return;
 
-
   try {
     await updateOrderStatus(
       selectedOrder.id,
       selectedOrder.status
     );
 
-
     alert("Cập nhật trạng thái thành công!");
-
 
     await fetchOrders();
 
-
     setSelectedOrder(null);
-
 
   } catch (err) {
     console.log(err);
-
 
     alert("Không thể cập nhật trạng thái.");
   }
 };
 
-
   // XỬ LÝ LỌC DỮ LIỆU REAL-TIME
 const filteredOrders = useMemo(() => {
   return orders.filter((order) => {
-
 
     // Tìm theo tên sản phẩm
     const matchesProduct = order.items?.some((item) =>
       item.ProductName?.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
 
     // Tìm kiếm
     const matchesSearch =
@@ -87,28 +74,23 @@ const filteredOrders = useMemo(() => {
       order.customerPhone?.includes(searchTerm) ||
       matchesProduct;
 
-
     // Lọc trạng thái
     const matchesStatus =
       statusFilter === "Tất cả trạng thái" ||
       order.status === statusFilter;
-
 
     // Lọc ngày
     const matchesDate =
       !dateFilter ||
       order.date?.slice(0, 10) === dateFilter;
 
-
     // Lọc giá
     const minPrice = priceFrom ? Number(priceFrom) : 0;
     const maxPrice = priceTo ? Number(priceTo) : Infinity;
 
-
     const matchesPrice =
       order.total >= minPrice &&
       order.total <= maxPrice;
-
 
     return (
       matchesSearch &&
@@ -133,67 +115,54 @@ const filteredOrders = useMemo(() => {
     setPriceTo('');
   };
 
-
   // ĐÃ SỬA: Hàm xử lý xóa đơn hàng tách biệt, không bị lồng
-
 
   const getStatusStyle = (status) => {
   switch (status) {
     case "Đã giao":
       return "bg-emerald-50 border-emerald-200 text-emerald-700";
 
-
     case "Đang giao":
       return "bg-blue-50 border-blue-200 text-blue-700";
-
 
     case "Chờ xác nhận":
       return "bg-amber-50 border-amber-200 text-amber-700";
 
-
     case "Đã hủy":
       return "bg-rose-50 border-rose-200 text-rose-700";
-
 
     default:
       return "bg-slate-50 border-slate-200 text-slate-700";
   }
 };
 
-
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
   };
- 
+  
   useEffect(() => {
   const token = localStorage.getItem("access_token");
-
 
   if (!token) {
     console.warn("No token - stop fetch");
     return;
   }
 
-
   fetchOrders();
 }, []);
-
 
   const fetchOrders = async () => {
   try {
     const res = await getOrders();
 
-
     console.log(res.data);
-
+    
 
     const raw = res.data.data || [];
-
 
     console.log("RAW =", raw);
     console.log(raw[0]);
     console.log(JSON.stringify(raw[0], null, 2));
-
 
     const mapped = raw.map((o) => ({
   id: o.OrderID,
@@ -209,14 +178,11 @@ const filteredOrders = useMemo(() => {
 customerPhone: o.ShippingPhone,
 shippingAddress: o.ShippingAddress,
 
-
 customerEmail: o.CustomerEmail || "",
-
 
   items: o.Items || [],
 }));
     console.log("MAPPED =", mapped);
-
 
     setOrders(mapped);
     console.log("Đơn hàng đầu tiên:", mapped[0]);
@@ -228,28 +194,23 @@ console.log(
   }
 };
 
-
   const formatDateDisplay = (dateStr) => {
   if (!dateStr) return "";
 
-
   const d = new Date(dateStr);
-
 
   return d.toLocaleDateString("vi-VN");
 };
-
 
   return (
    <div className="min-h-full bg-[#f8fafc] text-gray-800 font-sans antialiased relative w-full z-0">
       <div className="w-full relative">
        <div className="p-4 lg:p-8 relative z-10">
-          <div
+          <div 
             className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-15 filter pointer-events-none"
             style={{ backgroundImage: `url(${hinhNenTechTonic})` }}
           ></div>
           <div className="absolute inset-0 bg-linear-to-tr from-slate-100/30 via-transparent to-blue-50/10 z-0 pointer-events-none"></div>
-
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div className="space-y-1">
@@ -271,10 +232,9 @@ console.log(
                   className="w-full h-10 bg-white border border-slate-200/80 rounded-xl pl-10 pr-4 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:shadow-xs transition-all"
                 />
               </div>
-             
+              
             </div>
           </div>
-
 
           <div className="relative z-10 bg-white/90 backdrop-blur-md border border-slate-200/60 rounded-2xl p-4 mb-6 shadow-xs grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
             <div className="space-y-1.5">
@@ -341,7 +301,6 @@ console.log(
             </div>
           </div>
 
-
           <div className="relative z-10 bg-white/95 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">
@@ -364,24 +323,19 @@ console.log(
                         <td className="py-4 px-5">
                           <div className="flex flex-col">
 
-
                               <span className="font-bold text-blue-600">
                                   {order.userId}
                               </span>
-
 
                               <span className="text-[10px] text-slate-500">
                                   {order.customerName}
                               </span>
 
-
                           </div>
                       </td>
                         <td className="py-4 px-5">
 
-
                           <div className="space-y-2">
-
 
                               {order.items.map((item,index)=>(
                                   <div
@@ -389,23 +343,18 @@ console.log(
                                       className="flex justify-between rounded-lg bg-slate-100 px-3 py-2"
                                   >
 
-
                                       <span className="font-semibold">
                                           {item.ProductName}
                                       </span>
-
 
                                       <span className="font-bold text-blue-600">
                                           x{item.Quantity}
                                       </span>
 
-
                                   </div>
                               ))}
 
-
                           </div>
-
 
                       </td>
                         <td className="py-4 px-5 text-slate-500">
@@ -431,7 +380,7 @@ console.log(
                         </td>
                         <td className="py-4 px-5 text-right">
                           <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-all">
-                            <button
+                            <button 
                               onClick={() => setSelectedOrder(order)}
                               className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all cursor-pointer bg-transparent border-none"
                               title="Xem chi tiết"
@@ -456,9 +405,8 @@ console.log(
         </div>
       </div>
 
-
       {/* MODAL CHI TIẾT ĐƠN HÀNG */}
-     
+      
       {selectedOrder &&
   createPortal(
     <div
@@ -474,30 +422,23 @@ console.log(
         -translate-x-1/2
         -translate-y-1/2
 
-
         w-[94vw]
         max-w-7xl
         max-h-[92vh]
 
-
         overflow-hidden
-
 
         rounded-[32px]
 
-
         border
         border-slate-200/70
-
 
         bg-gradient-to-br
         from-slate-50
         via-white
         to-slate-100
 
-
         shadow-[0_35px_80px_rgba(15,23,42,.22)]
-
 
         animate-in
         zoom-in-95
@@ -505,54 +446,37 @@ console.log(
       "
       >
 
-
         {/* HEADER */}
-
 
         <div className="relative overflow-hidden">
 
-
           <div className="absolute inset-0 bg-gradient-to-r from-blue-700 via-sky-600 to-cyan-500"/>
-
 
           <div className="absolute right-0 top-0 w-72 h-72 rounded-full bg-white/10 blur-3xl"/>
 
-
           <div className="relative px-8 py-7 flex items-center justify-between">
-
 
             <div>
 
-
               <p className="text-blue-100 text-xs font-semibold uppercase tracking-[4px]">
-
 
                 TECH TONIC
 
-
               </p>
-
 
               <h2 className="text-2xl font-bold text-white mt-1">
 
-
                 Chi tiết đơn hàng
-
 
               </h2>
 
-
               <p className="text-blue-100 mt-1 text-sm">
-
 
                 #{selectedOrder.id}
 
-
               </p>
 
-
             </div>
-
 
             <button
               onClick={() => setSelectedOrder(null)}
@@ -561,23 +485,17 @@ console.log(
               h-11
               rounded-2xl
 
-
               bg-white/15
-
 
               hover:bg-white/25
 
-
               backdrop-blur
 
-
               transition
-
 
               flex
               items-center
               justify-center
-
 
               text-white
               "
@@ -585,69 +503,51 @@ console.log(
               <X size={20}/>
             </button>
 
-
           </div>
-
 
         </div>
 
-
         {/* BODY */}
-
 
         <div className="bg-slate-100/60 p-8 overflow-y-auto max-h-[78vh]">
 
-
           <div className="grid grid-cols-3 gap-8">
-
 
             {/* LEFT */}
 
-
             <div className="col-span-2 space-y-7">
 
-
               {/* CARD PRODUCT */}
-
 
               <div
                 className="
                 rounded-[28px]
                 bg-white
 
-
                 border
                 border-slate-200/70
 
-
                 shadow-xl
                 shadow-slate-200/50
-
 
                 overflow-hidden
               "
               >
 
-
                 {/* HEADER */}
-
 
                 <div
                   className="
                   px-7
                   py-5
 
-
                   border-b
 
-
                   border-slate-100
-
 
                   bg-gradient-to-r
                   from-slate-50
                   to-white
-
 
                   flex
                   items-center
@@ -655,318 +555,220 @@ console.log(
                 "
                 >
 
-
                   <div className="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center">
-
 
                     <Package
                       className="text-blue-600"
                       size={20}
                     />
 
-
                   </div>
-
 
                   <div>
 
-
                     <h3 className="font-black text-xl text-slate-800">
-
 
                       Danh sách sản phẩm
 
-
                     </h3>
-
 
                     <p className="text-xs text-slate-400">
 
-
                       {selectedOrder.items.length} sản phẩm
-
 
                     </p>
 
-
                   </div>
-
 
                 </div>
 
-
                 {/* LIST */}
-
 
                 <div className="p-7 space-y-6">
 
-
                   {selectedOrder.items.map((item,index)=>(
-
 
                     <div
 
-
                       key={index}
-
 
                       className="
                       group
 
-
                       rounded-[24px]
-
 
                       border
 
-
                       border-slate-200
-
 
                       bg-gradient-to-br
                       from-white
                       to-slate-50
 
-
                       hover:border-blue-300
-
 
                       hover:shadow-2xl
                       hover:shadow-blue-100/60
 
-
                       transition-all
 
-
                       duration-300
-
 
                       p-6
                       "
 
-
                     >
-
 
                       <div className="flex justify-between">
 
-
                         {/* LEFT */}
-
 
                         <div className="flex gap-6">
 
-
                           <div className="relative">
 
-
                             <img
-
 
                               src={
                                 item.ImageURL ||
                                 "https://placehold.co/120x120"
                               }
 
-
                               className="
                               w-28
                               h-28
 
-
                               rounded-3xl
 
-
                               object-cover
-
 
                               border
                               border-slate-200
 
-
                               shadow-md
                               "
 
-
                             />
 
-
                             <div
-
 
                               className="
                               absolute
 
-
                               -top-3
                               -right-3
-
 
                               w-8
                               h-8
 
-
                               rounded-full
-
 
                               bg-blue-600
 
-
                               text-white
-
 
                               text-sm
 
-
                               font-black
-
 
                               flex
                               items-center
                               justify-center
 
-
                               shadow-lg
                               "
 
-
                             >
-
 
                               {item.Quantity}
 
-
                             </div>
 
-
                           </div>
-
 
                           <div className="space-y-4">
 
-
                             <div>
-
 
                               <h2 className="text-2xl font-black text-slate-800 group-hover:text-blue-600 transition">
 
-
                                 {item.ProductName}
-
 
                               </h2>
 
-
                               <p className="text-xs text-slate-400 mt-1">
-
 
                                 Product ID
 
-
                               </p>
-
 
                               <p className="font-semibold text-slate-600 break-all">
 
-
                                 {item.ProductID}
-
 
                               </p>
 
-
                             </div>
-
 
                             <div className="flex gap-2">
 
-
                               <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
-
 
                                 SL: {item.Quantity}
 
-
                               </span>
-
 
                               <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">
 
-
                                 Chính hãng
-
 
                               </span>
 
-
                             </div>
-
 
                           </div>
 
-
                         </div>
-
 
                         {/* RIGHT */}
 
-
                         <div className="text-right flex flex-col justify-center">
 
-
                           <p className="text-xs uppercase tracking-widest text-slate-400">
-
 
                             Đơn giá
 
-
                           </p>
-
 
                           <h3 className="text-xl font-bold text-slate-800">
 
-
                             {formatCurrency(item.UnitPrice)}
-
 
                           </h3>
 
-
                           <div className="my-5 border-t border-dashed border-slate-300"/>
-
 
                           <p className="text-xs uppercase tracking-widest text-slate-400">
 
-
                             Thành tiền
-
 
                           </p>
 
-
                           <h1 className="text-3xl font-black text-blue-600">
-
 
                             {formatCurrency(item.UnitPrice*item.Quantity)}
 
-
                           </h1>
-
 
                         </div>
 
-
                       </div>
-
 
                     </div>
 
-
                   ))}
 
-
                 </div>
-
 
                 {/* FOOTER */}
 <div
@@ -986,12 +788,10 @@ console.log(
       Tổng thanh toán
     </p>
 
-
     <h2 className="text-4xl font-black text-blue-600">
       {formatCurrency(selectedOrder.total)}
     </h2>
   </div>
-
 
   <ShoppingBag
     size={48}
@@ -999,77 +799,56 @@ console.log(
   />
 </div>
 
-
 </div> {/* <-- Đóng CARD PRODUCT */}
 
-
 </div> {/* <-- Đóng LEFT (col-span-2) */}
-
 
 {/* RIGHT */}
 <div className="space-y-7">
 
-
   {/* ================= KHÁCH HÀNG ================= */}
-
 
   <div
     className="
     overflow-hidden
 
-
     rounded-[28px]
-
 
     border border-slate-200/70
 
-
     bg-white
-
 
     shadow-xl
     shadow-slate-200/40
     "
   >
 
-
     {/* HEADER */}
-
 
     <div className="relative overflow-hidden">
 
-
       <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-sky-500 to-cyan-400"/>
-
 
       <div className="absolute right-0 -top-10 w-40 h-40 rounded-full bg-white/10 blur-2xl"/>
 
-
       <div className="relative px-7 py-7">
 
-
         <div className="flex items-center gap-5">
-
 
           <div
             className="
             w-20
             h-20
 
-
             rounded-3xl
-
 
             bg-white/20
 
-
             backdrop-blur
-
 
             flex
             items-center
             justify-center
-
 
             text-white
             text-3xl
@@ -1077,240 +856,165 @@ console.log(
             "
           >
 
-
             {selectedOrder.customerName
               ?.charAt(0)
               .toUpperCase()}
 
-
           </div>
-
 
           <div>
 
-
             <h2 className="text-2xl font-black text-white">
-
 
               {selectedOrder.customerName}
 
-
             </h2>
-
 
             <p className="text-blue-100 mt-1">
 
-
               {selectedOrder.userId}
-
 
             </p>
 
-
           </div>
-
 
         </div>
 
-
       </div>
-
 
     </div>
 
-
     {/* BODY */}
-
 
     <div className="p-7 space-y-5">
 
-
       <div className="flex gap-4">
 
-
         <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center">
-
 
           <Phone
             className="text-blue-600"
             size={20}
           />
 
-
         </div>
-
 
         <div>
 
-
           <p className="text-xs uppercase tracking-widest text-slate-400">
-
 
             Số điện thoại
 
-
           </p>
-
 
           <p className="font-bold text-slate-800 mt-1">
 
-
             {selectedOrder.customerPhone}
-
 
           </p>
 
-
         </div>
-
 
       </div>
 
-
       <div className="border-t border-dashed border-slate-200"/>
-
 
       <div className="flex gap-4">
 
-
         <div className="w-12 h-12 rounded-2xl bg-emerald-100 flex items-center justify-center">
-
 
           <MapPin
             className="text-emerald-600"
             size={20}
           />
 
-
         </div>
-
 
         <div>
 
-
           <p className="text-xs uppercase tracking-widest text-slate-400">
-
 
             Địa chỉ giao hàng
 
-
           </p>
-
 
           <p className="font-bold text-slate-800 mt-1">
 
-
             {selectedOrder.shippingAddress}
-
 
           </p>
 
-
         </div>
-
 
       </div>
 
-
     </div>
-
 
   </div>
 
 
 
-
-
-
   {/* ================= THANH TOÁN ================= */}
-
 
   <div
     className="
     rounded-[28px]
 
-
     bg-white
-
 
     border border-slate-200/70
 
-
     shadow-xl
     shadow-slate-200/40
-
 
     p-7
     "
   >
 
-
     <h3 className="text-xl font-black mb-6">
-
 
       Thanh toán
 
-
     </h3>
-
 
     <div className="space-y-5">
 
-
       <div className="flex justify-between">
 
-
         <span className="text-slate-500">
-
 
           Phương thức
 
-
         </span>
-
 
         <span className="font-bold">
 
-
           {selectedOrder.paymentMethod}
 
-
         </span>
-
 
       </div>
 
-
       <div className="flex justify-between items-center">
-
 
         <span className="text-slate-500">
 
-
           Trạng thái
 
-
         </span>
-
 
         <span
           className={`
 
-
           px-4
-
 
           py-2
 
-
           rounded-full
-
 
           text-xs
 
-
           font-bold
-
 
           ${
             selectedOrder.paymentStatus==="Đã thanh toán"
@@ -1318,240 +1022,164 @@ console.log(
             : "bg-amber-100 text-amber-700"
           }
 
-
           `}
         >
 
-
           {selectedOrder.paymentStatus}
-
 
         </span>
 
-
       </div>
-
 
       <div className="border-t border-dashed pt-5 flex justify-between items-center">
 
-
         <span className="text-slate-500">
-
 
           Tổng tiền
 
-
         </span>
-
 
         <span className="text-2xl font-black text-blue-600">
 
-
           {formatCurrency(selectedOrder.total)}
-
 
         </span>
 
-
       </div>
-
 
     </div>
 
-
   </div>
-
-
-
 
 
 
   {/* ================= QUẢN LÝ ================= */}
 
-
   <div
     className="
     rounded-[28px]
 
-
     bg-gradient-to-br
-
 
     from-white
 
-
     to-slate-50
-
 
     border
 
-
     border-slate-200/70
-
 
     shadow-xl
 
-
     shadow-blue-100/30
-
 
     p-7
     "
   >
 
-
     <h3 className="text-xl font-black mb-6">
-
 
       Quản lý đơn hàng
 
-
     </h3>
-
 
     <select
 
-
       value={selectedOrder.status}
-
 
       onChange={(e)=>
 
-
         setSelectedOrder({
-
 
           ...selectedOrder,
 
-
           status:e.target.value
-
 
         })
 
-
       }
-
 
       className={`
       w-full
 
-
       h-14
-
 
       rounded-2xl
 
-
       px-4
-
 
       border-2
 
-
       font-bold
-
 
       transition-all
 
-
       ${getStatusStyle(selectedOrder.status)}
-
 
       `}
     >
 
-
       <option>Chờ xác nhận</option>
-
 
       <option>Đang giao</option>
 
-
       <option>Đã giao</option>
-
 
       <option>Đã hủy</option>
 
-
     </select>
-
 
     <button
 
-
       onClick={handleUpdateStatus}
-
 
       className="
       mt-6
 
-
       w-full
-
 
       h-14
 
-
       rounded-2xl
-
 
       bg-gradient-to-r
 
-
       from-blue-600
-
 
       via-sky-500
 
-
       to-cyan-500
-
 
       hover:from-blue-700
 
-
       hover:to-cyan-600
-
 
       text-white
 
-
       text-lg
-
 
       font-black
 
-
       shadow-xl
-
 
       shadow-blue-200
 
-
       hover:scale-[1.02]
 
-
       active:scale-100
-
 
       transition-all
       "
     >
 
-
       Cập nhật trạng thái
-
 
     </button>
 
-
   </div>
-
 
 </div>
   </div>
-
 
 </div>
           </div>
@@ -1561,4 +1189,3 @@ console.log(
     </div>
   );
 }
-

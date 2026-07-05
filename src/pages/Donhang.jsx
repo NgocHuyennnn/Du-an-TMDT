@@ -4,16 +4,15 @@ import {
     getOrderDetail,
     cancelOrder
 } from "@/api/orderApi"; "@/api/orderApi";
-
+import axios from "axios";
+import { addToCart } from "@/api/cartApi";
 import { useNavigate, Link } from 'react-router-dom';
 import {
   Search, Bell, HelpCircle, Home, ShoppingBag,
   ClipboardList, Users,  Settings, MessageSquare, ArrowLeft, X,
-  Trash2, ShieldCheck, Check, Truck, RefreshCw, Award,
+  Trash2, Plus, Minus, ShieldCheck, Check, Truck, RefreshCw, Award, Ticket,
   UserPlus
 } from 'lucide-react';
-
-
 
 
 export default function QuanLyDonHang() {
@@ -23,15 +22,11 @@ export default function QuanLyDonHang() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
-
   // 1. ĐÃ THÊM: State quản lý tên người dùng để hiển thị Avatar đồng bộ
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "Khách";
   });
- 
-   const currentUser = JSON.parse(localStorage.getItem("user"));
-  const isManager = currentUser?.rolename === "Manager";
-
+  
   // 2. ĐÃ THÊM: Lắng nghe sự thay đổi tên từ localStorage (giống các trang khác)
   useEffect(() => {
         async function test() {
@@ -39,15 +34,12 @@ export default function QuanLyDonHang() {
                 "612f63f6-fa87-4142-b308-75f315ce8ea9"
             );
 
-
             console.log("DETAIL =", res.data);
         }
 
-
         test();
     }, []);
- 
-
+  
 
   // 3. ĐÃ THÊM: Hàm tạo chữ viết tắt từ tên người dùng (Nguyễn Văn A -> NA)
   const getInitials = (name) => {
@@ -60,7 +52,7 @@ export default function QuanLyDonHang() {
 
 
   const tabs = [
-    'Tất cả', 'Chờ xác nhận',
+    'Tất cả', 'Chờ xác nhận', 
     'Đang giao', 'Đã giao', 'Đã hủy',
   ];
 
@@ -70,20 +62,16 @@ export default function QuanLyDonHang() {
     try {
         const res = await getOrders();
 
-
-        console.log(res.data);
-
+        console.log(JSON.stringify(res.data.data, null, 2));
 
         if (res.data.status === "success") {
             setOrders(res.data.data || []);
         }
 
-
     } catch (err) {
         console.error(err);
     }
 };
-
 
 useEffect(() => {
     fetchOrders();
@@ -91,7 +79,6 @@ useEffect(() => {
 useEffect(() => {
     console.log("orders state =", orders);
 }, [orders]);
-
 
   const handleUpdateQuantity = (orderId, type) => {
     setOrders(prevOrders =>
@@ -112,46 +99,38 @@ useEffect(() => {
     setIsModalOpen(true);
   };
 
-
   const handleConfirmCancel = async () => {
     try {
         await cancelOrder(selectedOrderId);
 
-
         setIsModalOpen(false);
         setSelectedOrderId(null);
-
 
         fetchOrders();
     } catch (err) {
         alert(err.response?.data?.message || "Hủy đơn thất bại");
     }
 };
-
+const reviewedOrders =
+    JSON.parse(localStorage.getItem("reviewedOrders")) || [];
 
   const filteredOrders = orders.filter((order) => {
     if (activeTab === "Tất cả") return true;
 
-
     if (activeTab === "Chờ xác nhận")
         return order.Status === "Chờ xác nhận";
-
 
     if (activeTab === "Đang giao")
         return order.Status === "Đang giao";
 
-
     if (activeTab === "Đã giao")
         return order.Status === "Đã giao";
-
 
     if (activeTab === "Đã hủy")
         return order.Status === "Đã hủy";
 
-
     return true;
 });
-
 
   return (
     <div className="flex min-h-screen bg-[#f8fafc] text-gray-800 font-sans antialiased relative">
@@ -179,19 +158,9 @@ useEffect(() => {
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
-              <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
+            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
             </Link>
-            
-            {!isManager && (
-  <Link
-    to="/dktkhoan"
-    className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all"
-  >
-    <UserPlus size={16} />
-    <span>Đăng kí bán hàng</span>
-  </Link>
-)}
           </nav>
         </div>
 
@@ -243,8 +212,8 @@ useEffect(() => {
         <main className="flex-1 p-6 overflow-y-auto space-y-4">
          
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/page1')}
+            <button 
+              onClick={() => navigate('/page1')} 
               className="text-gray-400 hover:text-blue-600 transition-colors border-none bg-transparent cursor-pointer p-0"
             >
               <ArrowLeft size={16} />
@@ -287,7 +256,7 @@ useEffect(() => {
             {filteredOrders.length > 0 ? (
               filteredOrders.map((order) => (
                 <div key={order.OrderID}>
-                 
+                  
                   {/* Header Đơn hàng */}
                   <div className="flex items-center justify-between border-b border-gray-50 pb-3">
                     <div className="flex items-center gap-2">
@@ -297,14 +266,14 @@ useEffect(() => {
                         Xem shop
                       </button>
                       <button
-                        onClick={() => navigate("/chat")}
+                        onClick={() => navigate("/chatkhach")}
                         className="border border-gray-200 bg-white text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-md hover:bg-gray-50 hover:text-blue-600 hover:border-blue-200 transition-all flex items-center gap-1 cursor-pointer"
                       >
                         <MessageSquare size={10} />
                         Chat
                       </button>
                     </div>
-                   
+                    
                     <div
   className={`text-[11px] font-extrabold tracking-wider uppercase flex items-center gap-1.5 ${
     order.Status === "Đã hủy"
@@ -318,11 +287,9 @@ useEffect(() => {
     <Truck size={12} className="text-blue-500 animate-pulse" />
   )}
 
-
   {order.Status === "Đã giao" && (
     <Check size={12} className="text-green-500" />
   )}
-
 
   <span
     className={`w-1.5 h-1.5 rounded-full ${
@@ -333,7 +300,6 @@ useEffect(() => {
         : "bg-blue-500"
     }`}
   ></span>
-
 
   {order.Status}
 </div>
@@ -360,7 +326,20 @@ useEffect(() => {
                       <p className="text-[10px] text-gray-400">
                           Phương thức thanh toán: {order.PaymentMethod}
                       </p>
-                     
+                      <div className="mt-2 rounded-lg bg-gray-50 border border-gray-100 p-2 text-[11px] space-y-1">
+    <p>
+        <span className="font-semibold">Người nhận:</span> {order.ShippingName}
+    </p>
+
+    <p>
+        <span className="font-semibold">SĐT:</span> {order.ShippingPhone}
+    </p>
+
+    <p className="break-words">
+        <span className="font-semibold">Địa chỉ:</span> {order.ShippingAddress}
+    </p>
+</div>
+                      
                       {/* Bộ tăng giảm số lượng */}
                       <p className="text-[11px] text-gray-500">
                           x{order.Items?.[0]?.Quantity}
@@ -374,7 +353,6 @@ useEffect(() => {
                             ₫{Number(order.TotalAmount).toLocaleString("vi-VN")}
                           </p>
                         </div>
-
 
                     </div>
                   </div>
@@ -390,38 +368,48 @@ useEffect(() => {
                     </div>
                    
                     <div className="flex items-center justify-end gap-2">
-                      {order.Status === 'HOÀN THÀNH' && (
-                        <>
-                          <button className="flex items-center gap-1 bg-blue-600 text-white text-xs font-bold h-8 px-3 rounded-xl hover:bg-blue-700 active:scale-[0.98] transition-all shadow-sm cursor-pointer">
-                            <RefreshCw size={12} /> Mua lại
-                          </button>
-                          <Link to='/danhgia' className="flex items-center justify-center border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer">
-                            Đánh giá
-                          </Link>
-                        </>
-                      )}
-                     
-                      {order.Status === 'ĐANG GIAO HÀNG' && (
-                        <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all cursor-pointer">Đã nhận được hàng</button>
-                      )}
-                     
-                      {order.Status === "Chờ xác nhận" && (
-                          <button
-                              onClick={() => handleOpenCancelModal(order.OrderID)}
-                              className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
-                          >
-                              <Trash2 size={12} />
-                              Hủy đơn hàng
-                          </button>
-                      )}
-                     
-                      <button
-                        onClick={() => navigate("/chat")}
-                        className="border border-gray-200 bg-white text-gray-400 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-gray-600 transition-all cursor-pointer"
-                      >
-                        Liên hệ người bán
-                      </button>
-                    </div>
+
+  {/* Chờ xác nhận */}
+  {order.Status === "Chờ xác nhận" && (
+    <button
+      onClick={() => handleOpenCancelModal(order.OrderID)}
+      className="flex items-center gap-1 bg-gray-900 text-white text-xs font-bold h-8 px-3 rounded-xl"
+    >
+      <Trash2 size={12} />
+      Hủy đơn hàng
+    </button>
+  )}
+
+  {/* Đang giao */}
+  {order.Status === "Đang giao" && (
+    <button className="bg-gray-100 text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-200 transition-all">
+      Đã nhận được hàng
+    </button>
+  )}
+
+  {order.Status === "Đã giao" &&
+ !reviewedOrders.includes(order.OrderID) && (
+    <Link
+        to="/danhgia"
+        state={{
+            product: order.Items[0],
+            orderId: order.OrderID,
+        }}
+        className="border border-yellow-500 bg-yellow-500 text-white text-xs font-bold h-8 px-4 rounded-xl hover:bg-yellow-600 flex items-center"
+    >
+        Đánh giá
+    </Link>
+)}
+
+  {/* Luôn hiển thị */}
+  <button
+    onClick={() => navigate("/chatkhach")}
+    className="border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer"
+  >
+    Liên hệ người bán
+  </button>
+
+</div>
                   </div>
 
 
@@ -484,7 +472,6 @@ useEffect(() => {
           </div>
         </div>
       )}
-
 
     </div>
   );

@@ -1,31 +1,81 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Star, Camera, MessageSquare, ArrowLeft, ShoppingBag, CheckCircle } from 'lucide-react';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import {
+  Star,
+  Camera,
+  MessageSquare,
+  ArrowLeft,
+  ShoppingBag,
+  CheckCircle,
+} from "lucide-react";
 
-// Import file ảnh nền hệ thống của bạn ở đây
-import hinhNenTechTonic from '../assets/nen.png'; 
+import hinhNenTechTonic from "../assets/nen.png";
 
 export default function DanhGiaSanPham() {
   const navigate = useNavigate();
   const location = useLocation();
 
   // Nhận tên sản phẩm từ trang đơn mua truyền sang
-  const { productName = "Chuột Không Dây Silent Siêu Nhạy M100" } = location.state || {};
+const { product, orderId } = location.state || {};
+const token = localStorage.getItem("access_token");
+console.log(token);
+
+const ProductName = product?.ProductName || "Không có tên sản phẩm";
+const productId = product?.ProductID;
+const imageUrl = product?.ImageURL;
 
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
-  const handleSubmitReview = (e) => {
-    e.preventDefault();
-    if (comment.trim().length < 10) {
-      alert("Vui lòng viết đánh giá chi tiết hơn một chút (tối thiểu 10 ký tự) nhé!");
-      return;
-    }
-    setReviewSuccess(true);
-    setTimeout(() => navigate('/donhang'), 2000);
-  };
+  const handleSubmitReview = async (e) => {
+  e.preventDefault();
+
+  if (comment.trim().length < 10) {
+    alert("Vui lòng nhập tối thiểu 10 ký tự.");
+    return;
+  }
+
+  try {
+    await axios.post(
+  `https://tmdt-backend-ego0.onrender.com/api/products/${productId}/ratings`,
+  {
+    rating,
+    reviewtext: comment,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+const reviewedOrders =
+    JSON.parse(localStorage.getItem("reviewedOrders")) || [];
+
+if (!reviewedOrders.includes(orderId)) {
+    reviewedOrders.push(orderId);
+}
+
+localStorage.setItem(
+    "reviewedOrders",
+    JSON.stringify(reviewedOrders)
+);
+
+setReviewSuccess(true);
+
+setTimeout(() => {
+    navigate("/donhang");
+}, 2000);
+
+  } catch (err) {
+    alert(
+      err.response?.data?.message ||
+      "Gửi đánh giá thất bại."
+    );
+  }
+};
 
   if (reviewSuccess) {
     return (
@@ -93,7 +143,7 @@ export default function DanhGiaSanPham() {
             <div className="space-y-0.5">
               <span className="text-[9px] font-bold text-[#1d63f6] uppercase tracking-wider px-1.5 py-0.5 bg-blue-50 rounded-md">Đã hoàn thành</span>
               <h3 className="text-xs font-extrabold text-gray-800 leading-snug line-clamp-2 mt-1">
-                {productName}
+                {ProductName}
               </h3>
             </div>
           </div>

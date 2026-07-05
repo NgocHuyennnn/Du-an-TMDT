@@ -1,4 +1,4 @@
-import  { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Search, Send, Paperclip, Image } from "lucide-react";
 import { io } from "socket.io-client";
 import { getOrders } from "@/api/orderApi";
@@ -16,15 +16,6 @@ const quickReplies = [
     "Cảm ơn bạn.",
     "Xin lỗi vì sự bất tiện."
 ];
-
-
-const quickReplies = [
-  "Shop cho em xin thêm thông tin",
-  "Sản phẩm này còn không ạ?",
-  "Em muốn đặt hàng",
-  "Cho em xin giá tốt nhất",
-];
-
 
 export default function AdminChat() {
   const [conversations, setConversations] = useState([]);
@@ -189,7 +180,6 @@ useEffect(() => {
           </div>
         </div>
 
-
         <div className="flex-1 overflow-y-auto">
           {conversations.map((c) => (
             
@@ -334,4 +324,3 @@ useEffect(() => {
     </div>
   );
 }
-
