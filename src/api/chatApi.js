@@ -4,6 +4,7 @@ const API = axios.create({
   baseURL: "https://tmdt-backend-ego0.onrender.com/api",
 });
 
+// Nếu bạn đã có interceptor thì không cần đoạn này
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("access_token");
 
@@ -14,47 +15,30 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// ================= Danh sách hội thoại =================
-export const getConversations = (shopId) => {
-  return API.get("/chat/rooms", {
-    params: {
-      shop_id: shopId,
-    },
+// Lấy giỏ hàng
+export const getCart = () => API.get("/cart");
+
+// Thêm sản phẩm vào giỏ hàng
+export const addToCart = (productId, quantity = 1) =>
+  API.post("/cart/items", {
+    product_id: productId,
+    quantity,
   });
-};
 
-// ================= Lịch sử chat =================
-export const getChatHistory = (userId, shopId) => {
-  return API.get("/chat/history", {
-    params: {
-      user_id: userId,
-      shop_id: shopId,
-    },
+// Cập nhật số lượng
+export const updateCartItem = (itemId, quantity) =>
+  API.patch(`/cart/items/${itemId}`, {
+    quantity,
   });
-};
 
-// ================= Gửi tin nhắn =================
-export const sendMessage = ({
-    user_id,
-    shop_id,
-    content,
-    image_file = null,
-}) => {
+// Xóa sản phẩm
+export const deleteCartItem = (itemId) =>
+  API.delete(`/cart/items/${itemId}`);
 
-    if (image_file) {
-        const formData = new FormData();
+// Xóa toàn bộ giỏ hàng
+export const clearCart = () =>
+  API.delete("/cart");
 
-        formData.append("user_id", user_id);
-        formData.append("shop_id", shop_id);
-        formData.append("content", content);
-        formData.append("image_file", image_file);
-
-        return API.post("/chat/send", formData);
-    }
-
-    return API.post("/chat/send", {
-        user_id,
-        shop_id,
-        content,
-    });
-};
+// Checkout
+export const checkoutCart = (data) =>
+  API.post("/cart/checkout", data);
