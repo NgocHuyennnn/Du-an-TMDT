@@ -10,19 +10,10 @@ import {
 
 const socket = io("https://tmdt-backend-ego0.onrender.com");
 const quickReplies = [
-    "Xin chào!",
-    "Shop sẽ kiểm tra giúp bạn.",
-    "Đơn hàng đang được xử lý.",
-    "Cảm ơn bạn.",
-    "Xin lỗi vì sự bất tiện."
-];
-
-
-const quickReplies = [
-  "Shop cho em xin thêm thông tin",
-  "Sản phẩm này còn không ạ?",
-  "Em muốn đặt hàng",
-  "Cho em xin giá tốt nhất",
+  "Xin chào 👋",
+  "Đơn hàng của bạn đang được xử lý.",
+  "Shop sẽ phản hồi sớm nhất.",
+  "Cảm ơn bạn đã liên hệ ❤️",
 ];
 
 
