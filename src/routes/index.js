@@ -15,10 +15,10 @@ import DSTKhoan from '../QLTKhoan/DSTKhoan';
 import PQuyen from '../QLTKhoan/PQuyen';
 import DKTKhoan from '../QLTKhoan/DKTKhoan';
 import TKCNhan from '../pages/TKCNhan';
-import Chat from '../pages/Chat';
 import DSDHang from '../DonHang/DSDHang';
-import ChatUser from '../pages/manager/ChatUser';
+import ChatManager from '../pages/manager/ChatManager';
 import ProductDetailPage from '@/pages/ProductDetailPage';
+import ChatUser from '../pages/ChatUser';
 
 import EditStore from '@/pages/EditStore';
 import RoleList from '@/pages/admin/RoleList';
@@ -48,6 +48,7 @@ export const publicRoutes = [
     path: '/danhgia',
     component: Danhgia
 },
+    { path: '/chatkhach', component: ChatUser },
     { path: '/dstkhoan', component: DSTKhoan },
     { path: '/phanquyen', component: PQuyen },
     { path: '/dktkhoan', component: DKTKhoan },
@@ -59,8 +60,7 @@ export const publicRoutes = [
     { path: '/cuahang', component: CuaHang },
     { path: '/danhmuc', component: CategoriesAdmin },
     { path: '/verify', component: Verify },
-    { path: '/chat', component: ChatUser },
-    { path: '/chatkhach', component: Chat },
+    { path: '/chat', component: ChatManager },
     //{ path: '/danhmuc', component: CategoriesAdmin },
     {
     path: "/roles",
