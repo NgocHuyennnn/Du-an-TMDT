@@ -2,46 +2,90 @@ import { useState, useRef } from 'react';
  
 // ─── Dữ liệu demo – thay bằng props/orders thực của bạn ───────────────────
 function buildChartData(filter, orders = []) {
-
-  orders = orders.filter(
-    order => order.status === 'HOÀN THÀNH'
-  );
-
+  const validOrders = orders.filter(o =>
+  ["Đã giao", "DELIVERED", "delivered"].includes(o.Status)
+);
   const now = new Date();
-  if (filter === 'today') {
-    const hours = Array(24).fill(0).map((_, i) => ({ label: `${i}:00`, revenue: 0, visits: 0 }));
-    orders.forEach(order => {
-      const d = new Date(order.date);
+
+  // TODAY
+  if (filter === "today") {
+    const hours = Array(24)
+      .fill(0)
+      .map((_, i) => ({
+        label: `${i}:00`,
+        revenue: 0,
+        visits: 0,
+      }));
+
+    validOrders.forEach(order => {
+      const d = new Date(order.OrderDate || order.CreatedAt);
+
       if (d.toDateString() === now.toDateString()) {
-        hours[d.getHours()].revenue += order.total || 0;
-        hours[d.getHours()].visits += 1;
+        const amount = Number(order.TotalAmount || 0);
+hours[d.getHours()].revenue += amount;
+hours[d.getHours()].visits += 1;
       }
     });
+
     return hours;
   }
- 
-  if (filter === 'week') {
-    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    const result = Array(7).fill(0).map((_, i) => ({ label: days[i], revenue: 0, visits: 0 }));
-    const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 6);
-    orders.forEach(order => {
-      const d = new Date(order.date);
-      if (d >= weekAgo) { result[d.getDay()].revenue += order.total || 0; result[d.getDay()].visits += 1; }
+
+  // WEEK
+  if (filter === "week") {
+    const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+
+    const result = Array(7)
+      .fill(0)
+      .map((_, i) => ({
+        label: days[i],
+        revenue: 0,
+        visits: 0,
+      }));
+
+    const weekAgo = new Date(now);
+    weekAgo.setDate(now.getDate() - 6);
+
+    validOrders.forEach(order => {
+      const d = new Date(order.OrderDate || order.CreatedAt);
+
+      if (d >= weekAgo) {
+        const idx = d.getDay();
+        result[idx].revenue += order.TotalAmount || 0;
+        result[idx].visits += 1;
+      }
     });
+
     return result;
   }
- 
-  // month
-  const result = Array(30).fill(0).map((_, i) => ({ label: `${i + 1}`, revenue: 0, visits: 0 }));
-  const monthAgo = new Date(now); monthAgo.setDate(now.getDate() - 29);
-  orders.forEach(order => {
-    const d = new Date(order.date);
-    if (d >= monthAgo) {
-      const idx = Math.floor((d - monthAgo) / 86400000);
-      if (idx >= 0 && idx < 30) { result[idx].revenue += order.total || 0; result[idx].visits += 1; }
-    }
-  });
-  return result;
+
+  // MONTH
+  // MONTH (30 ngày gần nhất - FIX CHUẨN)
+const result = Array.from({ length: 30 }, (_, i) => {
+  const d = new Date();
+  d.setDate(d.getDate() - (29 - i)); // ngày thật
+
+  return {
+    label: `${d.getDate()}/${d.getMonth() + 1}`, // hiển thị thật
+    revenue: 0,
+    visits: 0,
+    date: d.toDateString(), // để match
+  };
+});
+
+validOrders.forEach(order => {
+  const d = new Date(order.OrderDate || order.CreatedAt);
+
+  const matchIndex = result.findIndex(
+    r => new Date(r.date).toDateString() === d.toDateString()
+  );
+
+  if (matchIndex !== -1) {
+    result[matchIndex].revenue += Number(order.TotalAmount || 0);
+    result[matchIndex].visits += 1;
+  }
+});
+
+return result;
 }
  
 // ─── LineChart SVG thuần ──────────────────────────────────────────────────
@@ -199,13 +243,12 @@ export default function ActivityChart({ orders = [] }) {
 
 
   const peakHour = chartData.reduce(
-    (max, item, index, arr) =>
-      item.revenue > (arr[max]?.revenue || 0)
-        ? index
-        : max,
-    0
-  );
-
+  (max, item, index, arr) => {
+    const currentMax = arr[max]?.revenue || 0;
+    return item.revenue > currentMax ? index : max;
+  },
+  0
+);
 
   const fmt = (n) =>
     n >= 1000000

@@ -1,26 +1,32 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from 'react-router-dom';
 import { getCart, deleteCartItem,} from "@/api/cartApi";
-import { 
-  Trash2, Plus, Minus, ArrowLeft, ShieldCheck, ShoppingBag, Check, 
+import {
+  Trash2, Plus, Minus, ArrowLeft, ShieldCheck, ShoppingBag, Check,
   Truck, RefreshCw, Award, Ticket, ChevronRight, ChevronLeft, ShoppingCart
 } from 'lucide-react';
+
 
 export default function GioHang() {
   const navigate = useNavigate();
 
+
   // Mock data sản phẩm trong giỏ hàng có thêm thuộc tính màu sắc, kích cỡ
   const [cartItems, setCartItems] = useState([]);
+
 
 useEffect(() => {
   loadCart();
 }, []);
 
+
 const loadCart = async () => {
   try {
     const res = await getCart();
 
+
     console.log("Cart API:", res.data);
+
 
     const items = res.data.data.items.map((item) => ({
       id: item.item_id,                 // CartItemID
@@ -35,6 +41,7 @@ const loadCart = async () => {
       checked: true,
     }));
 
+
     setCartItems(items);
   } catch (err) {
     console.error("Lỗi lấy giỏ hàng:", err);
@@ -48,7 +55,9 @@ const loadCart = async () => {
     { id: 104, name: 'Kính mát nam phân cực', price: 320000, image: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400&auto=format&fit=crop&q=60' },
   ];
 
+
   const [couponCode, setCouponCode] = useState("");
+
 
 const [appliedDiscount, setAppliedDiscount] = useState(0);
 const [couponMessage, setCouponMessage] = useState("");
@@ -63,9 +72,11 @@ const shippingFee = 30000;
   }
 };
 
+
   const handleCheckChange = (id) => {
     setCartItems(cartItems.map(item => item.id === id ? { ...item, checked: !item.checked } : item));
   };
+
 
   const updateQuantity = (id, amount) => {
   const newCart = cartItems.map(item => {
@@ -79,7 +90,9 @@ const shippingFee = 30000;
     return item;
   });
 
+
   setCartItems(newCart);
+
 
   localStorage.setItem(
   "cart",
@@ -93,11 +106,14 @@ const shippingFee = 30000;
   window.dispatchEvent(new Event("cartUpdated"));
 };
 
+
   const deleteItem = async (id) => {
   try {
     await deleteCartItem(id);
 
+
     await loadCart();
+
 
     window.dispatchEvent(new Event("cartUpdated"));
   } catch (err) {
@@ -105,29 +121,33 @@ const shippingFee = 30000;
   }
 };
 
+
   const tempTotal = cartItems.filter(item => item.checked).reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const discountAmount = tempTotal > 0 ? appliedDiscount : 0;
   const finalTotal = tempTotal > 0 ? (tempTotal + shippingFee - discountAmount) : 0;
   const checkedCount = cartItems.filter(item => item.checked).length;
 
+
   const formatCurrency = (value) => {
     return value.toLocaleString('vi-VN') + ' đ';
   };
 
+
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] text-gray-800 py-6 px-4 sm:px-6 lg:px-8 font-sans antialiased">
       <div className="max-w-6xl mx-auto">
-        
+       
         {/* HEADER ĐIỀU HƯỚNG */}
         <div className="mb-4">
-          <Link 
-            to="/" 
+          <Link
+            to="/"
             className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 transition-colors group"
           >
             <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />
             <span>TIẾP TỤC MUA SẮM</span>
           </Link>
         </div>
+
 
         {/* TIÊU ĐỀ TRANG VÀ SUBTITLE */}
         <div className="mb-5">
@@ -140,12 +160,13 @@ const shippingFee = 30000;
           <p className="text-xs text-gray-400 mt-1">Kiểm tra lại sản phẩm và tiến hành thanh toán</p>
         </div>
 
+
         {/* BỐ CỤC HAI CỘT CHÍNH */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
+         
           {/* CỘT TRÁI: TIỆN ÍCH & DANH SÁCH SẢN PHẨM (Chiếm 8/12 cột) */}
           <div className="lg:col-span-8 space-y-4">
-            
+           
             {/* THANH BADGE CAM KẾT DỊCH VỤ */}
             <div className="grid grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-gray-100 shadow-xs text-center sm:text-left">
               <div className="flex flex-col sm:flex-row items-center gap-2 px-2">
@@ -171,6 +192,7 @@ const shippingFee = 30000;
               </div>
             </div>
 
+
             {/* DANH SÁCH GIỎ HÀNG */}
             <div className="space-y-3">
               {cartItems.length === 0 ? (
@@ -180,8 +202,8 @@ const shippingFee = 30000;
                 </div>
               ) : (
                 cartItems.map((item) => (
-                  <div 
-                    key={item.id} 
+                  <div
+                    key={item.id}
                     className={`bg-white rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-200 shadow-xs ${
                       item.checked ? 'border-blue-500/20 bg-blue-50/5' : 'border-gray-100/80'
                     }`}
@@ -192,18 +214,20 @@ const shippingFee = 30000;
                       <button
                         onClick={() => handleCheckChange(item.id)}
                         className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all shrink-0 cursor-pointer ${
-                          item.checked 
-                            ? 'bg-blue-600 border-blue-600 text-white' 
+                          item.checked
+                            ? 'bg-blue-600 border-blue-600 text-white'
                             : 'border-gray-300 hover:border-gray-400 bg-white'
                         }`}
                       >
                         {item.checked && <Check size={12} strokeWidth={4} />}
                       </button>
 
+
                       {/* Ảnh sản phẩm */}
                       <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl overflow-hidden border border-gray-100 shrink-0">
                         <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                       </div>
+
 
                       {/* Chi tiết Tên, Biến thể, Đơn giá */}
                       <div className="space-y-1 flex-1 min-w-0">
@@ -215,9 +239,10 @@ const shippingFee = 30000;
                       </div>
                     </div>
 
+
                     {/* Bộ đếm và Giá tiền bên phải */}
                     <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
-                      
+                     
                       {/* Bộ tương tác số lượng */}
                       <div className="flex items-center border border-gray-200 rounded-lg bg-gray-50/50 p-0.5 h-8">
                         <button
@@ -237,12 +262,14 @@ const shippingFee = 30000;
                         </button>
                       </div>
 
+
                       {/* Đơn giá hiển thị trên PC */}
                       <div className="text-right min-w-22.5 hidden sm:block">
                         <span className="font-extrabold text-sm text-gray-900 tracking-tight">
                           {formatCurrency(item.price * item.quantity)}
                         </span>
                       </div>
+
 
                       {/* Nút xóa */}
                       <button
@@ -256,6 +283,7 @@ const shippingFee = 30000;
                 ))
               )}
             </div>
+
 
             {/* BANNER ƯU ĐÃI DÀNH RIÊNG */}
             <div className="bg-amber-50/60 border border-amber-100 p-3 rounded-xl flex items-center justify-between text-xs text-amber-900">
@@ -271,6 +299,7 @@ const shippingFee = 30000;
               </button>
             </div>
 
+
             {/* SECTION "CÓ THỂ BẠN CŨNG THÍCH" */}
             <div className="pt-2">
               <div className="flex justify-between items-center mb-3">
@@ -282,7 +311,7 @@ const shippingFee = 30000;
                   <button className="p-1 border border-gray-200 rounded-lg bg-white hover:bg-gray-50 text-gray-400 transition-colors cursor-pointer"><ChevronRight size={14} /></button>
                 </div>
               </div>
-              
+             
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {suggestedProducts.map((prod) => (
                   <div key={prod.id} className="bg-white border border-gray-100 rounded-xl p-2.5 shadow-xs hover:shadow-md transition-all group flex flex-col justify-between">
@@ -306,18 +335,20 @@ const shippingFee = 30000;
               </div>
             </div>
 
+
           </div>
+
 
           {/* CỘT PHẢI: CHI TIẾT ĐƠN HÀNG (Chiếm 4/12 cột) */}
           <div className="lg:col-span-4 lg:sticky lg:top-6">
-            
+           
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden space-y-4 pb-4">
               {/* Tiêu đề Box Đơn hàng màu Gradient Tím Xanh cá tính như ảnh mẫu */}
               <div className="bg-linear-to-r from-violet-600 to-indigo-600 p-4 text-white flex items-center gap-2">
                 <Ticket size={18} />
                 <h2 className="text-sm font-bold tracking-wide">Chi tiết đơn hàng</h2>
               </div>
-              
+             
               <div className="px-4 space-y-3 text-xs">
                 {checkedCount > 0 && (
                   <p className="text-[11px] text-gray-500 font-medium bg-gray-50 px-2 py-1 rounded-md inline-block">
@@ -325,10 +356,12 @@ const shippingFee = 30000;
                   </p>
                 )}
 
+
                 <div className="flex justify-between items-center text-gray-500 pt-1">
                   <span className="font-medium">Tạm tính</span>
                   <span className="font-bold text-gray-900">{formatCurrency(tempTotal)}</span>
                 </div>
+
 
                 <div className="flex justify-between items-center text-gray-500">
                   <span className="font-medium">Phí giao hàng</span>
@@ -336,6 +369,7 @@ const shippingFee = 30000;
                     {tempTotal > 0 ? formatCurrency(shippingFee) : '0 đ'}
                   </span>
                 </div>
+
 
                 {/* Input nhập Coupon */}
                 <div className="pt-0.5">
@@ -367,6 +401,7 @@ const shippingFee = 30000;
                   </div>
                 </div>
 
+
                 {/* Khối hiển thị Ưu đãi hiện có đã áp dụng thành công giống trong ảnh */}
                 {tempTotal > 0 && appliedDiscount > 0 && (
                   <div className="bg-amber-50/40 border border-dashed border-amber-200 p-2.5 rounded-lg flex items-center justify-between text-[11px]">
@@ -381,7 +416,9 @@ const shippingFee = 30000;
                   </div>
                 )}
 
+
                 <div className="border-t border-gray-100 pt-3 my-1"></div>
+
 
                 <div className="flex justify-between items-end">
                   <span className="text-gray-900 text-xs font-bold uppercase tracking-wider mb-0.5">Tổng thanh toán</span>
@@ -390,6 +427,7 @@ const shippingFee = 30000;
                   </span>
                 </div>
               </div>
+
 
               {/* Nút thanh toán hành động chính */}
               <div className="px-4 pt-1">
@@ -431,6 +469,7 @@ console.log("SAVE CART =", JSON.stringify(selectedItems, null, 2));
                 </p>
               </div>
 
+
               {/* Lợi ích cộng thêm dưới chân sidebar */}
               <div className="mx-4 border-t border-gray-100 pt-3 space-y-1.5 text-[11px] text-gray-500 font-medium">
                 <div className="flex items-center gap-1.5 text-emerald-600"><Check size={12} strokeWidth={3} /> Sản phẩm chính hãng 100%</div>
@@ -438,13 +477,18 @@ console.log("SAVE CART =", JSON.stringify(selectedItems, null, 2));
                 <div className="flex items-center gap-1.5 text-emerald-600"><Check size={12} strokeWidth={3} /> Hỗ trợ khách hàng 24/7</div>
               </div>
 
+
             </div>
+
 
           </div>
 
+
         </div>
+
 
       </div>
     </div>
   );
 }
+

@@ -31,6 +31,8 @@ export default function DangKyBanHang() {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+  const isManager = currentUser?.rolename === "Manager";
 
   // Xử lý thay đổi dữ liệu trong các ô nhập
   const handleInputChange = (e) => {
@@ -168,9 +170,19 @@ localStorage.setItem("shop_id", shop.ShopID);
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
-              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
+            <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
             </Link>
+            
+            {!isManager && (
+  <Link
+    to="/dktkhoan"
+    className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
+    <UserPlus size={16} />
+    <span>Đăng kí bán hàng</span>
+  </Link>
+)}
+          
           </nav>
         </div>
 

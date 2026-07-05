@@ -218,14 +218,15 @@ console.log(
               <p className="text-xs font-medium text-slate-400">Quản lý và theo dõi tất cả các giao dịch hệ thống thương mại điện tử.</p>
             </div>
 
+
             <div className="flex items-center gap-3">
               <div className="relative w-72">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
                   <Search size={15} />
                 </span>
-                <input 
-                  type="text" 
-                  placeholder="Tìm mã đơn, tên khách, sđt, sản phẩm..." 
+                <input
+                  type="text"
+                  placeholder="Tìm mã đơn, tên khách, sđt, sản phẩm..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full h-10 bg-white border border-slate-200/80 rounded-xl pl-10 pr-4 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:shadow-xs transition-all"
@@ -238,7 +239,7 @@ console.log(
           <div className="relative z-10 bg-white/90 backdrop-blur-md border border-slate-200/60 rounded-2xl p-4 mb-6 shadow-xs grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
             <div className="space-y-1.5">
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Trạng thái</label>
-              <select 
+              <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
                 className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-3 text-xs font-semibold text-slate-700 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
@@ -251,44 +252,47 @@ console.log(
               </select>
             </div>
 
+
             <div className="space-y-1.5">
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Ngày đặt hàng</label>
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
                 className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-3 text-xs font-semibold text-slate-600 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all cursor-pointer"
               />
             </div>
 
+
             <div className="space-y-1.5">
               <label className="text-[11px] font-black text-slate-500 uppercase tracking-wider">Khoảng giá (VNĐ)</label>
               <div className="flex items-center gap-2">
-                <input 
-                  type="number" 
-                  placeholder="Từ" 
+                <input
+                  type="number"
+                  placeholder="Từ"
                   value={priceFrom}
                   onChange={(e) => setPriceFrom(e.target.value)}
-                  className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-2 text-xs font-semibold focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" 
+                  className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-2 text-xs font-semibold focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
                 />
                 <span className="text-slate-400 text-xs font-bold">-</span>
-                <input 
-                  type="number" 
-                  placeholder="Đến" 
+                <input
+                  type="number"
+                  placeholder="Đến"
                   value={priceTo}
                   onChange={(e) => setPriceTo(e.target.value)}
-                  className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-2 text-xs font-semibold focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" 
+                  className="w-full h-10 bg-slate-50/50 border border-slate-200 rounded-xl px-2 text-xs font-semibold focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all"
                 />
               </div>
             </div>
+
 
             <div className="flex items-center gap-2">
               <div className="flex-1 bg-slate-100 text-slate-500 text-[11px] font-bold h-10 px-2 rounded-xl flex items-center justify-center border border-slate-200 select-none">
                 Tìm thấy: {filteredOrders.length} dòng
               </div>
-              <button 
+              <button
                 onClick={handleResetFilters}
-                className="h-10 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-rose-100" 
+                className="h-10 px-4 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-rose-100"
                 title="Xóa bộ lọc về mặc định"
               >
                 <RefreshCw size={13} />
@@ -378,7 +382,7 @@ console.log(
                           <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-all">
                             <button 
                               onClick={() => setSelectedOrder(order)}
-                              className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all cursor-pointer bg-transparent border-none" 
+                              className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all cursor-pointer bg-transparent border-none"
                               title="Xem chi tiết"
                             >
                               <Eye size={14} />
