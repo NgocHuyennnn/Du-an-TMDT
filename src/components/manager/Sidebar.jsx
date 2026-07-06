@@ -1,9 +1,9 @@
 import {
   LayoutDashboard,
-  Store,
+ 
   Package,
   ShoppingCart,
-  Users,
+  
   BarChart3,
   Settings,
   HelpCircle,
@@ -22,7 +22,7 @@ const navItems = [
   { icon: Package, label: "Sản phẩm", path: "/products" },
   //{ icon: BarChart3, label: "Danh mục", path: "/categories" },
   { icon: ShoppingCart, label: "Đơn hàng", path: "/orders" },
-  { icon: Users, label: "Khách hàng", path: "/customers" },
+  
   
   
 ];
