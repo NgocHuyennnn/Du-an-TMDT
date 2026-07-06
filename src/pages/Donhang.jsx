@@ -21,7 +21,17 @@ export default function QuanLyDonHang() {
   const [activeTab, setActiveTab] = useState('Tất cả');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState(null);
+   const currentUser = JSON.parse(localStorage.getItem("user"));
+  const isManager = currentUser?.rolename === "Manager";
+  const getImageUrl = (path) => {
+  if (!path) return "https://placehold.co/80x80";
 
+  // nếu đã là full URL
+  if (path.startsWith("http")) return path;
+
+  // chuẩn hoá slash
+  return `https://tmdt-backend-ego0.onrender.com/${path.replace(/^\/+/, "")}`;
+};
   // 1. ĐÃ THÊM: State quản lý tên người dùng để hiển thị Avatar đồng bộ
   const [userName, setUserName] = useState(() => {
     return localStorage.getItem("userName") || "Khách";
@@ -158,9 +168,20 @@ const reviewedOrders =
             <Link to="/donhang" className="flex items-center gap-3 px-3 py-2 text-xs font-black bg-blue-50 text-blue-600 rounded-xl shadow-sm transition-all">
               <ClipboardList size={16} /> <span>Đơn hàng</span>
             </Link>
-            <Link to="/dktkhoan" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
-              <UserPlus size={16} /> <span>Đăng kí bán hàng </span>
+            <Link to="/verify" className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all">
+              <ShieldCheck size={16} /> <span>Đổi mật khẩu</span>
             </Link>
+            
+            {!isManager && (
+  <Link
+    to="/dktkhoan"
+    className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-gray-500 hover:bg-gray-50 hover:text-blue-600 rounded-xl transition-all"
+  >
+    <UserPlus size={16} />
+    <span>Đăng kí bán hàng</span>
+  </Link>
+)}
+            
           </nav>
         </div>
 
@@ -309,13 +330,13 @@ const reviewedOrders =
                   {/* Chi tiết sản phẩm trong đơn */}
                   <div className="flex items-start gap-4 py-1">
                     <img
-                      src={
-                          order.Items?.[0]?.ImageURL ||
-                          "https://placehold.co/80x80"
-                      }
-                      alt={order.Items?.[0]?.ProductName}
-                      className="w-16 h-16 object-cover rounded"
-                  />
+  src={getImageUrl(order.Items?.[0]?.ImageURL)}
+  alt={order.Items?.[0]?.ProductName || "product"}
+  className="w-16 h-16 object-cover rounded"
+  onError={(e) => {
+    e.target.src = "https://placehold.co/80x80";
+  }}
+/>
                     <div className="flex-1 min-w-0 space-y-1">
                       <div className="flex items-center gap-1.5">
                         <h4 className="text-xs font-bold">
