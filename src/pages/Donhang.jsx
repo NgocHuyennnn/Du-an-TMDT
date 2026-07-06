@@ -424,11 +424,17 @@ const reviewedOrders =
 
   {/* Luôn hiển thị */}
   <button
-    onClick={() => navigate("/chatkhach")}
-    className="border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer"
-  >
-    Liên hệ người bán
-  </button>
+  onClick={() =>
+    navigate("/chatkhach", {
+      state: {
+        shopId: order.ShopID,
+      },
+    })
+  }
+  className="border border-gray-200 bg-white text-gray-700 text-xs font-bold h-8 px-4 rounded-xl hover:bg-gray-50 hover:text-blue-600 transition-all cursor-pointer"
+>
+  Liên hệ người bán
+</button>
 
 </div>
                   </div>

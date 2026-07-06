@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Send, Paperclip, Image } from "lucide-react";
+import {
+  Search,
+  Send,
+  Paperclip,
+  Image,
+  ArrowLeft,
+} from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import {
     getConversations,
@@ -15,6 +22,10 @@ const quickReplies = [
 
 
 export default function AdminChat() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+const targetShopId = location.state?.shopId;
   const socket = useRef(null);
   const chatBoxRef = useRef(null);
   const [conversations, setConversations] = useState([]);
@@ -55,13 +66,17 @@ useEffect(() => {
 }, []);
 
 
-  useEffect(() => {
-    loadConversations();
-}, []);
-const loadConversations = async () => {
+useEffect(() => {
+    loadConversations(targetShopId);
+}, [targetShopId]);
+const loadConversations = async (shopId = null) => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+console.log("CURRENT USER:", user);
+console.log("USER ID:", user.userid);
     try {
 
-        const res = await getConversations();
+        const res = await getConversations(shopId);
         console.log(JSON.stringify(res.data, null, 2));
 
         const data = (res.data.data || []).map(item => ({
@@ -72,6 +87,9 @@ const loadConversations = async () => {
 }));
 
 setConversations(data);
+if (shopId && data.length > 0) {
+    handleSelectConversation(data[0]);
+}
 
 console.log(data);
 
@@ -128,11 +146,23 @@ const handleSend = async () => {
 };
 
   return (
+    
     <div className="h-screen flex bg-[#eef2f7] font-sans text-gray-800">
 
       {/* SIDEBAR */}
       <div className="w-80 bg-white border-r shadow-sm flex flex-col">
-        <div className="p-4 border-b font-bold">Messages</div>
+
+  <div className="p-4 border-b">
+    <button
+      onClick={() => navigate(-1)}
+      className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 mb-3"
+    >
+      <ArrowLeft size={18} />
+      <span>Quay lại</span>
+    </button>
+
+    <h2 className="font-bold text-lg">Messages</h2>
+  </div>
 
         <div className="p-3">
           <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2">
@@ -168,7 +198,9 @@ const handleSend = async () => {
               </div>
 
               <span className="text-[10px] text-gray-400">
-                {new Date(c.last_sent).toLocaleDateString()}
+                {c.last_sent
+    ? new Date(c.last_sent).toLocaleDateString()
+    : ""}
               </span>
             </div>
           ))}
@@ -223,7 +255,7 @@ const handleSend = async () => {
 
                 {m.ImageURL && (
                     <img
-    src={c.ShopImage}
+    src={m.ImageURL}
     alt=""
     className="w-10 h-10 rounded-full object-cover flex-shrink-0"
 />

@@ -4,6 +4,7 @@ import {
   updateOrderStatus,
 } from "../../api/orderApi";
 import { useNavigate } from "react-router-dom";
+import { io } from "socket.io-client";
 import {
   Search,
   RefreshCw,
@@ -23,6 +24,8 @@ import { createPortal } from "react-dom";
 import hinhNenTechTonic from "@/assets/nen.png"; 
 
 export default function DanhSachDonHang() {
+  const [unreadMap, setUnreadMap] = useState({});
+  const [hasNewMessage, setHasNewMessage] = useState(false);
   const navigate = useNavigate();
   // 1. DỮ LIỆU ĐƠN HÀNG
   const [orders, setOrders] = useState([]);
@@ -117,6 +120,28 @@ const filteredOrders = useMemo(() => {
     setPriceFrom('');
     setPriceTo('');
   };
+  useEffect(() => {
+  const socket = io("https://tmdt-backend-ego0.onrender.com", {
+    transports: ["websocket"],
+  });
+
+  socket.on("connect", () => {
+    console.log("Socket connected:", socket.id);
+  });
+
+  socket.on("new_message", (msg) => {
+    console.log("NEW MSG:", msg);
+
+    const key = `${msg.UserID}_${msg.ShopID}`;
+
+    setUnreadMap((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
+  });
+
+  return () => socket.disconnect();
+}, []);
 
   // ĐÃ SỬA: Hàm xử lý xóa đơn hàng tách biệt, không bị lồng
 
@@ -156,6 +181,7 @@ const filteredOrders = useMemo(() => {
 }, []);
 
   const fetchOrders = async () => {
+
   try {
     const res = await getOrders();
 
@@ -178,14 +204,27 @@ const filteredOrders = useMemo(() => {
   status: o.Status,
   paymentMethod: o.PaymentMethod,
   paymentStatus: o.PaymentStatus,
- customerName: o.ShippingName,
-customerPhone: o.ShippingPhone,
-shippingAddress: o.ShippingAddress,
-
-customerEmail: o.CustomerEmail || "",
-
+  customerName: o.ShippingName,
+  customerPhone: o.ShippingPhone,
+  shippingAddress: o.ShippingAddress,
+  customerEmail: o.CustomerEmail || "",
   items: o.Items || [],
 }));
+
+console.table(
+  mapped.map((o) => ({
+    userId: o.userId,
+    customer: o.customerName,
+    shopId: o.shopId,
+  }))
+);
+
+const uniqueUsers = [...new Set(mapped.map((o) => o.userId))];
+
+console.log("Unique Users:", uniqueUsers);
+console.log("Số khách:", uniqueUsers.length);
+
+setOrders(mapped);
     console.log("MAPPED =", mapped);
 
     setOrders(mapped);
@@ -197,25 +236,22 @@ console.log(
     console.log(err);
   }
 };
-const openChat = () => {
-    console.log("Đã click chat");
+const openChat = (order) => {
+  console.log("CLICK CHAT");
 
-    console.log(orders);
+  console.log("ShopID =", order.shopId);
+  console.log("UserID =", order.userId);
 
-    if (orders.length === 0) {
-        alert("Chưa có đơn hàng");
-        return;
-    }
+  sessionStorage.setItem("shop_id", order.shopId);
+  sessionStorage.setItem("target_user_id", order.userId);
+  setUnreadMap((prev) => {
+    const newMap = { ...prev };
+    delete newMap[`${order.userId}_${order.shopId}`];
+    return newMap;
+  });
 
-    const shopId = orders[0].shopId;
 
-    console.log("ShopID =", shopId);
-
-    sessionStorage.setItem("shop_id", shopId);
-
-    console.log(sessionStorage.getItem("shop_id"));
-
-    navigate("/chat");
+  navigate("/chat");
 };
   const formatDateDisplay = (dateStr) => {
   if (!dateStr) return "";
@@ -240,14 +276,6 @@ const openChat = () => {
               <h2 className="text-xl font-black text-slate-900 tracking-tight">Danh sách đơn hàng</h2>
               <p className="text-xs font-medium text-slate-400">Quản lý và theo dõi tất cả các giao dịch hệ thống thương mại điện tử.</p>
             </div>
-            <button
-  onClick={openChat}
-  className="relative h-11 w-11 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 hover:scale-110 transition-all duration-200 flex items-center justify-center"
-  title="Chat với khách hàng"
->
-  <MessageCircle size={22} />
-</button>
-
             <div className="flex items-center gap-3">
               <div className="relative w-72">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none">
@@ -408,15 +436,31 @@ const openChat = () => {
                           </span>
                         </td>
                         <td className="py-4 px-5 text-right">
-                          <div className="flex items-center justify-end gap-1 opacity-80 group-hover:opacity-100 transition-all">
-                            <button 
-                              onClick={() => setSelectedOrder(order)}
-                              className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg transition-all cursor-pointer bg-transparent border-none"
-                              title="Xem chi tiết"
-                            >
-                              <Eye size={14} />
-                            </button>
-                          </div>
+                          <div className="flex items-center justify-end gap-2">
+
+    <div className="relative">
+  <button
+    onClick={() => openChat(order)}
+    className="p-1.5 hover:bg-green-50 text-green-600 rounded-lg"
+    title="Chat"
+  >
+    <MessageCircle size={16} />
+  </button>
+
+  {unreadMap[`${order.userId}_${order.shopId}`] && (
+    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
+  )}
+</div>
+
+    <button
+        onClick={() => setSelectedOrder(order)}
+        className="p-1.5 hover:bg-blue-50 text-slate-400 hover:text-blue-600 rounded-lg"
+        title="Chi tiết"
+    >
+        <Eye size={14}/>
+    </button>
+
+</div>
                         </td>
                       </tr>
                     ))

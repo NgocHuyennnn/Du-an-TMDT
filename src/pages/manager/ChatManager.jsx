@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Search, Send, Paperclip, Image } from "lucide-react";
+import { Search, Send, Paperclip, Image, ArrowLeft } from "lucide-react";
 import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
+
 import {
     getConversations,
     getChatHistory,
@@ -15,6 +17,8 @@ const quickReplies = [
 
 
 export default function AdminChat() {
+  const [unreadMap, setUnreadMap] = useState({});
+  const navigate = useNavigate();
   const socket = useRef(null);
   const chatBoxRef = useRef(null);
   const [conversations, setConversations] = useState([]);
@@ -38,9 +42,22 @@ useEffect(() => {
 
   socket.current.on("receive_message", (msg) => {
   console.log("RECEIVE:", msg);
-  console.log("SentAt =", msg.SentAt);
 
-  setMessages(prev => [...prev, msg]);
+  const isCurrentChat =
+    activeChat &&
+    msg.UserID === activeChat.UserID &&
+    msg.ShopID === activeChat.ShopID;
+
+  // luôn add message
+  setMessages((prev) => [...prev, msg]);
+
+  // nếu KHÔNG đang mở chat → đánh dấu chưa đọc
+  if (!isCurrentChat) {
+    setUnreadMap((prev) => ({
+      ...prev,
+      [`${msg.UserID}_${msg.ShopID}`]: true,
+    }));
+  }
 });
 
   return () => {
@@ -62,7 +79,10 @@ const loadConversations = async () => {
             return;
         }
 
-        const res = await getConversations(shopId);
+       const res = await getConversations({
+    shop_id: shopId,
+    target_user_id: sessionStorage.getItem("target_user_id"),
+});
         console.log(JSON.stringify(res.data, null, 2));
 
         const data = (res.data.data || []).map(item => ({
@@ -92,6 +112,12 @@ console.log(data);
     });
   }, [messages]);
   const handleSelectConversation = async (conversation) => {
+    setUnreadMap((prev) => {
+  const newMap = { ...prev };
+  delete newMap[`${conversation.UserID}_${conversation.ShopID}`];
+  return newMap;
+});
+    console.log("SELECT =", conversation.UserID);
   setActiveChat(conversation);
 
   const res = await getChatHistory(
@@ -140,8 +166,18 @@ const handleSend = async () => {
 
       {/* SIDEBAR */}
       <div className="w-80 bg-white border-r shadow-sm flex flex-col">
-        <div className="p-4 border-b font-bold">Messages</div>
 
+  <div className="p-4 border-b">
+    <button
+      onClick={() => navigate(-1)}
+      className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 mb-3"
+    >
+      <ArrowLeft size={18} />
+      <span>Quay lại</span>
+    </button>
+
+    <h2 className="font-bold text-lg">Messages</h2>
+  </div>
         <div className="p-3">
           <div className="flex items-center bg-gray-100 rounded-xl px-3 py-2">
             <Search size={14} className="text-gray-400" />
@@ -157,19 +193,19 @@ const handleSend = async () => {
           {conversations.map((c) => (
             
             <div
-              key={c.user_id}
+              key={c.UserID}
               
               onClick={() => handleSelectConversation(c)}
               className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-gray-50 ${
-                activeChat?.user_id === c.user_id?  "bg-blue-50" : ""
+                activeChat?.UserID === c.UserID?  "bg-blue-50" : ""
               }`}
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
-                {c.user_name?.charAt(0)}
+                {c.UserName?.charAt(0)}
               </div>
 
               <div className="flex-1">
-                <p className="text-sm font-semibold">{c.user_name}</p>
+                <p className="text-sm font-semibold">{c.UserName}</p>
                 <p className="text-xs text-gray-400 truncate">
                   {c.last_message}
                 </p>
@@ -190,11 +226,11 @@ const handleSend = async () => {
         <div className="h-14 bg-white shadow-sm flex items-center px-5 justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold">
-              {activeChat?.user_name?.charAt(0)}
+              {activeChat?.UserName?.charAt(0)}
             </div>
             <div>
               <p className="text-sm font-semibold">
-                {activeChat?.user_name}
+                {activeChat?.UserName}
               </p>
               <p className="text-xs text-green-500">● Online</p>
             </div>
@@ -231,10 +267,10 @@ const handleSend = async () => {
 
                 {m.ImageURL && (
                     <img
-                        src={m.ImageURL}
-                        alt=""
-                        className="mt-2 rounded-lg max-h-60"
-                    />
+    src={m.ImageURL}
+    alt=""
+    className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+/>
                 )}
 
                 <div
