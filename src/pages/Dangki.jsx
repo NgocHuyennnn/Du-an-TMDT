@@ -73,8 +73,15 @@ export default function RegisterPage() {
   return;
 }
 
-    alert('Đăng ký thành công!');
-    navigate('/login');
+    const regToken = data.data.reg_token;
+
+navigate("/nhapOTP", {
+    state: {
+        type: "register",
+        email,
+        regToken,
+    },
+});
   } catch (error) {
     console.error(error);
     setErrorMessage('Không thể kết nối tới server');

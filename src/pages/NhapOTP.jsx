@@ -12,7 +12,10 @@ export default function NhapOTP() {
   const navigate = useNavigate();
 
   // ĐỒNG BỘ EMAIL CHUẨN: Ưu tiên lấy từ state chuyển trang, nếu không thấy sẽ lấy từ localStorage
-  const emailReceived = location.state?.email || localStorage.getItem('user_reset_email') || "nguyenvana@gmail.com";
+  const emailReceived = location.state?.email || localStorage.getItem('user_reset_email') || "";
+const type = location.state?.type;
+const regToken = location.state?.regToken;
+
 
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -80,46 +83,59 @@ export default function NhapOTP() {
 
   const finalOtp = otp.join("");
 
-  if (finalOtp.length < 6) {
+  if (type === "register" && !regToken) {
+    alert("Phiên đăng ký đã hết hạn, vui lòng đăng ký lại.");
+    navigate("/register");
+    return;
+  }
+
+  if (finalOtp.length !== 6) {
     alert("Vui lòng nhập đủ 6 số OTP!");
     return;
   }
 
-
   try {
 
-    const res = await axios.post(
+    // ===== Đăng ký =====
+    if (type === "register") {
+
+      await axios.post(
+        "https://tmdt-backend-ego0.onrender.com/api/auth/register-verify",
+        {
+          otp: finalOtp,
+          reg_token: regToken,
+        }
+      );
+
+      alert("Đăng ký thành công!");
+      navigate("/login");
+      return;
+    }
+
+    // ===== Quên mật khẩu =====
+    await axios.post(
       "https://tmdt-backend-ego0.onrender.com/api/auth/verify-otp",
       {
         email: emailReceived,
-        otp: finalOtp
+        otp: finalOtp,
       }
     );
 
+    localStorage.setItem(
+      "user_reset_email",
+      emailReceived
+    );
 
-    if(res.data.success){
+    alert("Xác nhận OTP thành công");
 
-      // lưu email để trang đổi mật khẩu lấy
-      localStorage.setItem(
-        "user_reset_email",
-        emailReceived
-      );
+    navigate("/reset-password", {
+      state: {
+        email: emailReceived,
+        otp: finalOtp,
+      },
+    });
 
-
-      alert("Xác nhận OTP thành công");
-
-
-      navigate("/reset-password",{
-        state:{
-          email: emailReceived,
-          otp: finalOtp
-        }
-      });
-
-    }
-
-
-  } catch(err){
+  } catch (err) {
 
     console.log(err);
 
@@ -129,9 +145,7 @@ export default function NhapOTP() {
     );
 
   }
-
 };
-
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
       <div className="absolute inset-0 z-0 w-full h-full select-none pointer-events-none">
@@ -190,33 +204,38 @@ export default function NhapOTP() {
           <div className="text-center mt-5">
             <button 
               type="button"
-              onClick={async()=>{
+              onClick={async () => {
 
- try{
+  try {
 
-    await axios.post(
-   "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
-   {
-    email: emailReceived
-   }
-  );
+    if (type === "register") {
 
-  alert("Đã gửi lại OTP");
+      // gọi API resend OTP đăng ký (nếu backend có)
 
-  setTimeLeft(89);
+    } else {
 
- }catch(err){
+      await axios.post(
+        "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
+        {
+          email: emailReceived
+        }
+      );
 
-  console.log(err);
+    }
 
-  alert(
-    err.response?.data?.message ||
-    "OTP không hợp lệ"
-  );
+    alert("Đã gửi lại OTP");
+    setTimeLeft(89);
 
-}
+  } catch (err) {
 
-}} 
+    alert(
+      err.response?.data?.message ||
+      "Không thể gửi lại OTP"
+    );
+
+  }
+
+}}
               disabled={timeLeft > 0}
               className={`text-xs font-bold underline transition-colors ${timeLeft > 0 ? 'text-gray-300 cursor-not-allowed' : 'text-blue-600 hover:text-blue-700 cursor-pointer'}`}
             >
