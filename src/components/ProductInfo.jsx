@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { addToCart } from "@/api/cartApi";
 export default function ProductInfo({ product }) {
   const variants = product?.Variants || [];
 const [selectedVariant, setSelectedVariant] = useState(variants[0] || null);
@@ -8,49 +8,64 @@ const [selectedVariant, setSelectedVariant] = useState(variants[0] || null);
   const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   if (!user) {
-  setShowLoginPopup(true);
-  return;
-}
+    setShowLoginPopup(true);
+    return;
+  }
 
-  const cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-  cart.push({
-    ...product,
-    variant: selectedVariant,
-    quantity,
-  });
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-
-  setShowPopup(true);
-
-  setTimeout(() => {
-    setShowPopup(false);
-  }, 2000);
-};
-  const handleBuyNow = () => {
-  const user = JSON.parse(localStorage.getItem("user"));
-
-   if (!user) {
-  setShowLoginPopup(true);
-  return;
-}
-
-  const cart = [
-    {
-      ...product,
-      variant: selectedVariant,
+  try {
+    await addToCart(
+      product.ProductID,
       quantity,
-    },
-  ];
+      selectedVariant
+    );
 
-  localStorage.setItem("checkout", JSON.stringify(cart));
+    window.dispatchEvent(new Event("cartUpdated"));
 
-  navigate("/giohang");
+    setShowPopup(true);
+
+    setTimeout(() => {
+      setShowPopup(false);
+    }, 2000);
+
+  } catch (err) {
+    console.error(err);
+
+    alert("Không thể thêm sản phẩm vào giỏ hàng.");
+  }
+};
+  const handleBuyNow = async () => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+
+    if (!user) {
+      setShowLoginPopup(true);
+      return;
+    }
+
+    navigate("/thanhtoan", {
+      state: {
+        items: [
+          {
+            product,
+            variant: selectedVariant,
+            quantity,
+          },
+        ],
+        subTotal: product.Price * quantity,
+        shippingFee: 30000,
+        discount: 0,
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    alert("Không thể mua sản phẩm ngay bây giờ. Vui lòng thử lại sau.");
+  }
 };
 // Định dạng giá tiền: 100000 -> 100.000 đ
 const formatPrice = (price) => {

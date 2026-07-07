@@ -9,7 +9,7 @@ import {
 
 export default function GioHang() {
   const navigate = useNavigate();
-
+  
 
   // Mock data sản phẩm trong giỏ hàng có thêm thuộc tính màu sắc, kích cỡ
   const [cartItems, setCartItems] = useState([]);
@@ -27,20 +27,22 @@ const loadCart = async () => {
 
     console.log("Cart API:", res.data);
 
+const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
 
-    const items = res.data.data.items.map((item) => ({
-      id: item.item_id,                 // CartItemID
-      productId: item.product_id,       // ProductID
-      name: item.product_name,
-      price: Number(item.price),
-      quantity: item.quantity,
-      image:
-        item.image_url ||
-        "https://via.placeholder.com/150",
-      variant: "",
-      checked: true,
-    }));
+const items = res.data.data.items.map((item) => ({
+  id: item.item_id,
+  productId: item.product_id,
+  name: item.product_name,
+  price: Number(item.price),
+  quantity: item.quantity,
 
+  image: item.image_url
+    ? `${BASE_URL}${item.image_url}`
+    : "https://via.placeholder.com/150",
+
+  variant: "",
+  checked: true,
+}));
 
     setCartItems(items);
   } catch (err) {

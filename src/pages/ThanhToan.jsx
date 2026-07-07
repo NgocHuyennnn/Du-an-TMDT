@@ -1,19 +1,25 @@
 
-import axios from "axios";
-import { useEffect, useState } from "react";
+
+import { useState } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { checkoutCart } from "@/api/cartApi";
 import { 
   User, Phone, MapPin, FileText, ShoppingBag, CreditCard, 
   CheckCircle, ShieldCheck, RefreshCw, Truck, Headphones, Lock
 } from 'lucide-react';
-
+import { createOrder } from "@/api/orderApi";
 
 export default function ThanhToan() {
   const navigate = useNavigate();
   const location = useLocation();
-
-
+  const buyNowItems = location.state?.items || [];
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    }).format(value);
+  };
+  const items = location.state?.items || [];
   // Nếu location.state trống (khi F5), hệ thống tự lấy data giả lập để không bị lỗi total = 0
   const {
     subTotal = 350000,
@@ -24,8 +30,37 @@ export default function ThanhToan() {
 
   // Tổng tiền cuối cùng
   const total = subTotal + shippingFee - discount;
+//Thêm thông tin sản phẩm 
+{buyNowItems.length > 0 && (
+  <div className="bg-white rounded-xl border p-4 mb-4">
+    
+    <h3 className="font-bold mb-3">
+      Sản phẩm
+    </h3>
 
+    {buyNowItems.map((item) => (
+      <div
+        key={item.product.ProductID}
+        className="flex justify-between"
+      >
+        <div>
+          <p>{item.product.ProductName}</p>
+          <p className="text-sm text-gray-500">
+            {item.variant}
+          </p>
+        </div>
 
+        <div>
+          x{item.quantity}
+        </div>
+
+        <div>
+          {formatCurrency(item.product.Price)}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
   // State thông tin giao hàng
   const [shippingInfo, setShippingInfo] = useState({
   fullName: "",
@@ -37,10 +72,7 @@ export default function ThanhToan() {
   const [paymentMethod, setPaymentMethod] = useState('cod');
 
 
-  const formatCurrency = (value) => {
-    return value.toLocaleString('vi-VN') + ' đ';
-  };
-
+  
 
   // Đồng bộ hàm xử lý thay đổi text cho các ô input gõ chữ mượt mà
   const handleInputChange = (e) => {
@@ -52,46 +84,53 @@ export default function ThanhToan() {
   };
 
   const handleOrder = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    if (total <= 0) {
-        alert("Đơn hàng không hợp lệ hoặc giỏ hàng trống!");
-        return;
+  try {
+
+    // ===== MUA NGAY =====
+    if (items.length > 0) {
+
+      const firstProduct = items[0].product;
+
+      const data = {
+        shopid: firstProduct.ShopID,
+        shipping_name: shippingInfo.fullName,
+        shipping_phone: shippingInfo.phone,
+        shipping_address: shippingInfo.address,
+        paymentmethod: paymentMethod === "cod" ? "COD" : "BANK",
+        note: shippingInfo.note,
+
+        items: items.map(item => ({
+          ProductID: item.product.ProductID,
+          Quantity: item.quantity,
+        })),
+      };
+
+      await createOrder(data);
+
+      alert("Đặt hàng thành công!");
+      navigate("/donhang");
+      return;
     }
 
-    try {
+    // ===== THANH TOÁN GIỎ HÀNG =====
+    await checkoutCart({
+      payment_method: paymentMethod === "cod" ? "COD" : "BANK",
+      shipping_name: shippingInfo.fullName,
+      shipping_phone: shippingInfo.phone,
+      shipping_address: shippingInfo.address,
+      note: shippingInfo.note,
+      voucher_code: null,
+    });
 
-        const payment =
-            paymentMethod === "cod"
-                ? "COD"
-                : "Chuyển khoản";
+    alert("Đặt hàng thành công!");
+    navigate("/donhang");
 
-        const response = await checkoutCart({
-    payment_method: payment,
-    shipping_name: shippingInfo.fullName,
-    shipping_phone: shippingInfo.phone,
-    shipping_address: shippingInfo.address,
-    note: shippingInfo.note,
-    voucher_code: null,
-});
-
-        if (response.data.success) {
-            alert("🎉 Đặt hàng thành công!");
-
-            navigate("/donhang");
-        } else {
-            alert(response.data.message);
-        }
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            error.response?.data?.message ||
-            "Đặt hàng thất bại!"
-        );
-    }
+  } catch (err) {
+    console.log(err);
+    alert(err.response?.data?.message || "Đặt hàng thất bại");
+  }
 };
   return (
     <div className="min-h-screen w-full bg-[#f8fafc] text-gray-800 py-6 px-4 sm:px-6 lg:px-8 font-sans antialiased">
@@ -262,7 +301,40 @@ export default function ThanhToan() {
               <div className="space-y-1"><Headphones size={12} className="mx-auto text-amber-600" /><span>24/7</span></div>
             </div>
 
+            {items.length > 0 && (
+  <div className="bg-white rounded-xl border border-gray-200 p-5 mb-5">
+    <h3 className="text-lg font-semibold mb-4">
+      Sản phẩm đặt mua
+    </h3>
 
+    {items.map((item, index) => (
+      <div
+        key={index}
+        className="flex items-center justify-between border-b last:border-0 pb-3 mb-3"
+      >
+        <div>
+          <p className="font-medium">
+            {item.product.ProductName}
+          </p>
+
+          <p className="text-sm text-gray-500">
+            Phân loại: {item.variant || "Mặc định"}
+          </p>
+
+          <p className="text-sm text-gray-500">
+            Số lượng: {item.quantity}
+          </p>
+        </div>
+
+        <div className="text-right">
+          <p className="font-bold text-red-600">
+            {formatCurrency(item.product.Price)}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
             {/* BOX THÔNG TIN GIÁ TIỀN */}
             <div className="bg-white rounded-xl border border-gray-100 shadow-xs p-4 space-y-3">
               <div className="flex items-center gap-2 border-b border-gray-50 pb-2">
