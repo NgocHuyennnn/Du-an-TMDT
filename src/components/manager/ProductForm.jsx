@@ -84,9 +84,16 @@ const [categories, setCategories] = useState([]);
   price: product?.Price ?? "",
   stock: product?.StockQuantity ?? "",
   comparePrice: "",
+
   weight: "",
   origin: "",
+  material: "",
+  warranty: "",
+  color: "",
+  size: "",
+
   category: product?.CategoryID ?? "",
+
   statusActive: true,
   statusSoldout: false,
   statusHidden: false,
@@ -123,17 +130,29 @@ useEffect(() => {
       );
 
       const p = res.data.data;
-      const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+      const specs = {};
+
+p.Specifications?.forEach(item => {
+  specs[item.Key] = item.Value;
+});
 setForm({
   name: p.ProductName || "",
   brand: "",
   description: p.Description || "",
   price: p.Price || "",
   stock: p.StockQuantity || "",
+
   comparePrice: "",
-  weight: "",
-  origin: "",
+
+  weight: specs["Trọng lượng"] || "",
+  origin: specs["Xuất xứ"] || "",
+  material: specs["Chất liệu"] || "",
+  warranty: specs["Bảo hành"] || "",
+  color: specs["Màu sắc"] || "",
+  size: specs["Kích cỡ"] || "",
+
   category: p.CategoryID || "",
+
   statusActive: p.IsActive,
   statusSoldout: p.StockQuantity === 0,
   statusHidden: !p.IsActive,
@@ -163,6 +182,7 @@ console.log("Primary:", p.PrimaryImage);
 
   function set(k, v) { setForm((f) => ({ ...f, [k]: v })); }
   const handleSubmit = async () => {
+    console.log("Đã bấm cập nhật");
   try {
     const token = localStorage.getItem("access_token");
     const shopId = localStorage.getItem("shop_id");
@@ -178,6 +198,20 @@ console.log("Primary:", p.PrimaryImage);
     formData.append("CategoryID", form.category);
     formData.append("ShopID", shopId);
     formData.append("Description", form.description);
+    
+    const specs = {};
+
+if (form.weight) specs["Trọng lượng"] = form.weight;
+if (form.origin) specs["Xuất xứ"] = form.origin;
+if (form.material) specs["Chất liệu"] = form.material;
+if (form.warranty) specs["Bảo hành"] = form.warranty;
+if (form.color) specs["Màu sắc"] = form.color;
+if (form.size) specs["Kích cỡ"] = form.size;
+
+formData.append(
+  "specifications",
+  JSON.stringify(specs)
+);
     images.forEach((file) => {
   if (file) {
     formData.append("images", file);
@@ -186,17 +220,22 @@ console.log("Primary:", p.PrimaryImage);
     console.log("ShopID:", localStorage.getItem("shop_id"));
     if (isEdit) {
 
-  await axios.patch(
-    `https://tmdt-backend-ego0.onrender.com/api/products/${id}`,
-    formData,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+ console.log("Trước PATCH");
 
-  alert("Cập nhật sản phẩm thành công");
+const res = await axios.patch(
+  `https://tmdt-backend-ego0.onrender.com/api/products/${id}`,
+  formData,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
+console.log("Sau PATCH");
+console.log(res.data);
+
+alert("Cập nhật sản phẩm thành công");
 
 } else {
 
@@ -290,17 +329,68 @@ navigate("/products");
           </SectionBlock>
 
           <SectionBlock title="Thông số kỹ thuật">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label>Trọng lượng</Label>
-                <input type="text" placeholder="VD: 420g" value={form.weight} onChange={(e) => set('weight', e.target.value)} className={inputClass} />
-              </div>
-              <div>
-                <Label>Xuất xứ</Label>
-                <input type="text" placeholder="VD: Việt Nam" value={form.origin} onChange={(e) => set('origin', e.target.value)} className={inputClass} />
-              </div>
-            </div>
-          </SectionBlock>
+
+  <div className="grid grid-cols-2 gap-3">
+
+    <div>
+      <Label>Trọng lượng</Label>
+      <input
+        className={inputClass}
+        value={form.weight}
+        onChange={(e)=>set("weight",e.target.value)}
+        placeholder="VD: 500g"
+      />
+    </div>
+
+    <div>
+      <Label>Xuất xứ</Label>
+      <input
+        className={inputClass}
+        value={form.origin}
+        onChange={(e)=>set("origin",e.target.value)}
+        placeholder="VD: Việt Nam"
+      />
+    </div>
+
+    <div>
+      <Label>Chất liệu</Label>
+      <input
+        className={inputClass}
+        value={form.material}
+        onChange={(e)=>set("material",e.target.value)}
+      />
+    </div>
+
+    <div>
+      <Label>Bảo hành</Label>
+      <input
+        className={inputClass}
+        value={form.warranty}
+        onChange={(e)=>set("warranty",e.target.value)}
+      />
+    </div>
+
+    <div>
+      <Label>Màu sắc</Label>
+      <input
+        className={inputClass}
+        value={form.color}
+        onChange={(e)=>set("color",e.target.value)}
+      />
+    </div>
+
+    <div>
+      <Label>Kích cỡ</Label>
+      <input
+        className={inputClass}
+        value={form.size}
+        onChange={(e)=>set("size",e.target.value)}
+      />
+    </div>
+
+  </div>
+
+</SectionBlock>
         </div>
 
         {/* RIGHT — image + category */}

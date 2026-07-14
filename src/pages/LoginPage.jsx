@@ -44,7 +44,7 @@ if (!token) {
 
 localStorage.setItem("access_token", token);
 localStorage.setItem("user", JSON.stringify(user));
-
+localStorage.setItem("refresh_token", res.data.refresh_token)
 
 const role = user.roleid;
 
@@ -180,12 +180,13 @@ console.log(
         {/* 6. Liên kết chuyển đổi sang Đăng ký */}
         <div className="text-center text-xs text-gray-500 mt-6 border-t border-gray-100 pt-4">
           Chưa có tài khoản?{' '}
-          <Link 
-            to="/dangki" 
-            className="font-bold text-blue-600 underline hover:text-blue-700 ml-1 cursor-pointer"
-          >
-            Đăng ký ngay
-          </Link>
+          <Link
+  to="/quen-mat-khau"
+  state={{ type: "register" }}
+  className="font-bold text-blue-600 underline hover:text-blue-700 ml-1 cursor-pointer"
+>
+  Đăng ký ngay
+</Link>
         </div>
 
       </div>

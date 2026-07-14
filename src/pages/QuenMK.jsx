@@ -1,66 +1,90 @@
 import  { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate,useLocation } from 'react-router-dom';
 import { ArrowLeft, ShieldCheck } from 'lucide-react';
 import loginBanner from '../assets/nen.png'; 
 import axios from "axios";
 export default function QuenMK() {
   const [accountInfo, setAccountInfo] = useState('');
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const [loading, setLoading] = useState(false);
+const type = location.state?.type || "forgot";
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
+    setLoading(true);
+    
+    if (!accountInfo) {
+        alert("Vui lòng nhập email");
+        return;
+    }
 
-  console.log("Bấm gửi OTP");
+    try {
 
-  if(!accountInfo){
-    alert("Vui lòng nhập email");
-    return;
-  }
+        let res;
 
+        // ==========================
+        // ĐĂNG KÝ
+        // ==========================
+        if (type === "register") {
 
-  try {
+            res = await axios.post(
+                "https://tmdt-backend-ego0.onrender.com/api/auth/register/request-otp",
+                {
+                    email: accountInfo
+                }
+            );
 
-    const res = await axios.post(
-      "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
-      {
-        email: accountInfo
-      }
-    );
+            alert("OTP đã được gửi về email");
 
+            navigate("/nhapOTP", {
+                state: {
+                    type: "register",
+                    email: accountInfo,
+                    step1Token: res.data.data.step1_token
+                }
+            });
 
-    console.log("BE trả:", res.data);
+            return;
+        }
 
+        // ==========================
+        // QUÊN MẬT KHẨU
+        // ==========================
 
-    // không cần check success nữa
-    localStorage.setItem(
-      "user_reset_email",
-      accountInfo
-    );
+        res = await axios.post(
+            "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",
+            {
+                email: accountInfo
+            }
+        );
 
+        localStorage.setItem(
+            "user_reset_email",
+            accountInfo
+        );
 
-    alert("OTP đã được gửi về email");
+        alert("OTP đã được gửi về email");
 
+        navigate("/nhapOTP", {
+            state: {
+                type: "forgot",
+                email: accountInfo
+            }
+        });
 
-    navigate('/nhapOTP', { 
-      state:{
-        email: accountInfo
-      }
-    });
+    } catch (err) {
 
+        console.log(err.response?.data);
 
-  } catch(err){
+        alert(
+            err.response?.data?.message ||
+            "Không gửi được OTP"
+        );
 
-    console.log("LỖI:", err.response?.data || err);
+    }  finally {
 
-
-    alert(
-      err.response?.data?.message ||
-      "Không gửi được OTP"
-    );
-
-  }
-
-};
+    setLoading(false);
+};}
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
@@ -78,9 +102,16 @@ export default function QuenMK() {
           </div>
 
           <div className="text-left mb-6">
-            <h1 className="text-[26px] font-semibold text-gray-900 mb-2 tracking-tight font-sans">Quên mật khẩu</h1>
-            <p className="text-gray-500 text-sm leading-relaxed">Nhập email hoặc số điện thoại đã đăng ký để nhận mã xác thực (OTP).</p>
-          </div>
+  <h1 className="text-[26px] font-semibold text-gray-900 mb-2 tracking-tight font-sans">
+    {type === "register" ? "Đăng ký tài khoản" : "Quên mật khẩu"}
+  </h1>
+
+  <p className="text-gray-500 text-sm leading-relaxed">
+    {type === "register"
+      ? "Nhập email để nhận mã OTP xác thực tài khoản."
+      : "Nhập email đã đăng ký để nhận mã OTP đặt lại mật khẩu."}
+  </p>
+</div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
@@ -95,9 +126,17 @@ export default function QuenMK() {
               />
             </div>
 
-            <button type="submit" className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold hover:bg-blue-700 active:scale-[0.98] transition-all text-sm shadow-[0_4px_12px_rgba(37,99,235,0.2)] cursor-pointer flex items-center justify-center tracking-wide">
-              Gửi mã OTP
-            </button>
+            <button
+    type="submit"
+    disabled={loading}
+    className="w-full bg-blue-600 text-white h-12 rounded-xl font-bold disabled:bg-gray-400"
+>
+    {loading
+        ? "Đang gửi..."
+        : type === "register"
+            ? "Tiếp tục"
+            : "Gửi mã OTP"}
+</button>
           </form>
         </div>
 
