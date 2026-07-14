@@ -60,6 +60,11 @@ const status = product.IsActive ? "active" : "hidden";
 const cfg = productStatusConfig[status];
 const categoryName =
   categories.find(c => c.CategoryID === product.CategoryID)?.CategoryName || "--";
+const specs = {};
+
+product.Specifications?.forEach(item => {
+  specs[item.Key] = item.Value;
+});
   return (
     <div className="p-6 max-w-5xl mx-auto">
       {/* Breadcrumb */}
@@ -118,17 +123,23 @@ const categoryName =
         <div className="col-span-3 space-y-4">
           {/* Meta row */}
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
-              {product.sku}
-            </span>
-            <span className="text-xs font-semibold text-slate-400 uppercase">
-              {product.brand}
-            </span>
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-              {cfg.label}
-            </span>
-          </div>
+
+  <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-1 rounded">
+    ID: {product.ProductID.slice(0,8)}
+  </span>
+
+  <span className="text-xs text-slate-500">
+    Đã bán: {product.SoldQuantity}
+  </span>
+
+  <span
+    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.bg} ${cfg.text}`}
+  >
+    <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+    {cfg.label}
+  </span>
+
+</div>
 
           {/* Name + price */}
           <div>
@@ -200,26 +211,35 @@ const categoryName =
 
           {/* Technical specs */}
           <div className="bg-slate-50 rounded-xl p-4">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">Thông số kỹ thuật</p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Trọng lượng</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.weight}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Xuất xứ</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.origin}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Danh mục</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{categoryName}</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider">Thương hiệu</p>
-                <p className="text-sm font-semibold text-slate-700 mt-0.5">{product.brand || "--"}</p>
-              </div>
-            </div>
-          </div>
+  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+    Thông số kỹ thuật
+  </p>
+
+  <div className="grid grid-cols-2 gap-4">
+
+    <div>
+      <p className="text-[10px] text-slate-400 uppercase">
+        Danh mục
+      </p>
+      <p className="text-sm font-semibold">
+        {categoryName}
+      </p>
+    </div>
+
+    {product.Specifications?.map(spec => (
+      <div key={spec.Key}>
+        <p className="text-[10px] text-slate-400 uppercase">
+          {spec.Key}
+        </p>
+
+        <p className="text-sm font-semibold text-slate-700">
+          {spec.Value}
+        </p>
+      </div>
+    ))}
+
+  </div>
+</div>
         </div>
       </div>
 

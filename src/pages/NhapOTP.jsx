@@ -14,7 +14,7 @@ export default function NhapOTP() {
   // ĐỒNG BỘ EMAIL CHUẨN: Ưu tiên lấy từ state chuyển trang, nếu không thấy sẽ lấy từ localStorage
   const emailReceived = location.state?.email || localStorage.getItem('user_reset_email') || "";
 const type = location.state?.type;
-const regToken = location.state?.regToken;
+const step1Token = location.state?.step1Token;
 
 
   useEffect(() => {
@@ -83,11 +83,15 @@ const regToken = location.state?.regToken;
 
   const finalOtp = otp.join("");
 
-  if (type === "register" && !regToken) {
-    alert("Phiên đăng ký đã hết hạn, vui lòng đăng ký lại.");
-    navigate("/register");
+  if (type === "register" && !step1Token) {
+    alert("Phiên đăng ký đã hết hạn.");
+    navigate("/quenmk", {
+        state: {
+            type: "register"
+        }
+    });
     return;
-  }
+}
 
   if (finalOtp.length !== 6) {
     alert("Vui lòng nhập đủ 6 số OTP!");
@@ -99,17 +103,24 @@ const regToken = location.state?.regToken;
     // ===== Đăng ký =====
     if (type === "register") {
 
-      await axios.post(
-        "https://tmdt-backend-ego0.onrender.com/api/auth/register-verify",
-        {
-          otp: finalOtp,
-          reg_token: regToken,
-        }
-      );
+      const res = await axios.post(
+    "https://tmdt-backend-ego0.onrender.com/api/auth/register/verify-otp",
+    {
+        step1_token: step1Token,
+        otp: finalOtp
+    }
+);
 
-      alert("Đăng ký thành công!");
-      navigate("/login");
-      return;
+alert("Xác thực OTP thành công");
+
+navigate("/dangki", {
+    state: {
+        step2Token: res.data.data.step2_token,
+        email: emailReceived
+    }
+});
+
+return;
     }
 
     // ===== Quên mật khẩu =====
@@ -161,7 +172,7 @@ const regToken = location.state?.regToken;
             </Link>
           </div>
 
-          <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase self-start mb-4">Bước 2: Nhập OTP</span>
+          <span className="text-[11px] font-bold text-gray-400 tracking-widest uppercase self-start mb-4"> Nhập OTP</span>
 
           <div className="w-16 h-16 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-center mb-5 shadow-sm">
             <Mail size={28} className="text-gray-700" strokeWidth={1.5} />
@@ -207,12 +218,28 @@ const regToken = location.state?.regToken;
               onClick={async () => {
 
   try {
+if (type === "register") {
 
-    if (type === "register") {
+  const res = await axios.post(
+    "https://tmdt-backend-ego0.onrender.com/api/auth/register/request-otp",
+    {
+      email: emailReceived
+    }
+  );
 
-      // gọi API resend OTP đăng ký (nếu backend có)
+  alert("Đã gửi lại OTP");
+  setTimeLeft(89);
 
-    } else {
+  navigate("/nhapOTP", {
+    replace: true,
+    state: {
+      type: "register",
+      email: emailReceived,
+      step1Token: res.data.data.step1_token
+    }
+  });
+
+} else {
 
       await axios.post(
         "https://tmdt-backend-ego0.onrender.com/api/auth/forgot-password",

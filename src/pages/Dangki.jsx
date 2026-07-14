@@ -1,10 +1,10 @@
 import  { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, User, Mail, ShieldCheck } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, ShieldCheck } from 'lucide-react';
 
 // Import tấm ảnh nền mờ của bạn
 import loginBanner from '../assets/nen.png'; 
-
+import { useLocation } from "react-router-dom";
 export default function RegisterPage() {
   // Quản lý ẩn/hiện mật khẩu
   const [showPassword, setShowPassword] = useState(false);
@@ -12,12 +12,14 @@ export default function RegisterPage() {
   
   // Các state lưu giá trị đầu vào
   const [fullName, setFullName] = useState('');
-  const [email, setEmail] = useState('');
+  
   const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
+  
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+  const location = useLocation();
+
+  const { step2Token } = location.state || {};
   // State lưu thông báo lỗi
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -47,17 +49,18 @@ export default function RegisterPage() {
   }
 
   try {
-    const response = await fetch('https://tmdt-backend-ego0.onrender.com/api/auth/register', {
+    const response = await fetch(
+'https://tmdt-backend-ego0.onrender.com/api/auth/register/finalize', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
+  step2_token: step2Token,
   fullname: fullName,
-  email: email,
   password: password,
-  phonenumber: phone,
-  address: address,
+  phone: phone,
+  
 }),
     });
 
@@ -73,15 +76,11 @@ export default function RegisterPage() {
   return;
 }
 
-    const regToken = data.data.reg_token;
 
-navigate("/nhapOTP", {
-    state: {
-        type: "register",
-        email,
-        regToken,
-    },
-});
+
+alert("Đăng ký thành công!");
+
+navigate("/login");
   } catch (error) {
     console.error(error);
     setErrorMessage('Không thể kết nối tới server');
@@ -130,7 +129,7 @@ navigate("/nhapOTP", {
             
             {/* Ô nhập Họ và tên */}
             <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Họ và tên</label>
+              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Tên đăng nhập <span className="text-red-500">*</span></label>
               <div className="relative flex items-center">
                 <User size={16} className="absolute left-4 text-gray-400 pointer-events-none" />
                 <input 
@@ -144,56 +143,28 @@ navigate("/nhapOTP", {
               </div>
             </div>
 
-            {/* Ô nhập Địa chỉ Email */}
-            <div className="space-y-2">
-              <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Địa chỉ Email</label>
-              <div className="relative flex items-center">
-                <Mail size={16} className="absolute left-4 text-gray-400 pointer-events-none" />
-                <input 
-                  type="email" 
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="example@domain.com" 
-                  className="w-full h-12 pl-11 pr-4 border border-gray-200 rounded-xl outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition-all text-sm text-gray-900 placeholder-gray-400 bg-white"
-                />
-              </div>
-            </div>
+            
             <div className="space-y-2">
   <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-    Số điện thoại
+    Số điện thoại <span className="text-red-500">*</span>
   </label>
 
   <input
     type="text"
-    required
     value={phone}
     onChange={(e) => setPhone(e.target.value)}
     placeholder="0912345678"
     className="w-full h-12 px-4 border border-gray-200 rounded-xl"
   />
 </div>
-          <div className="space-y-2">
-  <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-    Địa chỉ
-  </label>
-
-  <input
-    type="text"
-    required
-    value={address}
-    onChange={(e) => setAddress(e.target.value)}
-    placeholder="Huế"
-    className="w-full h-12 px-4 border border-gray-200 rounded-xl"
-  />
-</div>
+          
 
             {/* Hàng chứa Mật khẩu & Xác nhận mật khẩu */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               
               {/* Ô Mật khẩu */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Mật khẩu</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Mật khẩu <span className="text-red-500">*</span></label>
                 <div className="relative flex items-center">
                   <Lock size={16} className="absolute left-4 text-gray-400 pointer-events-none" />
                   <input 
@@ -216,7 +187,7 @@ navigate("/nhapOTP", {
 
               {/* Ô Xác nhận mật khẩu */}
               <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Xác nhận mật khẩu</label>
+                <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider">Xác nhận mật khẩu <span className="text-red-500">*</span></label>
                 <div className="relative flex items-center">
                   <Lock size={16} className="absolute left-4 text-gray-400 pointer-events-none" />
                   <input 
