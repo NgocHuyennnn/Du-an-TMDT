@@ -30,17 +30,17 @@ npm -v
 ```
 ## Cài đặt và chạy dự án
  
-1. Clone repository
+### 1. Clone repository
 git clone https://github.com/NgocHuyennnn/Du-an-TMDT.git
 cd Du-an-TMDT
 
-2. Cài đặt các thư viện phụ thuộc
+### 2. Cài đặt các thư viện phụ thuộc
 npm install
 
-3. Cài đặt các thư viện cho tính năng Chat (Socket.IO)
+### 3. Cài đặt các thư viện cho tính năng Chat (Socket.IO)
 npm install socket.io-client
 
-4. Khởi chạy môi trường phát triển
+### 4. Khởi chạy môi trường phát triển
 npm run dev
  
 App chạy ở `http://localhost:5173` (cổng mặc định của Vite).
