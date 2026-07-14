@@ -30,17 +30,17 @@ npm -v
 ```
 ## Cài đặt và chạy dự án
  
-# 1. Clone repository
+### 1. Clone repository
 git clone https://github.com/NgocHuyennnn/Du-an-TMDT.git
 cd Du-an-TMDT
 
-# 2. Cài đặt các thư viện phụ thuộc
+### 2. Cài đặt các thư viện phụ thuộc
 npm install
 
-# 3. Cài đặt các thư viện cho tính năng Chat (Socket.IO)
+### 3. Cài đặt các thư viện cho tính năng Chat (Socket.IO)
 npm install socket.io-client
 
-# 4. Khởi chạy môi trường phát triển
+### 4. Khởi chạy môi trường phát triển
 npm run dev
  
 App chạy ở `http://localhost:5173` (cổng mặc định của Vite).
@@ -58,11 +58,11 @@ App chạy ở `http://localhost:5173` (cổng mặc định của Vite).
 | Khác | sonner (toast), clsx, tailwind-merge, class-variance-authority |
 | Dev tooling | ESLint (flat config), `@vitejs/plugin-react` |
  
-Không dùng TypeScript, không dùng Bootstrap/MUI/Ant Design.
+
 
  
 ## Phân quyền người dùng
-**Customer**
+### Customer
 - Duyệt trang chủ, danh mục nổi bật, sản phẩm nổi bật, sản phẩm đề xuất
 - Xem danh sách cửa hàng và chi tiết cửa hàng
 - Xem chi tiết sản phẩm: ảnh, mô tả, thông số, đánh giá, sản phẩm tương tự
@@ -71,7 +71,7 @@ Không dùng TypeScript, không dùng Bootstrap/MUI/Ant Design.
 - Chat trực tiếp với cửa hàng
 - Đăng ký / đăng nhập / quên mật khẩu / xác thực OTP / đặt lại mật khẩu
 - Quản lý thông tin tài khoản cá nhân
-**Manager**
+### Manager
 - Dashboard riêng cho cửa hàng
 - CRUD sản phẩm, xem chi tiết sản phẩm
 - Quản lý danh mục sản phẩm của cửa hàng
@@ -80,13 +80,18 @@ Không dùng TypeScript, không dùng Bootstrap/MUI/Ant Design.
 - Tạo/sửa/xem chi tiết cửa hàng, tạm ngưng cửa hàng
 - Quản lý tài khoản nhân sự trong cửa hàng
 - Chat với khách hàng
-**Admin hệ thống**
+### Admin hệ thống
 - Quản lý cửa hàng toàn sàn (danh sách, chi tiết, tạo mới)
 - Quản lý danh mục sản phẩm cấp hệ thống
 - Phân quyền: danh sách vai trò, thêm/sửa/xem chi tiết vai trò
 - Quản lý danh sách tài khoản người dùng
 - Xem báo cáo và doanh thu toàn sàn
 - Xác thực (verify) các yêu cầu liên quan tài khoản/cửa hàng
+### Đăng ký tài khoản Manager
+
+Hệ thống hỗ trợ người dùng đăng ký trực tiếp tài khoản Manager thông qua trang đăng kí bán hàng.
+    -  Hệ thống tạo tài khoản Manager.
+    -  Người dùng đăng nhập và sử dụng ngay các chức năng quản lý cửa hàng.
 ## Cấu trúc code
  
 ```txt
