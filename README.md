@@ -58,7 +58,7 @@ App chạy ở `http://localhost:5173` (cổng mặc định của Vite).
 | Khác | sonner (toast), clsx, tailwind-merge, class-variance-authority |
 | Dev tooling | ESLint (flat config), `@vitejs/plugin-react` |
  
-Không dùng TypeScript, không dùng Bootstrap/MUI/Ant Design.
+
 
  
 ## Phân quyền người dùng
