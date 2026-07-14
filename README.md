@@ -87,6 +87,11 @@ Không dùng TypeScript, không dùng Bootstrap/MUI/Ant Design.
 - Quản lý danh sách tài khoản người dùng
 - Xem báo cáo và doanh thu toàn sàn
 - Xác thực (verify) các yêu cầu liên quan tài khoản/cửa hàng
+### Đăng ký tài khoản Manager
+
+Hệ thống hỗ trợ người dùng đăng ký trực tiếp tài khoản Manager thông qua trang đăng kí bán hàng.
+    -  Hệ thống tạo tài khoản Manager.
+    -  Người dùng đăng nhập và sử dụng ngay các chức năng quản lý cửa hàng.
 ## Cấu trúc code
  
 ```txt
