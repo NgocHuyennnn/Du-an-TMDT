@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   getOrders,
   updateOrderStatus,
@@ -24,9 +24,10 @@ import { createPortal } from "react-dom";
 import hinhNenTechTonic from "@/assets/nen.png"; 
 
 export default function DanhSachDonHang() {
-  const [unreadMap, setUnreadMap] = useState({});
-  const [hasNewMessage, setHasNewMessage] = useState(false);
+  const socket = useRef(null);
+  const [hasUnread, setHasUnread] = useState(false);
   const navigate = useNavigate();
+  
   // 1. DỮ LIỆU ĐƠN HÀNG
   const [orders, setOrders] = useState([]);
 
@@ -121,27 +122,34 @@ const filteredOrders = useMemo(() => {
     setPriceTo('');
   };
   useEffect(() => {
-  const socket = io("https://tmdt-backend-ego0.onrender.com", {
-    transports: ["websocket"],
-  });
 
-  socket.on("connect", () => {
-    console.log("Socket connected:", socket.id);
-  });
+    socket.current = io(
+        "https://tmdt-backend-ego0.onrender.com",
+        {
+            transports: ["websocket"],
+        }
+    );
 
-  socket.on("new_message", (msg) => {
-    console.log("NEW MSG:", msg);
+    socket.current.on("connect", () => {
+        console.log("Socket:", socket.current.id);
+    });
 
-    const key = `${msg.UserID}_${msg.ShopID}`;
+    socket.current.on("receive_message", (msg) => {
 
-    setUnreadMap((prev) => ({
-      ...prev,
-      [key]: true,
-    }));
-  });
+        console.log("Có tin nhắn:", msg);
 
-  return () => socket.disconnect();
+        setHasUnread(true);
+
+    });
+
+    return () => {
+
+        socket.current.disconnect();
+
+    };
+
 }, []);
+
 
   // ĐÃ SỬA: Hàm xử lý xóa đơn hàng tách biệt, không bị lồng
 
@@ -225,6 +233,21 @@ console.log("Unique Users:", uniqueUsers);
 console.log("Số khách:", uniqueUsers.length);
 
 setOrders(mapped);
+const token = localStorage.getItem("access_token");
+
+mapped.forEach((o) => {
+
+    socket.current.emit("join_chat", {
+
+        token,
+
+        user_id: o.userId,
+
+        shop_id: o.shopId,
+
+    });
+
+});
     console.log("MAPPED =", mapped);
 
     setOrders(mapped);
@@ -241,8 +264,6 @@ const openChat = (order) => {
 
   console.log("ShopID =", order.shopId);
   console.log("UserID =", order.userId);
-
-  sessionStorage.setItem("shop_id", order.shopId);
   sessionStorage.setItem("target_user_id", order.userId);
   setUnreadMap((prev) => {
     const newMap = { ...prev };
@@ -289,6 +310,50 @@ const openChat = (order) => {
                   className="w-full h-10 bg-white border border-slate-200/80 rounded-xl pl-10 pr-4 text-xs font-medium text-slate-800 focus:outline-hidden focus:border-blue-500 focus:shadow-xs transition-all"
                 />
               </div>
+              <div className="relative">
+
+    <button
+        onClick={() => {
+
+            setHasUnread(false);
+
+            navigate("/chat");
+
+        }}
+        className="
+            h-10
+            w-10
+            flex
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
+            hover:bg-green-50
+            hover:text-green-600
+            transition
+        "
+    >
+        <MessageCircle size={20}/>
+    </button>
+
+    {hasUnread && (
+        <span
+            className="
+                absolute
+                -top-1
+                -right-1
+                w-3
+                h-3
+                rounded-full
+                bg-red-500
+                animate-pulse
+            "
+        />
+    )}
+
+</div>
               
             </div>
           </div>
@@ -438,19 +503,6 @@ const openChat = (order) => {
                         <td className="py-4 px-5 text-right">
                           <div className="flex items-center justify-end gap-2">
 
-    <div className="relative">
-  <button
-    onClick={() => openChat(order)}
-    className="p-1.5 hover:bg-green-50 text-green-600 rounded-lg"
-    title="Chat"
-  >
-    <MessageCircle size={16} />
-  </button>
-
-  {unreadMap[`${order.userId}_${order.shopId}`] && (
-    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse" />
-  )}
-</div>
 
     <button
         onClick={() => setSelectedOrder(order)}
