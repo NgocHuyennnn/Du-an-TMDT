@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import  { useState } from "react";
 import axios from "axios";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Star,
   Camera,

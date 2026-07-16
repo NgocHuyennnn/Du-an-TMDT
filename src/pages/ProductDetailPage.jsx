@@ -11,6 +11,8 @@ import ProductInfo from "../components/ProductInfo";
 //import ShopInfo from "../components/ShopInfo";
 import ProductSpecs from "../components/ProductSpecs";
 import ProductDescription from "../components/ProductDescription";
+import ProductReviews from "@/components/ProductReviews";
+import ShopInfo from "@/components/ShopInfo";
 //import ProductReviews from "../components/ProductReviews";
 //import SimilarProducts from "../components/SimilarProducts";
 
@@ -114,9 +116,10 @@ export default function ProductDetailPage() {
 
 
 
-        {/* <ShopInfo
-          shop={data.shop}
-        /> */}
+        <ShopInfo 
+  shop={data}
+  product={data}
+/>
 
 
 
@@ -132,11 +135,7 @@ export default function ProductDetailPage() {
 
 
 
-        {/* <ProductReviews
-          rating={data.product?.rating}
-          totalReviews={data.product?.reviewsCount}
-          reviews={data.reviews}
-        /> */}
+        <ProductReviews productId={data.ProductID} />
 
 
 
