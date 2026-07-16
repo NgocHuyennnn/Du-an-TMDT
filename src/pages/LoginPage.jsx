@@ -12,62 +12,65 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  try {
-    const res = await fetch("https://tmdt-backend-ego0.onrender.com/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: emailOrPhone,
-        password: password,
-      }),
-    });
+    try {
+      const res = await fetch("https://tmdt-backend-ego0.onrender.com/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: emailOrPhone,
+          password: password,
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-console.log("LOGIN RESPONSE:", data);
-console.log("DATA KEYS:", Object.keys(data));
+      console.log("LOGIN RESPONSE:", data);
 
-if (!res.ok) {
-  throw new Error(data.message || "Đăng nhập thất bại");
-}
+      if (!res.ok) {
+        throw new Error(data.message || "Đăng nhập thất bại");
+      }
 
-const token = data.data?.access_token;
-const user = data.data?.user;
+      const token = data.data?.access_token;
+      const user = data.data?.user;
 
-if (!token) {
-  throw new Error("BE không trả token");
-}
+      if (!token || !user) {
+        throw new Error("Backend không trả về đủ token hoặc thông tin user");
+      }
 
-localStorage.setItem("access_token", token);
-localStorage.setItem("user", JSON.stringify(user));
-localStorage.setItem("refresh_token", data.data.refresh_token);
+      // 1. Lưu các token và user gốc
+      localStorage.setItem("access_token", token);
+      localStorage.setItem("refresh_token", data.data.refresh_token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-const role = user.roleid;
+      // 2.  BỌC THÉP TRÍCH XUẤT SHOP_ID: Lưu riêng ra để trang Thêm Sản Phẩm dễ chộp lấy
+      if (user.shop && user.shop.shopid) {
+        localStorage.setItem("shop_id", user.shop.shopid);
+        console.log("Đã lưu ShopID vào local:", user.shop.shopid);
+      } else {
+        localStorage.removeItem("shop_id"); // Dọn dẹp nếu đăng nhập bằng nick khách hàng
+      }
 
-if (role === 1) {
-  navigate("/admin");
-} else if (role === 2) {
-  navigate("/manager");
-} else {
-  navigate("/");
-}
+      // 3.  SỬA LỖI ĐIỀU HƯỚNG: Check bằng rolename thay vì roleid (vì roleid là UUID)
+      const roleName = user.rolename;
 
-console.log(
-  "TOKEN TRONG LOCAL:",
-  localStorage.getItem("access_token")
-);
+      if (roleName === 'Admin') {
+        navigate("/admin");
+      } else if (roleName === 'Manager') {
+        navigate("/manager");
+      } else {
+        navigate("/");
+      }
 
+    } catch (err) {
+      console.log("LOGIN ERROR:", err);
+      alert(err.message);
+    }
+  };
 
-
-  } catch (err) {
-    console.log("LOGIN ERROR:", err);
-    alert(err.message);
-  }
-};
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-slate-50 p-4 relative overflow-hidden">
       
