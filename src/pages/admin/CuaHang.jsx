@@ -253,12 +253,7 @@ setStores(managers);
             >
               <Tag size={16} /> <span>Danh mục</span>
             </Link>
-            <Link
-              to="/baocao"
-              className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all"
-            >
-              <ShoppingBag size={16} /> <span>Báo cáo</span>
-            </Link>
+            
             <Link
               to="/dstkhoan"
               className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all"
@@ -272,12 +267,7 @@ setStores(managers);
             >
               <ClipboardList size={16} /> <span>Phân quyền</span>
             </Link>
-            <Link
-              to="/doanhthu"
-              className="flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:bg-slate-800/50 hover:text-white rounded-xl transition-all"
-            >
-              <ClipboardList size={16} /> <span>Doanh thu</span>
-            </Link>
+            
           </nav>
         </div>
 

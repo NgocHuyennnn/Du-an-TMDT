@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import api from "@/lib/axios";
 import { Menu, ChevronDown, ChevronRight } from "lucide-react";
-
+import { Link } from "react-router-dom";
 const navLinks = [
   { label: "Trang chủ", href: "/" },
   { label: "Thời trang nam", href: "/thoi-trang-nam" },
@@ -10,20 +11,37 @@ const navLinks = [
   { label: "Mỹ phẩm", href: "/my-pham" },
 ];
 
-const categories = [
-  { label: "Giày thể thao", icon: "👟" }, // Sửa lỗi chính tả "Giày thao" luôn nhé
-  { label: "Máy tính", icon: "💻" },
-  { label: "Đồng hồ", icon: "⌚" },
-  { label: "Máy ảnh", icon: "📷" },
-  { label: "Phụ kiện", icon: "🎧" },
-  { label: "Trò chơi", icon: "🎮" },
-];
 
 export default function NavBar() {
   const [activeLink, setActiveLink] = useState("Trang chủ");
   const [showCategories, setShowCategories] = useState(false);
+  const [categories, setCategories] = useState([]);
+const [loading, setLoading] = useState(true);
 
-  return (
+  useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const res = await api.get("/api/categories", {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+console.log(res);
+
+setCategories(res.data || []);
+      
+    } catch (error) {
+      console.error("Lỗi lấy danh mục:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchCategories();
+}, []);
+    return (
     <nav className="bg-white border-b border-gray-100 relative z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-11">
@@ -45,40 +63,43 @@ export default function NavBar() {
 
             {/* Category Dropdown */}
             {showCategories && (
-              <div className="absolute top-full left-0 w-52 sm:w-56 bg-white shadow-xl border border-gray-100 rounded-b-xl py-1.5 z-50">
-                {categories.map((cat) => (
-                  <a
-                    key={cat.label}
-                    href="#"
-                    className="flex items-center gap-3 px-4 py-2.5 text-xs sm:text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
-                  >
-                    <span className="text-base">{cat.icon}</span>
-                    {cat.label}
-                    <ChevronRight size={13} className="ml-auto text-gray-300" />
-                  </a>
-                ))}
-              </div>
-            )}
+  <div className="absolute left-0 top-full mt-0 w-56 bg-white shadow-xl border rounded-b-xl z-[1000]">
+    {loading ? (
+      <div className="px-4 py-3 text-sm text-gray-500">
+        Đang tải...
+      </div>
+    ) : (
+      categories.map((cat) => (
+        <Link
+  key={cat.CategoryID}
+  to={`/category/${cat.CategoryID}`}
+  className="flex items-center justify-between px-4 py-2.5 hover:bg-blue-50"
+>
+  <span>{cat.CategoryName}</span>
+  <ChevronRight size={13} />
+</Link>
+      ))
+    )}
+
+  </div>
+)}
           </div>
 
           {/* Nav Links - Thêm h-full và ẩn thanh scrollbar thô trên di động */}
           <div className="flex items-center flex-1 h-full overflow-x-auto dataset-scrollbar-none gap-1 pl-2">
             {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setActiveLink(link.label);
-                }}
-                className={`shrink-0 px-3 sm:px-4 h-full flex items-center text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 ${
-                  activeLink === link.label
-                    ? "text-blue-600 border-blue-600"
-                    : "text-gray-500 border-transparent hover:text-blue-600 hover:border-blue-300"
-                }`}
-              >
-                {link.label}
-              </a>
+              <Link
+  key={link.label}
+  to={link.href}
+  onClick={() => setActiveLink(link.label)}
+  className={`shrink-0 px-3 sm:px-4 h-full flex items-center text-xs sm:text-sm font-medium transition-all duration-200 border-b-2 ${
+    activeLink === link.label
+      ? "text-blue-600 border-blue-600"
+      : "text-gray-500 border-transparent hover:text-blue-600 hover:border-blue-300"
+  }`}
+>
+  {link.label}
+</Link>
             ))}
           </div>
 
