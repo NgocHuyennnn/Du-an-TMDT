@@ -72,22 +72,28 @@ useEffect(() => {
 const loadConversations = async () => {
     try {
 
-        const shopId = sessionStorage.getItem("shop_id");
+        const shopId = localStorage.getItem("shop_id");
+
+        console.log("SHOP_ID =", shopId);
 
         if (!shopId) {
             console.log("Không tìm thấy shop_id");
             return;
         }
 
-       const res = await getConversations({
-    shop_id: shopId,
-    target_user_id: sessionStorage.getItem("target_user_id"),
-});
+        const targetUserId = sessionStorage.getItem("target_user_id");
+
+        console.log("TARGET_USER =", targetUserId);
+
+        const res = await getConversations({
+            shop_id: shopId,
+            target_user_id: targetUserId,
+        });
         console.log(JSON.stringify(res.data, null, 2));
 
         const data = (res.data.data || []).map(item => ({
     ...item,
-    ShopID: sessionStorage.getItem("shop_id"),
+    ShopID: shopId,
     UserID: item.user_id,
     UserName: item.user_name,
 }));
@@ -200,9 +206,19 @@ const handleSend = async () => {
                 activeChat?.UserID === c.UserID?  "bg-blue-50" : ""
               }`}
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
-                {c.UserName?.charAt(0)}
-              </div>
+              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 bg-gray-200">
+  {c.Avatar ? (
+    <img
+      src={c.Avatar}
+      alt={c.UserName}
+      className="w-full h-full object-cover"
+    />
+  ) : (
+    <div className="w-full h-full bg-gradient-to-tr from-blue-500 to-indigo-500 text-white flex items-center justify-center font-bold">
+      {c.UserName?.charAt(0)}
+    </div>
+  )}
+</div>
 
               <div className="flex-1">
                 <p className="text-sm font-semibold">{c.UserName}</p>
