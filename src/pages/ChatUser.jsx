@@ -87,8 +87,14 @@ console.log("USER ID:", user.userid);
 }));
 
 setConversations(data);
-if (shopId && data.length > 0) {
-    handleSelectConversation(data[0]);
+if (shopId) {
+  const conversation = data.find(
+    (item) => item.ShopID === shopId
+  );
+
+  if (conversation) {
+    handleSelectConversation(conversation);
+  }
 }
 
 console.log(data);

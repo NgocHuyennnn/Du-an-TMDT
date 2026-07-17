@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 export default function ShopInfo({ shop, product }) {
+  const navigate = useNavigate();
   if (!shop) return null;
 
   return (
@@ -34,10 +36,18 @@ export default function ShopInfo({ shop, product }) {
           </p>
 
           <div className="flex gap-2 mt-2">
-
-            <button className="text-xs border px-3 py-1 rounded hover:bg-gray-50">
-              CHAT NGAY
-            </button>
+            <button
+  onClick={() =>
+    navigate("/chatkhach", {
+      state: {
+        shopId: shop.ShopID,
+      },
+    })
+  }
+  className="text-xs border px-3 py-1 rounded hover:bg-gray-50"
+>
+  CHAT NGAY
+</button>
 
             <button className="text-xs border px-3 py-1 rounded hover:bg-gray-50">
               XEM SHOP
