@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import {  useNavigate, useParams } from "react-router-dom";
 import { productStatusConfig } from '@/data/mockDataCH';
-import { ArrowLeft, ChevronRight, Pencil, Copy, Heart, Eye, Package } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Pencil,Heart, Eye, Package } from 'lucide-react';
 
 
 export default function ProductDetail() {
@@ -80,10 +80,7 @@ product.Specifications?.forEach(item => {
           <ArrowLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
         </button>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-semibold rounded-xl transition-colors">
-            <Copy size={14} />
-            Sao chép
-          </button>
+          
           <button
             onClick={() => navigate(`/products/edit/${product.ProductID}`, {
   state:{ product }
