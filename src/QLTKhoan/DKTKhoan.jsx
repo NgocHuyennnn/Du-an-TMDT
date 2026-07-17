@@ -318,28 +318,7 @@ localStorage.setItem("shop_id", shop.ShopID);
 
           </div>
 
-          {/* PHÂN ĐOẠN KHỞI TẠO MẬT KHẨU */}
-          <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider border-b border-slate-100 pb-1 pt-2">3. Thiết lập bảo mật tài khoản</div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-xs font-black text-slate-700 block">Mật khẩu tài khoản <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Lock size={14} /></span>
-                <input type={showPassword ? 'text' : 'password'} name="password" value={formData.password} onChange={handleInputChange} placeholder="Tối thiểu 6 ký tự" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 h-10 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">{showPassword ? <EyeOff size={14} /> : <Eye size={14} />}</button>
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-black text-slate-700 block">Xác nhận lại mật khẩu <span className="text-red-500">*</span></label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-400 pointer-events-none"><Lock size={14} /></span>
-                <input type={showConfirmPassword ? 'text' : 'password'} name="confirmPassword" value={formData.confirmPassword} onChange={handleInputChange} placeholder="Nhập lại chính xác mật khẩu" className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-10 h-10 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-hidden focus:border-blue-500 focus:bg-white transition-all" />
-                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 cursor-pointer">{showConfirmPassword ? <EyeOff size={14} /> : <Eye size={14} />}</button>
-              </div>
-            </div>
-          </div>
-
+          
           {/* CHECKBOX CAM KẾT ĐIỀU KHOẢN */}
           <div className="flex items-start gap-2.5 pt-2">
             <input 
