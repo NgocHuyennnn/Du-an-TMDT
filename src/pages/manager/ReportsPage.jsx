@@ -70,7 +70,7 @@ useEffect(() => {
   getOrders(1, 1000),
 
   axios.get(
-    "https://tmdt-backend-ego0.onrender.com/api/products",
+    "https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=1000",
     {
       headers: {
         Authorization: `Bearer ${token}`,

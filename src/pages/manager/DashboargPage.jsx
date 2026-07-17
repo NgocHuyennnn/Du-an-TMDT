@@ -213,7 +213,7 @@ function DashboardContent() {
       const [orderRes, productRes] = await Promise.all([
         getOrders(1, 1000),
         axios.get(
-          "https://tmdt-backend-ego0.onrender.com/api/products",
+          "https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=1000",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -224,6 +224,7 @@ function DashboardContent() {
 
       setOrders(orderRes.data.data);
       setProducts(productRes.data.data);
+      console.log(productRes.data.data);
     } catch (err) {
       console.log(err);
     }
