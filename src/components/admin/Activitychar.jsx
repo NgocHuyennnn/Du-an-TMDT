@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
  
 // ─── Dữ liệu demo – thay bằng props/orders thực của bạn ───────────────────
-function buildChartData(filter, orders = []) {
+function buildChartData(filter, orders = [], customRange = null) {
   const validOrders = orders.filter(o =>
   ["Đã giao", "DELIVERED", "delivered"].includes(o.Status)
 );
   const now = new Date();
-
+ 
   // TODAY
   if (filter === "today") {
     const hours = Array(24)
@@ -16,24 +16,24 @@ function buildChartData(filter, orders = []) {
         revenue: 0,
         visits: 0,
       }));
-
+ 
     validOrders.forEach(order => {
       const d = new Date(order.OrderDate || order.CreatedAt);
-
+ 
       if (d.toDateString() === now.toDateString()) {
         const amount = Number(order.TotalAmount || 0);
 hours[d.getHours()].revenue += amount;
 hours[d.getHours()].visits += 1;
       }
     });
-
+ 
     return hours;
   }
-
+ 
   // WEEK
   if (filter === "week") {
     const days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
+ 
     const result = Array(7)
       .fill(0)
       .map((_, i) => ({
@@ -41,29 +41,70 @@ hours[d.getHours()].visits += 1;
         revenue: 0,
         visits: 0,
       }));
-
+ 
     const weekAgo = new Date(now);
     weekAgo.setDate(now.getDate() - 6);
-
+ 
     validOrders.forEach(order => {
       const d = new Date(order.OrderDate || order.CreatedAt);
-
+ 
       if (d >= weekAgo) {
         const idx = d.getDay();
         result[idx].revenue += order.TotalAmount || 0;
         result[idx].visits += 1;
       }
     });
-
+ 
     return result;
   }
-
+ 
+  // CUSTOM RANGE — lọc theo khoảng ngày người dùng tự chọn
+  if (filter === "custom" && customRange?.start && customRange?.end) {
+    const start = new Date(customRange.start);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(customRange.end);
+    end.setHours(23, 59, 59, 999);
+ 
+    // Số ngày trong khoảng (tối thiểu 1 ngày)
+    const dayCount = Math.max(
+      1,
+      Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1
+    );
+ 
+    const result = Array.from({ length: dayCount }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
+      return {
+        label: `${d.getDate()}/${d.getMonth() + 1}`,
+        revenue: 0,
+        visits: 0,
+        date: d.toDateString(),
+      };
+    });
+ 
+    validOrders.forEach(order => {
+      const d = new Date(order.OrderDate || order.CreatedAt);
+      if (d < start || d > end) return;
+ 
+      const matchIndex = result.findIndex(
+        r => r.date === d.toDateString()
+      );
+ 
+      if (matchIndex !== -1) {
+        result[matchIndex].revenue += Number(order.TotalAmount || 0);
+        result[matchIndex].visits += 1;
+      }
+    });
+ 
+    return result;
+  }
+ 
   // MONTH
   // MONTH (30 ngày gần nhất - FIX CHUẨN)
 const result = Array.from({ length: 30 }, (_, i) => {
   const d = new Date();
   d.setDate(d.getDate() - (29 - i)); // ngày thật
-
+ 
   return {
     label: `${d.getDate()}/${d.getMonth() + 1}`, // hiển thị thật
     revenue: 0,
@@ -71,20 +112,20 @@ const result = Array.from({ length: 30 }, (_, i) => {
     date: d.toDateString(), // để match
   };
 });
-
+ 
 validOrders.forEach(order => {
   const d = new Date(order.OrderDate || order.CreatedAt);
-
+ 
   const matchIndex = result.findIndex(
     r => new Date(r.date).toDateString() === d.toDateString()
   );
-
+ 
   if (matchIndex !== -1) {
     result[matchIndex].revenue += Number(order.TotalAmount || 0);
     result[matchIndex].visits += 1;
   }
 });
-
+ 
 return result;
 }
  
@@ -100,7 +141,7 @@ function LineChart({ data }) {
   const maxRev = Math.max(...data.map(d => d.revenue), 1);
   const maxVis = Math.max(...data.map(d => d.visits), 1);
  
-  const xScale = (i) => padL + (i / (data.length - 1)) * innerW;
+  const xScale = (i) => padL + (data.length > 1 ? (i / (data.length - 1)) * innerW : innerW / 2);
   const yScaleRev = (v) => padT + innerH - (v / maxRev) * innerH;
   const yScaleVis = (v) => padT + innerH - (v / maxVis) * innerH;
  
@@ -226,22 +267,25 @@ function LineChart({ data }) {
  
 // ─── Main component ────────────────────────────────────────────────────────
 export default function ActivityChart({ orders = [] }) {
-
+ 
   const [filter, setFilter] = useState('today');
-  const chartData = buildChartData(filter, orders);
-
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+ 
+  const chartData = buildChartData(filter, orders, { start: customStart, end: customEnd });
+ 
   const totalRevenue = chartData.reduce(
     (sum, item) => sum + item.revenue,
     0
   );
-
-
+ 
+ 
   const totalVisits = chartData.reduce(
     (sum, item) => sum + item.visits,
     0
   );
-
-
+ 
+ 
   const peakHour = chartData.reduce(
   (max, item, index, arr) => {
     const currentMax = arr[max]?.revenue || 0;
@@ -249,15 +293,15 @@ export default function ActivityChart({ orders = [] }) {
   },
   0
 );
-
+ 
   const fmt = (n) =>
     n >= 1000000
       ? (n / 1000000).toFixed(1) + ' triệu'
       : n >= 1000
       ? (n / 1000).toFixed(0) + 'k'
       : n.toLocaleString('vi-VN');
-
-
+ 
+ 
   const filters = [
     {
       key:'today',
@@ -272,8 +316,31 @@ export default function ActivityChart({ orders = [] }) {
       label:'30 ngày'
     }
   ];
-
-
+ 
+  // Khi người dùng chọn cả 2 mốc ngày -> tự động chuyển sang chế độ "custom"
+  const handleStartChange = (value) => {
+    setCustomStart(value);
+    if (value && customEnd) setFilter('custom');
+  };
+ 
+  const handleEndChange = (value) => {
+    setCustomEnd(value);
+    if (customStart && value) setFilter('custom');
+  };
+ 
+  const handlePresetClick = (key) => {
+    setFilter(key);
+    setCustomStart('');
+    setCustomEnd('');
+  };
+ 
+  const clearCustomRange = () => {
+    setCustomStart('');
+    setCustomEnd('');
+    setFilter('today');
+  };
+ 
+ 
   return (
     <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
       {/* Header */}
@@ -282,20 +349,47 @@ export default function ActivityChart({ orders = [] }) {
           <h2 className="text-sm font-bold text-slate-700">Phân tích hoạt động</h2>
           <p className="text-[11px] text-slate-400 mt-0.5">Theo dõi doanh số & đơn hàng theo thời gian</p>
         </div>
-        <div className="flex gap-1.5">
-          {filters.map(f => (
-            <button
-              key={f.key}
-              onClick={() => setFilter(f.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                filter === f.key
-                  ? 'bg-[#ee4d2d] text-white'
-                  : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
-              }`}
-            >
-              {f.label}
-            </button>
-          ))}
+ 
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex gap-1.5">
+            {filters.map(f => (
+              <button
+                key={f.key}
+                onClick={() => handlePresetClick(f.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                  filter === f.key
+                    ? 'bg-[#ee4d2d] text-white'
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+ 
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={customStart}
+              onChange={(e) => handleStartChange(e.target.value)}
+              className="h-8 text-xs border border-slate-200 rounded-lg px-2 bg-white"
+            />
+            <span className="text-slate-400 text-xs">→</span>
+            <input
+              type="date"
+              value={customEnd}
+              onChange={(e) => handleEndChange(e.target.value)}
+              className="h-8 text-xs border border-slate-200 rounded-lg px-2 bg-white"
+            />
+            {filter === 'custom' && (
+              <button
+                onClick={clearCustomRange}
+                className="h-8 text-xs px-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50"
+              >
+                Xóa
+              </button>
+            )}
+          </div>
         </div>
       </div>
  
