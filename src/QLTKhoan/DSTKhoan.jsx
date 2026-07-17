@@ -523,7 +523,7 @@ setUsers(normalizedData);
                     <input
                       id="edit-name" type="text" required
                       value={editingUser.name}
-                      onChange={(e) => setEditingUser({ ...editingUser, name: e.target.value })}
+                      readOnly
                       className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 h-10 outline-none text-slate-700 font-medium focus:border-slate-800 transition-all"
                     />
                   </div>
@@ -537,7 +537,7 @@ setUsers(normalizedData);
                     <input
                       id="edit-email" type="email" required
                       value={editingUser.email}
-                      onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                      readOnly
                       className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 h-10 outline-none text-slate-700 font-medium focus:border-slate-800 transition-all"
                     />
                   </div>
@@ -551,7 +551,7 @@ setUsers(normalizedData);
                     <input
                       id="edit-phone" type="text"
                       value={editingUser.phone}
-                      onChange={(e) => setEditingUser({ ...editingUser, phone: e.target.value })}
+                      readOnly
                       className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 h-10 outline-none text-slate-700 font-medium focus:border-slate-800 transition-all"
                     />
                   </div>
@@ -564,7 +564,7 @@ setUsers(normalizedData);
                     <select
                       id="edit-role"
                       value={editingUser.role}
-                      onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
+                       readOnly
                       className="w-full bg-white border border-slate-200 rounded-xl px-3.5 h-10 outline-none text-slate-600 font-medium focus:border-slate-800 cursor-pointer appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2364748B%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:10px_auto] bg-[right_14px_center] bg-no-repeat"
                     >
                       <option value="CUSTOMER">CUSTOMER</option>
@@ -599,7 +599,7 @@ setUsers(normalizedData);
                     type="button" onClick={() => setIsEditModalOpen(false)}
                     className="border border-slate-300 text-slate-700 text-xs font-bold px-5 h-9 rounded-lg hover:bg-slate-50 transition-all cursor-pointer uppercase tracking-wider"
                   >
-                    Đóng
+                    ĐÓNG
                   </button>
                 </div>
 

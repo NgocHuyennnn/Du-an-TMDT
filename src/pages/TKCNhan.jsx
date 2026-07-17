@@ -1,4 +1,5 @@
 import  { useState, useEffect } from 'react';
+import axios from "axios";
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShoppingBag, Home, Users, ClipboardList, Settings, HelpCircle,
@@ -71,40 +72,60 @@ const handleProfileChange = (e) => {
   }
 };
   // Xử lý thay đổi thông tin hồ sơ
-  const handleSaveProfile = (e) => {
+  const handleSaveProfile = async (e) => {
   e.preventDefault();
   setIsSaving(true);
-   
-  setTimeout(() => {
-    setIsSaving(false);
 
+  try {
+    const token = localStorage.getItem("access_token");
 
+    const res = await axios.patch(
+      "https://tmdt-backend-ego0.onrender.com/api/users/profile",
+      {
+        fullname: profileData.fullName,
+        phone: profileData.phone,
+        gender: profileData.gender,
+        birthday: profileData.birthday,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    // Lấy user hiện tại
     const user = JSON.parse(localStorage.getItem("user"));
 
-
+    // Cập nhật lại localStorage
     const newUser = {
       ...user,
       fullname: profileData.fullName,
       phone: profileData.phone,
       gender: profileData.gender,
-      birthday: profileData.birthday
+      birthday: profileData.birthday,
     };
-
 
     localStorage.setItem("user", JSON.stringify(newUser));
 
-
     window.dispatchEvent(new Event("auth-change"));
-
 
     setMsg({
       type: "success",
-      text: "Cập nhật thông tin thành công!"
+      text: "Cập nhật thông tin thành công!",
     });
 
+  } catch (err) {
+    console.error(err);
 
-  }, 1500); // 👈 đóng setTimeout
-}; // 👈 đóng handleSaveProfile
+    setMsg({
+      type: "error",
+      text: "Không thể cập nhật thông tin.",
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
 
 
