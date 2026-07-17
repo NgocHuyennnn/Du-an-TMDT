@@ -54,7 +54,7 @@ const normalizedData = apiUsers.map((u) => ({
   email: u.Email,
   phone: u.PhoneNumber,
   avatar: u.AvatarURL,
-  role: u.RoleName,
+  role: u.RoleName?.toUpperCase(),
   roleId: u.RoleID,
   status: u.IsActive
     ? "Hoạt động"
@@ -88,9 +88,8 @@ setUsers(normalizedData);
     id.toLowerCase().includes(searchTerm.toLowerCase());
 
   const matchesRole =
-
-    selectedRole === "Tất cả vai trò" || user?.role === selectedRole;
-
+    selectedRole === "Tất cả vai trò" ||
+    user.role?.toUpperCase() === selectedRole.toUpperCase();
   const matchesStatus =
     selectedStatus === "Tất cả trạng thái" || user?.status === selectedStatus;
 
@@ -130,6 +129,7 @@ setUsers(normalizedData);
 
   // 🌟 HÀM KHI CLICK VÀO ICON CÂY BÚT (MỞ POPUP CHỈNH SỬA)
   const handleEditClick = (user) => {
+    
     setEditingUser({ ...user }); // Sao chép dữ liệu user được chọn vào bản ghi tạm
     setIsEditModalOpen(true);
   };
