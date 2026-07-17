@@ -142,7 +142,7 @@ export default function CategoriesManagement() {
   
   const [showAddRow, setShowAddRow] = useState(false);
   const addInputRef = useRef(null);
-
+  const [productCounts, setProductCounts] = useState({});
  
 
   const filtered = categories.filter((c) =>
@@ -156,10 +156,31 @@ export default function CategoriesManagement() {
     (currentPage - 1) * ITEMS_PER_PAGE,
     currentPage * ITEMS_PER_PAGE,
   );
-  useEffect(()=>{
+  useEffect(() => {
   getCategories();
-},[]);
+  getProductCounts();
+}, []);
+  async function getProductCounts() {
+  try {
+    const res = await axios.get(
+  "https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=1000"
+);
 
+    const products = res.data.data;
+  
+const counts = {};
+
+products.forEach((product) => {
+  counts[product.CategoryID] = (counts[product.CategoryID] || 0) + 1;
+});
+
+setProductCounts(counts);
+
+  } catch (err) {
+    console.log(err);
+  }
+  
+}
 
 async function getCategories() {
   try {
@@ -430,7 +451,11 @@ async function handleAdd() {
                         className="text-sm font-semibold text-slate-700 border-b-2 border-blue-400 bg-transparent focus:outline-none w-48 placeholder-slate-400"
                       />
                     </td>
-                    <td className="px-3 py-3.5 text-center text-sm text-slate-400">0</td>
+                   <td className="px-3 py-3.5 text-center">
+  <span className="text-sm text-slate-500">
+    0
+  </span>
+</td>
                     <td className="px-3 py-3.5 text-center">
                       <Toggle checked={true} onChange={() => {}} />
                     </td>
@@ -484,9 +509,12 @@ async function handleAdd() {
                         />
                       </td>
                       {/* product count */}
-                      <td className="px-3 py-3.5 text-center">
-                        <span className="text-sm text-slate-500">0</span>
-                      </td>
+                      
+<td className="px-3 py-3.5 text-center">
+  <span className="text-sm text-slate-500">
+    {productCounts[category.CategoryID] || 0}
+  </span>
+</td>
                       {/* toggle */}
                       <td className="px-3 py-3.5 text-center">
                         <Toggle

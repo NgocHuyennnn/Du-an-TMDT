@@ -11,7 +11,7 @@ import {
   Tag,
   User2,
   CalendarDays,
-  ExternalLink,
+  
   ShieldCheck,
  
 } from "lucide-react";
@@ -312,23 +312,7 @@ if (loading) {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div>
-                    <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1.5">
-                      Website
-                    </p>
-                    <div className="flex items-center gap-2">
-                      <ExternalLink size={13} className="text-blue-500" />
-                      <span className="text-sm text-blue-500 font-medium hover:underline cursor-pointer">
-                        www.lumina.io
-                      </span>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold tracking-widest text-gray-400 uppercase mb-1.5">
-                      Giờ hoạt động
-                    </p>
-                    <span className="text-sm text-gray-700 font-medium">T2 – T7 · 09:00–18:00</span>
-                  </div>
+                  
                 </div>
               </div>
             </SectionCard>

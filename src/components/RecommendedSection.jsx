@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { Star, ShoppingCart, Heart } from "lucide-react";
+import { Star, ShoppingCart} from "lucide-react";
 import { addToCart } from "@/api/cartApi";
 //import { Products } from "@/data/productData";
 
@@ -19,7 +19,7 @@ const [page,setPage] = useState(1);
 const navigate = useNavigate();
 const [total,setTotal] = useState(0);
 const [products,setProducts] = useState([]);
-const [liked,setLiked] = useState(new Set());
+
 const [showPopup, setShowPopup] = useState(false);
 const [showLoginPopup, setShowLoginPopup] = useState(false);
 
@@ -99,23 +99,7 @@ if(!products.length){
  )
 }
 const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
-const toggleLike=(id,e)=>{
 
- e.preventDefault();
-
- setLiked(prev=>{
-
-  const next = new Set(prev);
-
-  next.has(id)
-  ? next.delete(id)
-  : next.add(id);
-
-  return next;
-
- });
-
-};
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-10">
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -136,15 +120,7 @@ const toggleLike=(id,e)=>{
 >
               
 
-              <button
-                onClick={(e) => toggleLike(product.ProductID, e)}
-                className="absolute top-2 right-2 z-10 w-7 h-7 flex items-center justify-center rounded-full bg-white/80 backdrop-blur-sm shadow-sm hover:bg-white transition-all duration-150"
-              >
-                <Heart
-                  size={13}
-                  className={liked.has(product.ProductID) ? "fill-red-500 text-red-500" : "text-gray-400"}
-                />
-              </button>
+              
 
               <div className="aspect-square bg-gray-50 overflow-hidden">
                 <img
