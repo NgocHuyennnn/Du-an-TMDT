@@ -14,24 +14,26 @@ function buildReportRows(orders, products, categories) {
     (order.Items || []).forEach(item => {
 
       if (!reportMap[item.ProductID]) {
-
+        console.log("ITEM:", item);
+console.log("ITEM ProductID:", item.ProductID);
         const product = products.find(
           p => p.ProductID === item.ProductID
         );
-
+console.log("FOUND PRODUCT:", product);
         const category = categories.find(
           c => c.CategoryID === product?.CategoryID
         );
 
-        const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+        const image =
+  product?.Images?.[0]?.ImageURL ||
+  product?.PrimaryImage ||
+  "";
 
 reportMap[item.ProductID] = {
   id: item.ProductID,
   name: item.ProductName,
   category: category?.CategoryName || "-",
-  image: product?.PrimaryImage
-    ? BASE_URL + product.PrimaryImage
-    : "",
+  image: image,
   sold: 0,
   revenue: 0,
 };
@@ -89,6 +91,8 @@ useEffect(() => {
       setOrders(orderRes.data.data);
       setProducts(productRes.data.data);
       setCategories(categoryRes.data.data);
+      console.log("Products:", productRes.data.data.length);
+console.log(productRes.data.data);
     } catch (err) {
       console.log(err);
     }

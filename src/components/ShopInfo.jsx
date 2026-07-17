@@ -49,9 +49,17 @@ export default function ShopInfo({ shop, product }) {
   CHAT NGAY
 </button>
 
-            <button className="text-xs border px-3 py-1 rounded hover:bg-gray-50">
-              XEM SHOP
-            </button>
+            <button
+  onClick={() => {
+    console.log(shop);
+    console.log(shop.ShopID);
+    navigate(`/shop/${shop.ShopID}`);
+  }}
+  className="text-xs border px-3 py-1 rounded hover:bg-gray-50"
+
+>
+  XEM SHOP
+</button>
 
           </div>
         </div>

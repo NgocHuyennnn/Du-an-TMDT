@@ -98,7 +98,6 @@ if(!products.length){
   </section>
  )
 }
-const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 pb-10">
@@ -126,15 +125,14 @@ const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
                 <img
   src={
     product.Images?.length
-      ? `${BASE_URL}${product.Images[0].ImageURL}`
+      ? product.Images[0].ImageURL
       : product.PrimaryImage
-      ? `${BASE_URL}${product.PrimaryImage}`
+      ? product.PrimaryImage
       : "https://via.placeholder.com/300"
   }
   alt={product.ProductName}
   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-/>
-              </div>
+/>      </div>
 
               {/* Thêm padding-bottom pb-12 để chừa sẵn chỗ trống cố định cho nút Mua trượt lên, không lo bị đè chữ */}
               <div className="p-3 pb-12">

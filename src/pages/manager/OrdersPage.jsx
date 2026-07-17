@@ -12,7 +12,7 @@ import {
   Calendar,
   CreditCard,
   Phone,
-  User,
+  
   MapPin,
   Package,
   ShoppingBag,
@@ -753,27 +753,23 @@ const openChat = (order) => {
                           <div className="relative">
 
                             <img
-
-                              src={
-                                item.ImageURL ||
-                                "https://placehold.co/120x120"
-                              }
-
-                              className="
-                              w-28
-                              h-28
-
-                              rounded-3xl
-
-                              object-cover
-
-                              border
-                              border-slate-200
-
-                              shadow-md
-                              "
-
-                            />
+  src={
+    item.ImageURL ||
+    item.image_url ||
+    item.Image ||
+    "https://placehold.co/120x120"
+  }
+  alt={item.ProductName}
+  className="
+    w-28
+    h-28
+    rounded-3xl
+    object-cover
+    border
+    border-slate-200
+    shadow-md
+  "
+/>v
 
                             <div
 

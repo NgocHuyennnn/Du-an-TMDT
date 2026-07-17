@@ -341,21 +341,20 @@ const orderTotal = orderStats.reduce(
   );
 
   const image =
-    product?.Images?.[0]?.ImageURL ||
-    product?.PrimaryImage ||
-    "";
-
-  return {
-    ...item,
-    image: image
-      ? `https://tmdt-backend-ego0.onrender.com${image}`
-      : "",
-    status: !product?.IsActive
-      ? "hidden"
-      : product?.StockQuantity === 0
-      ? "soldout"
-      : "active",
-  };
+  item.ImageURL ||
+  product?.Images?.[0]?.ImageURL ||
+  product?.PrimaryImage ||
+  "";
+console.log("Link ảnh:", image);
+return {
+  ...item,
+  image: image,
+  status: !product?.IsActive
+    ? "hidden"
+    : product?.StockQuantity === 0
+    ? "soldout"
+    : "active",
+};
 })
 .sort((a, b) => b.sold - a.sold)
 .slice(0, 3);
