@@ -122,7 +122,7 @@ export default function Header() {
                 <User size={20} />
                 <span className="hidden sm:block ml-1">Đăng nhập</span>
               </Link>
-              <Link to="/dangki" className="bg-yellow-400 text-blue-900 px-5 py-2 rounded-full font-bold hover:bg-yellow-300">Đăng ký</Link>
+              <Link to="/quen-mat-khau" className="bg-yellow-400 text-blue-900 px-5 py-2 rounded-full font-bold hover:bg-yellow-300">Đăng ký</Link>
             </>
           )}
         </div>
