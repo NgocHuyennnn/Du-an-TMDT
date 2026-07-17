@@ -48,7 +48,7 @@ const handleAddToCart = async (e, product) => {
       try {
         const response = await fetch("https://tmdt-backend-ego0.onrender.com/api/products?page=1&limit=100");
         const result = await response.json();
-        const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+       
         // Map dữ liệu từ API về giao diện
         const formattedData = result.data
   .sort((a, b) => {
@@ -71,9 +71,11 @@ const handleAddToCart = async (e, product) => {
     reviews: item.ReviewCount || item.SoldQuantity || 0,
     sold: item.SoldQuantity || 0,
 
-    image: item.PrimaryImage
-      ? `${BASE_URL}${item.PrimaryImage}`
-      : "https://via.placeholder.com/300",
+    image:
+      item.Images?.[0]?.ImageURL ||
+      item.PrimaryImage ||
+      item.image ||
+      "https://via.placeholder.com/300",
   }));
 
 setProducts(formattedData);

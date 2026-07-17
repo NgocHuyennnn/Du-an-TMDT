@@ -69,6 +69,7 @@ export default function ProductList() {
 );
 
       setProducts(res.data.data || []);
+      console.log(res.data.data[0]);
     } catch (error) {
       console.error("Lỗi lấy sản phẩm:", error);
     } finally {
@@ -204,7 +205,7 @@ export default function ProductList() {
   <div className="w-11 h-11 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 flex items-center justify-center">
     {product.PrimaryImage ? (
       <img
-        src={`https://tmdt-backend-ego0.onrender.com${product.PrimaryImage}`}
+        src={product.PrimaryImage}
         alt={product.ProductName}
         className="w-full h-full object-cover"
       />

@@ -12,7 +12,7 @@ const { id } = useParams();
 const [product, setProduct] = useState(null);
 const [categories, setCategories] = useState([]);
 const [loading, setLoading] = useState(true);
-const BASE_URL = "https://tmdt-backend-ego0.onrender.com";
+
 useEffect(() => {
   const fetchProduct = async () => {
     try {
@@ -105,8 +105,8 @@ product.Specifications?.forEach(item => {
   <img
     src={
       product.Images?.length
-        ? `${BASE_URL}${product.Images[0].ImageURL}`
-        : `${BASE_URL}${product.PrimaryImage}`
+        ? product.Images[0].ImageURL
+        : product.PrimaryImage
     }
     alt={product.ProductName}
     className="w-full h-full object-cover"

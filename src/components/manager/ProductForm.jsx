@@ -163,11 +163,7 @@ const image =
   p.PrimaryImage ||
   "";
 
-setPrimaryImage(
-  image
-    ? `https://tmdt-backend-ego0.onrender.com${image}`
-    : ""
-);
+setPrimaryImage(image || "");
 
 console.log("Primary:", p.PrimaryImage);
 
