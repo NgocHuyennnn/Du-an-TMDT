@@ -42,7 +42,8 @@ setCategories(res.data || []);
   fetchCategories();
 }, []);
     return (
-    <nav className="bg-white border-b border-gray-100 relative z-40">
+    <div className="sticky top-16 z-40 bg-gray-50 pt-2"> 
+  <nav className="bg-white border-b border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-11">
           
@@ -62,8 +63,9 @@ setCategories(res.data || []);
             </button>
 
             {/* Category Dropdown */}
-            {showCategories && (
-  <div className="absolute left-0 top-full mt-0 w-56 bg-white shadow-xl border rounded-b-xl z-[1000]">
+            {/* Category Dropdown */}
+{showCategories && (
+  <div className="absolute left-0 top-full mt-0 w-56 bg-white shadow-xl border rounded-b-xl z-50 max-h-96 overflow-y-auto custom-scrollbar">
     {loading ? (
       <div className="px-4 py-3 text-sm text-gray-500">
         Đang tải...
@@ -71,16 +73,15 @@ setCategories(res.data || []);
     ) : (
       categories.map((cat) => (
         <Link
-  key={cat.CategoryID}
-  to={`/category/${cat.CategoryID}`}
-  className="flex items-center justify-between px-4 py-2.5 hover:bg-blue-50"
->
-  <span>{cat.CategoryName}</span>
-  <ChevronRight size={13} />
-</Link>
+          key={cat.CategoryID}
+          to={`/category/${cat.CategoryID}`}
+          className="flex items-center justify-between px-4 py-2.5 hover:bg-blue-50 text-sm"
+        >
+          <span className="truncate">{cat.CategoryName}</span>
+          <ChevronRight size={13} />
+        </Link>
       ))
     )}
-
   </div>
 )}
           </div>
@@ -106,5 +107,6 @@ setCategories(res.data || []);
         </div>
       </div>
     </nav>
+    </div>
   );
 }
