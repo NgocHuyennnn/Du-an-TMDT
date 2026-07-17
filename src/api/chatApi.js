@@ -15,13 +15,12 @@ API.interceptors.request.use((config) => {
 });
 
 // ================= Danh sách hội thoại =================
-export const getConversations = ({ shop_id, target_user_id } = {}) => {
-  return API.get("/chat/rooms", {
-    params: {
-      shop_id,
-      target_user_id,
-    },
-  });
+export const getConversations = (shopId) => {
+    return API.get("/chat/rooms", {
+        params: {
+            target_shop_id: shopId,
+        },
+    });
 };
 // ================= Lịch sử chat =================
 export const getChatHistory = (userId, shopId) => {
