@@ -15,10 +15,17 @@ API.interceptors.request.use((config) => {
 });
 
 // ================= Danh sách hội thoại =================
-export const getConversations = (shopId) => {
+// ================= Danh sách hội thoại =================
+export const getConversations = ({
+    shop_id,
+    target_shop_id,
+    target_user_id,
+} = {}) => {
     return API.get("/chat/rooms", {
         params: {
-            target_shop_id: shopId,
+            shop_id,
+            target_shop_id,
+            target_user_id,
         },
     });
 };
